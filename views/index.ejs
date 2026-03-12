@@ -11,16 +11,23 @@
 
     <div class="sidebar-container">
         <aside class="sidebar-inner">
-            <div class="sidebar-header">
-                <a href="/" class="brand-button">
-                    <div class="brand-icon-box">
-                        <svg viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.2222 10.6018C15.7975 10.9575 16.3909 11.2823 17 11.5751V10.6472C15.4289 9.82681 12.1169 7.74904 9.88889 3.89655C9.88889 3.89655 9.88889 3 9 3C8.11111 3 8.11111 3.89655 8.11111 3.89655C5.88311 7.74904 2.57111 9.82681 1 10.6472V11.5751C1.6091 11.2823 2.20252 10.9575 2.77778 10.6018V11.9655H1V13.7586H8.11111V16H9.88889V13.7586H17V11.9655H15.2222V10.6018ZM14.3333 11.9655H12.5556V8.63257C13.1213 9.12904 13.7149 9.59225 14.3333 10.02V11.9655ZM3.66667 10.0195C4.28514 9.59202 4.87872 9.1289 5.44444 8.63257V11.9655H3.66667V10.0195ZM6.33333 11.9655V7.80016C6.98009 7.15343 7.57458 6.45563 8.11111 5.71342V11.9655H6.33333ZM9.88889 5.71386C10.4256 6.45598 11.02 7.15377 11.6667 7.80057V11.9655H9.88889V5.71386Z"></path></svg>
-                    </div>
-                    <div class="brand-text-container">
-                        <span class="brand-main-text">Boston</span>
-                        <span class="brand-sub-text">Crime Bot</span>
-                    </div>
-                </a>
+            
+            <div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 p-2">
+                <ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                    <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">
+                        <a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-size="lg" data-active="false" class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! [&amp;&gt;span:last-child]:truncate [&amp;&gt;svg]:size-4 [&amp;&gt;svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-12 text-sm group-data-[collapsible=icon]:p-0!" href="/" data-discover="true">
+                            <div class="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg" style="background-color: #0a0a0a;">
+                                <svg viewBox="0 0 18 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="size-4 text-white">
+                                    <path d="M15.2222 10.6018C15.7975 10.9575 16.3909 11.2823 17 11.5751V10.6472C15.4289 9.82681 12.1169 7.74904 9.88889 3.89655C9.88889 3.89655 9.88889 3 9 3C8.11111 3 8.11111 3.89655 8.11111 3.89655C5.88311 7.74904 2.57111 9.82681 1 10.6472V11.5751C1.6091 11.2823 2.20252 10.9575 2.77778 10.6018V11.9655H1V13.7586H8.11111V16H9.88889V13.7586H17V11.9655H15.2222V10.6018ZM14.3333 11.9655H12.5556V8.63257C13.1213 9.12904 13.7149 9.59225 14.3333 10.02V11.9655ZM3.66667 10.0195C4.28514 9.59202 4.87872 9.1289 5.44444 8.63257V11.9655H3.66667V10.0195ZM6.33333 11.9655V7.80016C6.98009 7.15343 7.57458 6.45563 8.11111 5.71342V11.9655H6.33333ZM9.88889 5.71386C10.4256 6.45598 11.02 7.15377 11.6667 7.80057V11.9655H9.88889V5.71386Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <div class="flex flex-col gap-0.5 leading-none">
+                                <span class="font-medium">Boston</span>
+                                <span class="text-xs text-muted-foreground">Crime Bot</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
             <div class="sidebar-content">
@@ -47,6 +54,10 @@
                 <div class="header-separator"></div>
                 <span class="page-title" id="current-title">Панель управления</span>
             </div>
+            
+            <div id="header-actions" style="display: none;">
+                <button class="btn-header-add" onclick="openModal()">Добавить семью</button>
+            </div>
         </header>
 
         <div class="content-body" id="page-content">
@@ -58,25 +69,13 @@
             <h2 id="modal-title">Добавить семью</h2>
             <form id="family-form">
                 <input type="hidden" id="edit-index">
-                <div class="form-group">
-                    <label>Название семьи *</label>
-                    <input type="text" id="fam-name" required>
-                </div>
-                <div class="form-group">
-                    <label>ID Семьи *</label>
-                    <input type="text" id="fam-id" required>
-                </div>
-                <div class="form-group">
-                    <label>Лидер (Ник)</label>
-                    <input type="text" id="fam-leader">
-                </div>
-                <div class="form-group">
-                    <label>Discord ID</label>
-                    <input type="text" id="fam-discord">
-                </div>
+                <div class="form-group"><label>Семья *</label><input type="text" id="fam-name" required></div>
+                <div class="form-group"><label>ID *</label><input type="text" id="fam-id" required></div>
+                <div class="form-group"><label>Лидер</label><input type="text" id="fam-leader"></div>
+                <div class="form-group"><label>Discord ID</label><input type="text" id="fam-discord"></div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeModal()">Отмена</button>
-                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <button type="submit" class="btn-primary-action">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -84,37 +83,19 @@
 
     <script>
         let families = [{ name: "Marabunta", id: "101", leader: "Dmitry Black", discord: "293847561023" }];
-        
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
+        const headerActions = document.getElementById('header-actions');
 
         function renderFamilies() {
             pageContent.innerHTML = `
-                <div class="table-header-box">
-                    <button class="btn-primary" onclick="openModal()">Добавить семью</button>
-                </div>
                 <div class="table-container">
                     <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Семья</th>
-                                <th>ID</th>
-                                <th>Лидер</th>
-                                <th>Discord ID</th>
-                                <th style="text-align:right">Действие</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Семья</th><th>ID</th><th>Лидер</th><th>Discord ID</th><th style="text-align:right">Действие</th></tr></thead>
                         <tbody>
                             ${families.map((f, i) => `
-                                <tr>
-                                    <td>${f.name}</td>
-                                    <td><span class="id-tag">#${f.id}</span></td>
-                                    <td>${f.leader || '—'}</td>
-                                    <td>${f.discord || '—'}</td>
-                                    <td style="text-align:right">
-                                        <button class="btn-edit" onclick="editFamily(${i})">Изменить</button>
-                                    </td>
-                                </tr>
+                                <tr><td>${f.name}</td><td><span class="id-tag">#${f.id}</span></td><td>${f.leader || '—'}</td><td>${f.discord || '—'}</td>
+                                <td style="text-align:right"><button class="btn-edit-small" onclick="editFamily(${i})">Изменить</button></td></tr>
                             `).join('')}
                         </tbody>
                     </table>
@@ -128,19 +109,14 @@
                 btn.classList.add('active');
                 const title = btn.getAttribute('data-title');
                 pageTitle.textContent = title;
+                headerActions.style.display = (title === 'Семьи') ? 'block' : 'none';
                 if(title === 'Семьи') renderFamilies();
-                else pageContent.innerHTML = `<p style="color:#444">Раздел "${title}" находится в разработке.</p>`;
+                else pageContent.innerHTML = `<div class="empty-state">Раздел в разработке</div>`;
             });
         });
 
-        function openModal() {
-            document.getElementById('family-form').reset();
-            document.getElementById('edit-index').value = "";
-            document.getElementById('modal-title').textContent = "Добавить семью";
-            document.getElementById('modal-overlay').style.display = 'flex';
-        }
+        function openModal() { document.getElementById('family-form').reset(); document.getElementById('edit-index').value = ""; document.getElementById('modal-overlay').style.display = 'flex'; }
         function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
-        
         function editFamily(i) {
             const f = families[i];
             document.getElementById('fam-name').value = f.name;
@@ -148,22 +124,14 @@
             document.getElementById('fam-leader').value = f.leader;
             document.getElementById('fam-discord').value = f.discord;
             document.getElementById('edit-index').value = i;
-            document.getElementById('modal-title').textContent = "Редактировать семью";
             document.getElementById('modal-overlay').style.display = 'flex';
         }
-
         document.getElementById('family-form').onsubmit = (e) => {
             e.preventDefault();
             const i = document.getElementById('edit-index').value;
-            const data = {
-                name: document.getElementById('fam-name').value,
-                id: document.getElementById('fam-id').value,
-                leader: document.getElementById('fam-leader').value,
-                discord: document.getElementById('fam-discord').value
-            };
+            const data = { name: document.getElementById('fam-name').value, id: document.getElementById('fam-id').value, leader: document.getElementById('fam-leader').value, discord: document.getElementById('fam-discord').value };
             if(i === "") families.push(data); else families[i] = data;
-            closeModal();
-            renderFamilies();
+            closeModal(); renderFamilies();
         };
     </script>
 </body>
