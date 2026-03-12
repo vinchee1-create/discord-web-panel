@@ -21,14 +21,16 @@ const client = new Client({
 
 // --- 3. МАРШРУТЫ САЙТА (ROUTES) ---
 app.get('/', (req, res) => {
-    // Безопасная передача данных: если бот еще не загрузился, ставим заглушки
+    // Создаем объект data, который ожидает твой index.ejs
     const data = {
-        botName: client.user ? client.user.username : "Загрузка...",
-        guildCount: client.guilds.cache.size || 0,
-        onlineStatus: "1 719" // Пока статично, как на твоем макете
+        botStatus: client.user ? "В сети" : "Подключение...",
+        serverName: "Boston RP", // Можешь заменить на свое
+        memberCount: client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0) || "1 719",
+        botName: client.user ? client.user.username : "Загрузка..."
     };
     
-    res.render('index', data);
+    // Передаем этот объект в шаблон
+    res.render('index', { data: data }); 
 });
 
 // --- 4. СОБЫТИЯ БОТА ---
