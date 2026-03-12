@@ -22,7 +22,7 @@ body {
     width: 100%;
     height: 100%;
     background-color: #161616;
-    border: none; /* Без визуальной обводки */
+    border: none;
     display: flex;
     flex-direction: column;
 }
@@ -33,40 +33,69 @@ body {
 .nav-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 4px; /* Соответствует gap-1 из твоего примера */
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 8px 12px;
     text-decoration: none;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    height: 32px; /* h-8 */
+    position: relative;
     
-    /* Изначально цвет как у панели */
     background-color: #161616; 
     
-    /* Скругляем ТОЛЬКО левую часть (верх-лево, верх-право, низ-право, низ-лево) */
-    border-radius: 8px 0 0 8px; 
+    /* ЗАКРУГЛЕНИЕ: Теперь закругляется везде */
+    border-radius: 6px; 
     
-    /* Сдвиг вправо, чтобы левая сторона кнопки была внутри панели с отступом */
-    margin-left: 12px; 
+    /* ОТСТУПЫ: Добавил margin-right, чтобы закругление справа не липло к краю */
+    margin-left: 8px;
+    margin-right: 8px; 
     
     transition: background 0.2s ease, color 0.2s ease;
 }
 
-.nav-item svg { width: 18px; height: 18px; opacity: 0.7; }
+.flex-1 { flex: 1; }
 
-/* Состояние при наведении или активном выборе */
+/* Эффект при наведении и активном выборе */
 .nav-item:hover, 
 .nav-item.active {
-    background-color: #222222; /* Цвет при выборе/наведении */
+    background-color: #222222; 
     color: white;
 }
 
-.nav-item.active svg { opacity: 1; }
+.nav-item svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.nav-item:hover svg, .nav-item.active svg {
+    opacity: 1;
+}
+
+/* Кнопка звездочки */
+.star-button {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.nav-item:hover .star-button,
+.nav-item.active .star-button {
+    opacity: 1;
+}
 
 /* ПРАВАЯ ЧАСТЬ */
 .main-content {
@@ -77,10 +106,8 @@ body {
     border-radius: 14px;
     display: flex;
     flex-direction: column;
-    color: oklch(0.985 0 0);
 }
 
-/* Шапка и контент */
 .content-header { height: 64px; border-bottom: 1px solid oklch(1 0 0 / 0.1); display: flex; align-items: center; padding: 0 16px; }
 .brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand-logo { width: 32px; height: 32px; background-color: #45cd5b; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
@@ -90,8 +117,3 @@ body {
 .sidebar-trigger { background: transparent; border: none; color: oklch(0.985 0 0 / 0.5); cursor: pointer; padding: 4px; }
 .header-separator { width: 1px; height: 16px; background: oklch(1 0 0 / 0.1); margin: 0 8px; }
 .page-title { font-size: 14px; font-weight: 500; }
-.content-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 60px; }
-.status-card { background: rgba(255, 255, 255, 0.03); border: 1px solid oklch(1 0 0 / 0.1); border-radius: 16px; padding: 24px; min-width: 300px; }
-.status-line { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: rgba(255, 255, 255, 0.6); }
-.status-value { color: white; font-weight: 600; }
-.highlight-green { color: #45cd5b; }
