@@ -1,53 +1,148 @@
 /* Глобальные */
 body {
-    margin: 0; padding: 0; font-family: 'Inter', sans-serif;
-    background-color: #161616; color: white; display: flex; height: 100vh; overflow: hidden;
+    margin: 0; padding: 0; 
+    font-family: 'Inter', sans-serif;
+    background-color: #161616; 
+    color: white; 
+    display: flex; 
+    height: 100vh; 
+    overflow: hidden;
 }
 
-/* САЙДБАР (ПОЛНЫЙ КОД) */
-.sidebar-container { width: 260px; height: 100vh; padding: 8px; box-sizing: border-box; flex-shrink: 0; }
-.sidebar-inner { width: 100%; height: 100%; display: flex; flex-direction: column; }
-.sidebar-header { padding: 12px 16px; }
+/* САЙДБАР */
+.sidebar-container { 
+    width: 260px; 
+    height: 100vh; 
+    padding: 8px; 
+    box-sizing: border-box; 
+    flex-shrink: 0; 
+}
+
+.sidebar-inner { 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+/* Смещаем хедер сайдбара, чтобы выровнять Boston Crime Bot с Панелью управления */
+.sidebar-header { 
+    padding: 10px 16px; 
+    margin-top: 4px; 
+}
 
 .brand-button {
-    display: flex; align-items: center; gap: 8px; padding: 8px; height: 48px;
-    text-decoration: none; color: white; border-radius: 6px; margin: 4px 8px;
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 8px; 
+    height: 48px;
+    text-decoration: none; 
+    color: white; 
+    border-radius: 6px; 
     transition: background 0.2s;
 }
+
 .brand-button:hover { background: #222; }
+
 .brand-icon-box {
-    width: 32px; height: 32px; background-color: rgb(10, 10, 10);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 32px; 
+    height: 32px; 
+    background-color: rgb(10, 10, 10);
+    border-radius: 8px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0;
 }
+
 .brand-icon-box svg { width: 16px; height: 16px; color: white; }
-.brand-text-container { display: flex; flex-direction: column; gap: 2px; line-height: 1; }
+
+.brand-text-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; 
+    line-height: 1; 
+}
+
 .brand-main-text { font-size: 14px; font-weight: 500; }
 .brand-sub-text { font-size: 12px; color: #ffffff; }
 
-.nav-list { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; overflow-y: auto; }
-.nav-item {
-    display: flex; align-items: center; gap: 8px; padding: 0 10px;
-    text-decoration: none; font-size: 13px; height: 32px;
-    color: rgba(255, 255, 255, 0.65); border-radius: 6px; margin: 0 8px;
-    transition: all 0.15s ease; flex-shrink: 0;
+/* Навигация — Текст и иконки теперь белые */
+.nav-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; 
+    margin-top: 12px; 
+    overflow-y: auto; 
 }
-.nav-item:hover, .nav-item.active { background-color: #222; color: white; }
-.nav-item svg { width: 16px; height: 16px; opacity: 0.6; flex-shrink: 0; }
-.nav-item.active svg { opacity: 1; }
+
+.nav-item {
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 0 10px;
+    text-decoration: none; 
+    font-size: 13px; 
+    height: 32px;
+    color: #ffffff; /* Текст белый */
+    border-radius: 6px; 
+    margin: 0 8px;
+    transition: all 0.15s ease; 
+    flex-shrink: 0;
+}
+
+.nav-item svg { 
+    width: 16px; 
+    height: 16px; 
+    color: #ffffff; /* Иконка белая */
+    opacity: 1; /* Убрали прозрачность */
+    flex-shrink: 0; 
+}
+
+.nav-item:hover, .nav-item.active { 
+    background-color: #222; 
+    color: white; 
+}
 
 /* ПРАВАЯ ЧАСТЬ */
 .main-content {
-    background-color: #0a0a0a; flex-grow: 1; margin: 8px 8px 8px 0;
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
-    display: flex; flex-direction: column; overflow: hidden;
+    background-color: #0a0a0a; 
+    flex-grow: 1; 
+    margin: 8px 8px 8px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 14px;
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden;
 }
+
 .content-header {
-    height: 64px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex; align-items: center; padding: 0 16px; flex-shrink: 0;
+    height: 64px; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; 
+    align-items: center; 
+    padding: 0 16px; 
+    flex-shrink: 0;
 }
+
 .header-left { display: flex; align-items: center; gap: 8px; }
-.sidebar-trigger { background: transparent; border: none; color: white; opacity: 0.5; cursor: pointer; }
-.header-separator { width: 1px; height: 16px; background: rgba(255, 255, 255, 0.1); margin: 0 8px; }
+
+.sidebar-trigger { 
+    background: transparent; 
+    border: none; 
+    color: white; 
+    opacity: 0.5; 
+    cursor: pointer; 
+}
+
+.header-separator { 
+    width: 1px; 
+    height: 16px; 
+    background: rgba(255, 255, 255, 0.1); 
+    margin: 0 8px; 
+}
+
 .page-title { font-size: 14px; font-weight: 500; }
 .content-body { padding: 24px; flex-grow: 1; overflow-y: auto; }
 
