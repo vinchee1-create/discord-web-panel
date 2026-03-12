@@ -1,37 +1,57 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
+const { Client, GatewayIntentBits } = require('discord.js');
+const path = require('path');
+
 const app = express();
 
-// 1. НАСТРОЙКА БОТА
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences]
-});
-
-// Когда бот готов
-client.once('ready', () => {
-    console.log(`Бот ${client.user.tag} успешно запущен!`);
-});
-
-// 2. НАСТРОЙКА САЙТА
+// --- НАСТРОЙКИ ВЕБ-САЙТА ---
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Главная страница
 app.get('/', (req, res) => {
-    // Сайт берет данные прямо у бота в реальном времени
-    const data = {
-        botStatus: client.user ? "Онлайн" : "Оффлайн",
-        serverName: client.guilds.cache.first()?.name || "Сервер не найден",
-        memberCount: client.guilds.cache.first()?.memberCount || 0
-    };
-    
-    res.render('index', { data: data });
+    // Передаем данные бота на страницу, если нужно (например, название сервера)
+    res.render('index', { 
+        botUser: client.user ? client.user.username : "Бот",
+        guildCount: client.guilds.cache.size 
+    });
 });
 
-// 3. ЗАПУСК ВСЕГО СРАЗУ
+// --- ЛОГИКА DISCORD БОТА ---
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
+    ]
+});
+
+client.once('ready', () => {
+    console.log(`✅ Бот ${client.user.tag} успешно запущен!`);
+});
+
+// Пример простой команды
+client.on('messageCreate', (message) => {
+    if (message.content === '!ping') {
+        message.reply('Pong! 🏓');
+    }
+});
+
+// --- ЗАПУСК ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Сайт работает на http://localhost:${PORT}`);
-});
+const TOKEN = process.env.BOT_TOKEN;
 
-// Замени BOT_TOKEN в файле .env на токен своего бота
-client.login(process.env.BOT_TOKEN);
+if (!TOKEN) {
+    console.error('❌ ОШИБКА: Токен бота (BOT_TOKEN) не найден в переменных окружения!');
+} else {
+    // Запускаем бота
+    client.login(TOKEN).catch(err => console.error('❌ Ошибка логина бота:', err));
+    
+    // Запускаем сервер
+    app.listen(PORT, () => {
+        console.log(`🚀 Панель управления доступна на порту ${PORT}`);
+    });
+}
