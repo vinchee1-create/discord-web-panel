@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Бот Панель</title>
+    <style>
+        body { background: #2c2f33; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .card { background: #23272a; padding: 20px; border-radius: 10px; display: inline-block; border: 1px solid #7289da; }
+    </style>
+</head>
+<body>
+    <h1>Связь установлена</h1>
+    <div class="card">
+        <p>Статус бота: <strong><%= data.botStatus %></strong></p>
+        <p>Сервер: <strong><%= data.serverName %></strong></p>
+        <p>Людей на сервере: <strong><%= data.memberCount %></strong></p>
+    </div>
+</body>
+</html>
