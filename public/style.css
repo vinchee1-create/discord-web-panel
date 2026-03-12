@@ -16,7 +16,7 @@ body {
 }
 .brand-button:hover { background: #222; }
 .brand-icon-box {
-    width: 32px; height: 32px; background-color: rgb(69, 205, 91);
+    width: 32px; height: 32px; background-color: rgb(10, 10, 10);
     border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .brand-icon-box svg { width: 16px; height: 16px; color: white; }
