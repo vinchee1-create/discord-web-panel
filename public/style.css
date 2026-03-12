@@ -1,62 +1,159 @@
-/* Переменные из твоего исходника с нужными цветами */
-:root {
-    --sidebar-background: 240 5.9% 6%; /* Тот самый темно-серый цвет */
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-}
-
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: hsl(var(--sidebar-background));
+    font-family: 'Inter', sans-serif;
+    /* Основной фон всей страницы (внешний) */
+    background-color: oklch(0.145 0 0); 
     color: white;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* Применяем цвет сайдбара ко всем основным блокам */
-.bg-sidebar, 
-main {
-    background-color: hsl(var(--sidebar-background)) !important;
+/* САЙДБАР */
+.sidebar-container {
+    width: 256px; /* 16rem из твоего инспектора */
+    height: 100vh;
+    padding: 8px;
+    box-sizing: border-box;
+    /* Внешняя часть сайдбара теперь того же цвета */
+    background-color: oklch(0.145 0 0);
 }
 
-.text-sidebar-foreground { color: hsl(var(--sidebar-foreground)); }
-.border-sidebar-border { border-color: hsl(var(--sidebar-border)); }
-.bg-sidebar-accent { background-color: hsl(var(--sidebar-accent)); }
-.text-sidebar-accent-foreground { color: hsl(var(--sidebar-accent-foreground)); }
+.sidebar-inner {
+    width: 100%;
+    height: 100%;
+    /* Цвет внутренней карточки сайдбара */
+    background-color: #161616; 
+    border-radius: 12px;
+    border: 1px solid oklch(1 0 0 / 0.1);
+    display: flex;
+    flex-direction: column;
+}
 
-/* Вспомогательные классы для структуры */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.flex-1 { flex: 1; }
-.h-full { height: 100%; }
-.w-full { width: 100%; }
-.rounded-lg { border-radius: 0.5rem; }
-.border { border: 1px solid hsl(var(--sidebar-border)); }
-.p-2 { padding: 0.5rem; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.sidebar-header { padding: 16px; }
 
-/* Настройки текста Boston */
-.font-semibold { font-weight: 600; }
-.text-sm { font-size: 0.875rem; }
-.text-xs { font-size: 0.75rem; }
-
-/* Убираем стандартные кнопки */
-.icon-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
+.brand-wrapper {
     display: flex;
     align-items: center;
+    gap: 12px;
+    text-decoration: none;
 }
 
-/* Скроллбары */
-::-webkit-scrollbar {
-    width: 6px;
+.brand-logo {
+    width: 32px;
+    height: 32px;
+    background-color: #45cd5b;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
-::-webkit-scrollbar-thumb {
-    background: hsl(var(--sidebar-border));
-    border-radius: 10px;
+
+.brand-info {
+    display: flex;
+    flex-direction: column;
 }
+
+.brand-name { color: white; font-weight: 600; font-size: 14px; line-height: 1.2; }
+.brand-status { color: #45cd5b; font-size: 11px; font-weight: 500; }
+
+.sidebar-content { flex: 1; padding: 0 8px; }
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.nav-item svg { width: 16px; height: 16px; opacity: 0.7; }
+
+.nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+
+.nav-item.active { 
+    color: white; 
+    background: rgba(255, 255, 255, 0.08); 
+    font-weight: 500;
+}
+
+.nav-item.active svg { opacity: 1; }
+
+/* ПРАВАЯ ЧАСТЬ */
+.main-content {
+    /* Внешняя часть правой стороны совпадает с цветом сайдбара */
+    background-color: oklch(0.145 0 0);
+    flex-grow: 1;
+    margin: 8px 8px 8px 0px;
+    border: 1px solid oklch(1 0 0 / 0.1);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    color: oklch(0.985 0 0);
+}
+
+.content-header {
+    height: 64px;
+    border-bottom: 1px solid oklch(1 0 0 / 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.header-left { display: flex; align-items: center; gap: 8px; }
+
+.sidebar-trigger {
+    background: transparent;
+    border: none;
+    color: oklch(0.985 0 0 / 0.5);
+    cursor: pointer;
+    padding: 4px;
+    transition: 0.2s;
+}
+
+.sidebar-trigger:hover { color: white; }
+
+.sidebar-trigger svg { width: 20px; height: 20px; }
+
+.header-separator {
+    width: 1px;
+    height: 16px;
+    background: oklch(1 0 0 / 0.1);
+    margin: 0 8px;
+}
+
+.page-title { font-size: 14px; font-weight: 500; }
+
+/* ТЕЛО СТРАНИЦЫ */
+.content-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+}
+
+.status-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid oklch(1 0 0 / 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 320px;
+}
+
+.status-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.status-value { color: white; font-weight: 600; }
+.highlight-green { color: #45cd5b; }
