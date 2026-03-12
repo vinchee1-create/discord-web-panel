@@ -1,167 +1,62 @@
+/* Переменные из твоего исходника с нужными цветами */
 :root {
-    --bg-main: #09090b;
-    --bg-sidebar: #09090b;
-    --sidebar-border: rgba(255, 255, 255, 0.1);
-    --accent-green: #45cd5b;
-    --text-muted: rgba(255, 255, 255, 0.5);
+    --sidebar-background: 240 5.9% 6%; /* Тот самый темно-серый цвет */
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
 }
 
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', -apple-system, sans-serif;
-    background-color: var(--bg-main);
-    color: white;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* САЙДБАР */
-.sidebar-container {
-    width: 240px;
-    height: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.sidebar-inner {
-    height: 100%;
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--sidebar-border);
-    display: flex;
-    flex-direction: column;
-}
-
-/* Шапка с логотипом */
-.sidebar-header {
-    padding: 8px;
-    margin-bottom: 4px;
-}
-
-.brand-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-
-.brand-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.brand-logo {
-    width: 32px;
-    height: 32px;
-    background-color: var(--accent-green);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.brand-logo svg { width: 18px; height: 18px; }
-
-.brand-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-name {
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.brand-online {
-    color: var(--accent-green);
-    font-size: 11px;
-    font-weight: 500;
-}
-
-/* Навигация */
-.sidebar-content {
-    flex: 1;
-    padding: 0 8px;
-}
-
-.nav-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 6px;
-    transition: 0.2s;
-}
-
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.05);
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: hsl(var(--sidebar-background));
     color: white;
 }
 
-.nav-link.active {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-weight: 500;
+/* Применяем цвет сайдбара ко всем основным блокам */
+.bg-sidebar, 
+main {
+    background-color: hsl(var(--sidebar-background)) !important;
 }
 
-.nav-link svg {
-    width: 16px;
-    height: 16px;
-    opacity: 0.6;
-}
+.text-sidebar-foreground { color: hsl(var(--sidebar-foreground)); }
+.border-sidebar-border { border-color: hsl(var(--sidebar-border)); }
+.bg-sidebar-accent { background-color: hsl(var(--sidebar-accent)); }
+.text-sidebar-accent-foreground { color: hsl(var(--sidebar-accent-foreground)); }
 
-.nav-link.active svg { opacity: 1; }
+/* Вспомогательные классы для структуры */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.h-full { height: 100%; }
+.w-full { width: 100%; }
+.rounded-lg { border-radius: 0.5rem; }
+.border { border: 1px solid hsl(var(--sidebar-border)); }
+.p-2 { padding: 0.5rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
 
-/* ПРАВАЯ ЧАСТЬ */
-.main-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
+/* Настройки текста Boston */
+.font-semibold { font-weight: 600; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
 
-.main-header {
-    height: 48px;
-    border-bottom: 1px solid var(--sidebar-border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-}
-
-.header-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
+/* Убираем стандартные кнопки */
 .icon-btn {
-    background: transparent;
+    background: none;
     border: none;
-    color: var(--text-muted);
+    color: inherit;
     cursor: pointer;
-    padding: 4px;
+    display: flex;
+    align-items: center;
 }
 
-.sep {
-    width: 1px;
-    height: 16px;
-    background: var(--sidebar-border);
+/* Скроллбары */
+::-webkit-scrollbar {
+    width: 6px;
 }
-
-.current-path {
-    font-size: 13px;
-    color: white;
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--sidebar-border));
+    border-radius: 10px;
 }
