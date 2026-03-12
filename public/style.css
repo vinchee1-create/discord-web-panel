@@ -1,0 +1,111 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0f0f0f;
+    color: #ffffff;
+    height: 100vh;
+}
+
+.wrapper {
+    display: flex;
+    height: 100%;
+}
+
+/* Сайдбар */
+.sidebar {
+    width: 280px;
+    background-color: #161616;
+    border-right: 1px solid #252525;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.logo-box {
+    width: 35px;
+    height: 35px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+}
+
+.server-title {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.online-status {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Навигация */
+.nav-group {
+    margin-bottom: 30px;
+}
+
+.group-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 12px;
+    display: block;
+    padding-left: 10px;
+}
+
+.nav-item {
+    display: block;
+    padding: 12px;
+    color: #a0a0a0;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    background-color: #1f1f1f;
+    color: #fff;
+}
+
+.nav-item.active {
+    background-color: #1f1f1f;
+    color: #fff;
+    border-left: 3px solid #f3b918;
+}
+
+/* Контентная часть */
+.main-content {
+    flex: 1;
+    background-color: #0f0f0f;
+}
+
+.content-header {
+    height: 70px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.bot-indicator {
+    background: #1a1a1a;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #4caf50; /* Зеленый цвет для статуса */
+}

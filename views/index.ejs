@@ -1,18 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Бот Панель</title>
-    <style>
-        body { background: #2c2f33; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .card { background: #23272a; padding: 20px; border-radius: 10px; display: inline-block; border: 1px solid #7289da; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston Admin Panel</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Связь установлена</h1>
-    <div class="card">
-        <p>Статус бота: <strong><%= data.botStatus %></strong></p>
-        <p>Сервер: <strong><%= data.serverName %></strong></p>
-        <p>Людей на сервере: <strong><%= data.memberCount %></strong></p>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-box"></div>
+                <div class="header-text">
+                    <span class="server-title">Boston</span>
+                    <span class="online-status"><%= data.memberCount %> онлайн</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <a href="#" class="nav-item active">🏠 Главная</a>
+                    <a href="#" class="nav-item">🌴 Отпуска</a>
+                </div>
+
+                <div class="nav-group">
+                    <span class="group-label">Администрирование</span>
+                    <a href="#" class="nav-item">🛡️ Модерация</a>
+                    <a href="#" class="nav-item">📊 Экономика</a>
+                    <a href="#" class="nav-item">📈 Аналитика</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-left">
+                    <h1>Главная</h1>
+                </div>
+                <div class="header-right">
+                    <span class="bot-indicator">Бот: <%= data.botStatus %></span>
+                </div>
+            </header>
+            
+            <div class="content-body">
+                </div>
+        </main>
     </div>
 </body>
 </html>
