@@ -2,7 +2,8 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
-    background-color: #000; 
+    /* ЗАМЕНЕНО: Фон страницы теперь такой же, как у сайдбара */
+    background-color: #161616; 
     color: white;
     display: flex;
     height: 100vh;
@@ -13,8 +14,9 @@ body {
 .sidebar-container {
     width: 260px;
     height: 100vh;
-    padding: 8px; /* Те самые отступы 8x8 */
+    padding: 8px; /* Внешний отступ для эффекта "карточки" */
     box-sizing: border-box;
+    background-color: #161616; /* Синхронизация с фоном страницы */
 }
 
 .sidebar-inner {
@@ -22,7 +24,8 @@ body {
     height: 100%;
     background-color: #161616;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Тонкая рамка для отделения блока от фона */
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
 }
@@ -58,14 +61,17 @@ body {
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     font-size: 14px;
+    transition: background 0.2s;
 }
 
 .nav-item svg { width: 16px; height: 16px; }
 .nav-item.active { color: white; background: rgba(255, 255, 255, 0.05); }
+.nav-item:hover { background: rgba(255, 255, 255, 0.03); }
 
 /* ПРАВАЯ ЧАСТЬ */
 .main-content {
-    background-color: oklch(0.145 0 0);
+    /* Фон контента оставляем чуть темнее для контраста */
+    background-color: oklch(0.145 0 0); 
     flex-grow: 1;
     margin: 8px 8px 8px 0px;
     border: 1px solid oklch(1 0 0 / 0.1);
