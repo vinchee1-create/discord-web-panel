@@ -15,7 +15,6 @@ body {
     height: 100vh;
     padding: 8px; 
     box-sizing: border-box;
-    background-color: #161616;
 }
 
 .sidebar-inner {
@@ -27,39 +26,37 @@ body {
     flex-direction: column;
 }
 
-.sidebar-header { padding: 16px; }
+.sidebar-header { padding: 12px 16px; }
 
 /* Навигация */
 .nav-list {
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Соответствует gap-1 из твоего примера */
+    gap: 4px; /* Расстояние между кнопками */
 }
 
 .nav-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 0 10px; 
     text-decoration: none;
+    /* УМЕНЬШЕНО: Компактные размеры */
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    height: 32px; /* h-8 */
+    height: 32px; 
+    
+    color: rgba(255, 255, 255, 0.65);
+    background-color: transparent; 
+    border-radius: 6px;
+    
+    /* ОТСТУПЫ: чтобы закругление было видно со всех сторон */
+    margin: 0 8px; 
     position: relative;
-    
-    background-color: #161616; 
-    
-    /* ЗАКРУГЛЕНИЕ: Теперь закругляется везде */
-    border-radius: 6px; 
-    
-    /* ОТСТУПЫ: Добавил margin-right, чтобы закругление справа не липло к краю */
-    margin-left: 8px;
-    margin-right: 8px; 
-    
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: all 0.15s ease;
 }
 
 .flex-1 { flex: 1; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Эффект при наведении и активном выборе */
 .nav-item:hover, 
@@ -71,7 +68,7 @@ body {
 .nav-item svg {
     width: 16px;
     height: 16px;
-    opacity: 0.7;
+    opacity: 0.6;
     flex-shrink: 0;
 }
 
@@ -79,17 +76,15 @@ body {
     opacity: 1;
 }
 
-/* Кнопка звездочки */
+/* Кнопка звездочки внутри навигации */
 .star-button {
     background: transparent;
     border: none;
     padding: 4px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    opacity: 0;
+    opacity: 0; /* Видна только при наведении */
     cursor: pointer;
-    transition: opacity 0.2s ease;
 }
 
 .nav-item:hover .star-button,
@@ -108,12 +103,15 @@ body {
     flex-direction: column;
 }
 
-.content-header { height: 64px; border-bottom: 1px solid oklch(1 0 0 / 0.1); display: flex; align-items: center; padding: 0 16px; }
-.brand-wrapper { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+/* Стили шапки бренда */
+.brand-wrapper { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .brand-logo { width: 32px; height: 32px; background-color: #45cd5b; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .brand-name { color: white; font-weight: 600; font-size: 14px; }
-.brand-status { color: #45cd5b; font-size: 11px; margin-left: 4px; }
+.brand-status { color: #45cd5b; font-size: 11px; }
+
+/* Header контента */
+.content-header { height: 64px; border-bottom: 1px solid oklch(1 0 0 / 0.1); display: flex; align-items: center; padding: 0 16px; }
 .header-left { display: flex; align-items: center; gap: 8px; }
-.sidebar-trigger { background: transparent; border: none; color: oklch(0.985 0 0 / 0.5); cursor: pointer; padding: 4px; }
-.header-separator { width: 1px; height: 16px; background: oklch(1 0 0 / 0.1); margin: 0 8px; }
+.sidebar-trigger { background: transparent; border: none; color: white; opacity: 0.5; cursor: pointer; }
+.header-separator { width: 1px; height: 16px; background: rgba(255, 255, 255, 0.1); margin: 0 8px; }
 .page-title { font-size: 14px; font-weight: 500; }
