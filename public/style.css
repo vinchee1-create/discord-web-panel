@@ -1,159 +1,22 @@
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-    /* Основной фон всей страницы (внешний) */
-    background-color: oklch(0.145 0 0); 
-    color: white;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
+.dark {
+  /* Основной фон сайта */
+  --background: oklch(14.5% 0 0);
+  --foreground: oklch(98.5% 0 0);
+
+  /* Фон сайдбара (как ты просил) */
+  --sidebar: oklch(20.5% 0 0);
+  --sidebar-foreground: oklch(98.5% 0 0);
+  --sidebar-primary: oklch(48.8% .243 264.376);
+  --sidebar-primary-foreground: oklch(98.5% 0 0);
+  --sidebar-accent: oklch(26.9% 0 0);
+  --sidebar-accent-foreground: oklch(98.5% 0 0);
+  
+  /* Границы (прозрачные белые линии) */
+  --sidebar-border: oklch(100% 0 0 / 0.1);
+  --border: oklch(100% 0 0 / 0.1);
+  --input: oklch(100% 0 0 / 0.15);
+  
+  /* Текст и кольца */
+  --muted-foreground: oklch(70.8% 0 0);
+  --ring: oklch(55.6% 0 0);
 }
-
-/* САЙДБАР */
-.sidebar-container {
-    width: 256px; /* 16rem из твоего инспектора */
-    height: 100vh;
-    padding: 8px;
-    box-sizing: border-box;
-    /* Внешняя часть сайдбара теперь того же цвета */
-    background-color: oklch(0.145 0 0);
-}
-
-.sidebar-inner {
-    width: 100%;
-    height: 100%;
-    /* Цвет внутренней карточки сайдбара */
-    background-color: #161616; 
-    border-radius: 12px;
-    border: 1px solid oklch(1 0 0 / 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header { padding: 16px; }
-
-.brand-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-}
-
-.brand-logo {
-    width: 32px;
-    height: 32px;
-    background-color: #45cd5b;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.brand-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-name { color: white; font-weight: 600; font-size: 14px; line-height: 1.2; }
-.brand-status { color: #45cd5b; font-size: 11px; font-weight: 500; }
-
-.sidebar-content { flex: 1; padding: 0 8px; }
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 8px;
-    transition: 0.2s;
-}
-
-.nav-item svg { width: 16px; height: 16px; opacity: 0.7; }
-
-.nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
-
-.nav-item.active { 
-    color: white; 
-    background: rgba(255, 255, 255, 0.08); 
-    font-weight: 500;
-}
-
-.nav-item.active svg { opacity: 1; }
-
-/* ПРАВАЯ ЧАСТЬ */
-.main-content {
-    /* Внешняя часть правой стороны совпадает с цветом сайдбара */
-    background-color: oklch(0.145 0 0);
-    flex-grow: 1;
-    margin: 8px 8px 8px 0px;
-    border: 1px solid oklch(1 0 0 / 0.1);
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    color: oklch(0.985 0 0);
-}
-
-.content-header {
-    height: 64px;
-    border-bottom: 1px solid oklch(1 0 0 / 0.1);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-}
-
-.header-left { display: flex; align-items: center; gap: 8px; }
-
-.sidebar-trigger {
-    background: transparent;
-    border: none;
-    color: oklch(0.985 0 0 / 0.5);
-    cursor: pointer;
-    padding: 4px;
-    transition: 0.2s;
-}
-
-.sidebar-trigger:hover { color: white; }
-
-.sidebar-trigger svg { width: 20px; height: 20px; }
-
-.header-separator {
-    width: 1px;
-    height: 16px;
-    background: oklch(1 0 0 / 0.1);
-    margin: 0 8px;
-}
-
-.page-title { font-size: 14px; font-weight: 500; }
-
-/* ТЕЛО СТРАНИЦЫ */
-.content-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 60px;
-}
-
-.status-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid oklch(1 0 0 / 0.1);
-    border-radius: 16px;
-    padding: 24px;
-    min-width: 320px;
-}
-
-.status-line {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.status-value { color: white; font-weight: 600; }
-.highlight-green { color: #45cd5b; }
