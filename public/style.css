@@ -1,22 +1,176 @@
-.dark {
-  /* Основной фон сайта */
-  --background: oklch(14.5% 0 0);
-  --foreground: oklch(98.5% 0 0);
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: oklch(0.145 0 0); /* Основной фон сайта */
+    color: white;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
 
-  /* Фон сайдбара (как ты просил) */
-  --sidebar: oklch(20.5% 0 0);
-  --sidebar-foreground: oklch(98.5% 0 0);
-  --sidebar-primary: oklch(48.8% .243 264.376);
-  --sidebar-primary-foreground: oklch(98.5% 0 0);
-  --sidebar-accent: oklch(26.9% 0 0);
-  --sidebar-accent-foreground: oklch(98.5% 0 0);
-  
-  /* Границы (прозрачные белые линии) */
-  --sidebar-border: oklch(100% 0 0 / 0.1);
-  --border: oklch(100% 0 0 / 0.1);
-  --input: oklch(100% 0 0 / 0.15);
-  
-  /* Текст и кольца */
-  --muted-foreground: oklch(70.8% 0 0);
-  --ring: oklch(55.6% 0 0);
+/* Сайдбар */
+.sidebar-container {
+    width: 240px; /* Твоя ширина из параметров */
+    height: 100vh;
+    background-color: oklch(0.205 0 0); /* Цвет фона вокруг левой части теперь совпадает */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-inner {
+    width: 100%;
+    height: 100%;
+    background-color: oklch(0.205 0 0); /* Твой цвет левой части */
+    border-right: 1px solid oklch(1 0 0 / 0.1); /* Тонкая линия разделения */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header { 
+    padding: 24px 16px; 
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    background-color: #45cd5b;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-logo svg {
+    width: 24px;
+    height: 24px;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-name { 
+    color: white; 
+    font-weight: 700; 
+    font-size: 18px; 
+    letter-spacing: -0.02em;
+}
+
+.brand-status { 
+    color: #45cd5b; 
+    font-size: 11px; 
+    font-weight: 500;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: oklch(0.985 0 0 / 0.7);
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.nav-item svg { 
+    width: 18px; 
+    height: 18px; 
+}
+
+.nav-item:hover {
+    background: oklch(1 0 0 / 0.05);
+}
+
+.nav-item.active { 
+    color: white; 
+    background: oklch(1 0 0 / 0.1); 
+}
+
+/* ПРАВАЯ ЧАСТЬ */
+.main-content {
+    background-color: oklch(0.145 0 0); 
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    color: oklch(0.985 0 0);
+}
+
+.content-header {
+    height: 64px;
+    border-bottom: 1px solid oklch(1 0 0 / 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.header-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+.sidebar-trigger {
+    background: transparent;
+    border: none;
+    color: oklch(0.985 0 0 / 0.5);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.header-separator {
+    width: 1px;
+    height: 16px;
+    background: oklch(1 0 0 / 0.1);
+    margin: 0 8px;
+}
+
+.page-title { 
+    font-size: 14px; 
+    font-weight: 500; 
+    color: oklch(0.985 0 0 / 0.8);
+}
+
+.content-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 80px;
+}
+
+.status-card {
+    background: oklch(1 0 0 / 0.02);
+    border: 1px solid oklch(1 0 0 / 0.1);
+    border-radius: 16px;
+    padding: 32px;
+    min-width: 340px;
+}
+
+.status-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 15px;
+    color: oklch(0.985 0 0 / 0.6);
+}
+
+.status-value { 
+    color: white; 
+    font-weight: 600; 
+}
+
+.highlight-green { 
+    color: #45cd5b; 
 }
