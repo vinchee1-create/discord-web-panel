@@ -231,6 +231,11 @@
             }
         }
 
+        let nickMonth = { 
+            year: new Date().getFullYear(), 
+            month: new Date().getMonth() 
+        };
+
         function isLeaderActive(L) {
             return Boolean(L.leader && L.staticId && L.term && L.time);
         }
@@ -255,6 +260,81 @@
                 }
             });
             return best;
+        }
+
+        function getNickDatesForMonth(year, monthIndex) {
+            const dates = [];
+            const d = new Date(year, monthIndex, 1);
+            while (d.getMonth() === monthIndex) {
+                const day = d.getDay(); // 0 - вс, 1 - пн, 2 - вт, ..., 4 - чт
+                if (day === 2 || day === 4) {
+                    dates.push(new Date(d));
+                }
+                d.setDate(d.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function renderNicknames() {
+            const { year, month } = nickMonth;
+            const dates = getNickDatesForMonth(year, month);
+            const factions = [
+                'The Ballas Gang',
+                'Los Santos Vagos',
+                'The Families',
+                'The Bloods Gang',
+                'Marabunta Grande'
+            ];
+            const monthValue = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const headerCells = dates.map(d => {
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                return `<th>${dd}.${mm}</th>`;
+            }).join('');
+            const bodyRows = factions.map(name => {
+                const cells = dates.map(() => `<td>—</td>`).join('');
+                return `<tr><td>${escapeHtml(name)}</td>${cells}</tr>`;
+            }).join('');
+
+            setPageContent(`
+                <div class="nick-page">
+                    <div class="nick-page-header">
+                        <div>
+                            <div class="nick-title">Проверка никнеймов</div>
+                        </div>
+                        <label class="nick-month-control">
+                            <span>Месяц</span>
+                            <input type="month" id="nick-month-input" value="${monthValue}">
+                        </label>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Фракции</th>
+                                    ${headerCells}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bodyRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+
+            const monthInput = document.getElementById('nick-month-input');
+            if (monthInput) {
+                monthInput.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    const [y, m] = value.split('-').map(Number);
+                    if (!isNaN(y) && !isNaN(m)) {
+                        nickMonth.year = y;
+                        nickMonth.month = m - 1;
+                        renderNicknames();
+                    }
+                });
+            }
         }
 
         function getTimeTooltip(isoDate) {
@@ -390,6 +470,9 @@
                     headerActions.style.display = 'none';
                     await loadLeaders();
                     renderLeaders();
+                } else if (title === 'Никнеймы') {
+                    headerActions.style.display = 'none';
+                    renderNicknames();
                 } else {
                     headerActions.style.display = 'none';
                     setPageContent(`<p style="color:#444">Раздел "${title}" находится в разработке.</p>`);

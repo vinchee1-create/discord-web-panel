@@ -183,6 +183,47 @@ body {
 .stat-card-icon { position: absolute; top: 16px; right: 16px; color: rgba(255,255,255,0.2); }
 .stat-card-icon svg { width: 24px; height: 24px; }
 
+/* Никнеймы: хедер и селектор месяца */
+.nick-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.nick-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+}
+.nick-subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+}
+.nick-month-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #151515;
+    border-radius: 8px;
+    border: 1px solid #262626;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #ffffff;
+}
+.nick-month-control input[type="month"] {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    outline: none;
+    cursor: pointer;
+}
+.nick-month-control input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
 /* Тултип для ячейки Время */
 .time-cell[data-time] { cursor: help; }
 .data-table .cell-actions-leaders { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
