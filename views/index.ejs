@@ -119,12 +119,47 @@
         </div>
     </div>
 
+    <div id="leader-modal-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <h2 id="leader-modal-title" style="margin-top:0; font-size:18px;">Редактировать лидера</h2>
+            <form id="leader-form">
+                <input type="hidden" id="leader-edit-index">
+                <div class="form-group">
+                    <label>Фракция</label>
+                    <input type="text" id="leader-faction" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Лидер</label>
+                    <input type="text" id="leader-name">
+                </div>
+                <div class="form-group">
+                    <label>Static ID</label>
+                    <input type="text" id="leader-static">
+                </div>
+                <div class="form-group">
+                    <label>Срок</label>
+                    <input type="text" id="leader-term">
+                </div>
+                <div class="form-group">
+                    <label>Дата (ГГГГ-ММ-ДД)</label>
+                    <input type="date" id="leader-time">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeLeaderModal()">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let families = [];
         
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
         const headerActions = document.getElementById('header-actions');
+        const leaderModal = document.getElementById('leader-modal-overlay');
+        const leaderForm = document.getElementById('leader-form');
 
         async function loadFamilies() {
             try {
@@ -197,8 +232,7 @@
             if (isNaN(d.getTime())) return '';
             const d30 = new Date(d);
             d30.setDate(d30.getDate() + 30);
-            const now = new Date();
-            const diffDays = Math.ceil((d30 - now) / (1000 * 60 * 60 * 24));
+            const diffDays = Math.round((d30 - d) / (1000 * 60 * 60 * 24));
             const fmt = (x) => x.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
             return 'Дата + 30 дней: ' + fmt(d30) + '\nОсталось: ' + diffDays + ' дн.';
         }
@@ -279,18 +313,27 @@
             renderLeaders();
         }
 
+        function openLeaderModal(index) {
+            const L = leaders[index];
+            document.getElementById('leader-edit-index').value = index;
+            document.getElementById('leader-faction').value = L.faction;
+            document.getElementById('leader-name').value = L.leader || '';
+            document.getElementById('leader-static').value = L.staticId || '';
+            document.getElementById('leader-term').value = L.term || '';
+            document.getElementById('leader-time').value = L.time || '';
+            leaderModal.classList.add('is-open');
+        }
+
+        function closeLeaderModal() {
+            leaderModal.classList.remove('is-open');
+        }
+
+        leaderModal.addEventListener('click', function(e) {
+            if (e.target === this) closeLeaderModal();
+        });
+
         function editLeader(i) {
-            const current = leaders[i];
-            const leader = prompt('Лидер:', current.leader || '');
-            if (leader === null) return;
-            const staticId = prompt('Static ID:', current.staticId || '');
-            if (staticId === null) return;
-            const term = prompt('Срок:', current.term || '');
-            if (term === null) return;
-            const time = prompt('Дата (ГГГГ-ММ-ДД):', current.time || '');
-            if (time === null) return;
-            leaders[i] = { ...current, leader: leader.trim(), staticId: staticId.trim(), term: term.trim(), time: time.trim() };
-            renderLeaders();
+            openLeaderModal(i);
         }
 
         document.querySelectorAll('.nav-item').forEach(btn => {
@@ -407,6 +450,23 @@
             }
             closeModal();
             renderFamilies();
+        };
+
+        leaderForm.onsubmit = (e) => {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('leader-edit-index').value, 10);
+            if (isNaN(idx)) { closeLeaderModal(); return; }
+            const current = leaders[idx];
+            const updated = {
+                ...current,
+                leader: document.getElementById('leader-name').value.trim(),
+                staticId: document.getElementById('leader-static').value.trim(),
+                term: document.getElementById('leader-term').value.trim(),
+                time: document.getElementById('leader-time').value
+            };
+            leaders[idx] = updated;
+            closeLeaderModal();
+            renderLeaders();
         };
 
         pageContent.innerHTML = `<p style="color:#444">Выберите раздел в меню слева.</p>`;
