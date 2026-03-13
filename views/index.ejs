@@ -176,12 +176,20 @@
         }
 
         const leaders = [
-            { id: 8,  faction: 'The Ballas Gang',      leader: '', staticId: '', term: '', time: '2025-04-15', flagged: false },
-            { id: 9,  faction: 'Los Santos Vagos',      leader: '', staticId: '', term: '', time: '', flagged: false },
+            { id: 8,  faction: 'The Ballas Gang',      leader: '', staticId: '', term: '', time: '', flagged: false },
+            { id: 9,  faction: 'Los Santos Vagos',     leader: '', staticId: '', term: '', time: '', flagged: false },
             { id: 10, faction: 'The Families',         leader: '', staticId: '', term: '', time: '', flagged: false },
             { id: 11, faction: 'The Bloods Gang',      leader: '', staticId: '', term: '', time: '', flagged: false },
-            { id: 12, faction: 'Marabunta Grande',      leader: '', staticId: '', term: '', time: '', flagged: false }
+            { id: 12, faction: 'Marabunta Grande',     leader: '', staticId: '', term: '', time: '', flagged: false }
         ];
+
+        function isLeaderActive(L) {
+            return Boolean(L.leader && L.staticId && L.term && L.time);
+        }
+
+        function getActiveLeadersCount() {
+            return leaders.filter(isLeaderActive).length;
+        }
 
         function getTimeTooltip(isoDate) {
             if (!isoDate) return '';
@@ -203,11 +211,12 @@
         function renderLeaders() {
             const flagSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
             const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
+            const activeCount = getActiveLeadersCount();
             const cardsHtml = `
                 <div class="stat-card">
-                    <span class="stat-card-title">Лидеров всего</span>
-                    <div class="stat-card-value">5</div>
-                    <div class="stat-card-label">записей</div>
+                    <span class="stat-card-title">Активных лидеров</span>
+                    <div class="stat-card-value">${activeCount}</div>
+                    <div class="stat-card-label">из ${leaders.length}</div>
                     <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                 </div>
                 <div class="stat-card">
@@ -269,8 +278,19 @@
             leaders[i].flagged = !leaders[i].flagged;
             renderLeaders();
         }
+
         function editLeader(i) {
-            console.log('Редактировать лидера', i);
+            const current = leaders[i];
+            const leader = prompt('Лидер:', current.leader || '');
+            if (leader === null) return;
+            const staticId = prompt('Static ID:', current.staticId || '');
+            if (staticId === null) return;
+            const term = prompt('Срок:', current.term || '');
+            if (term === null) return;
+            const time = prompt('Дата (ГГГГ-ММ-ДД):', current.time || '');
+            if (time === null) return;
+            leaders[i] = { ...current, leader: leader.trim(), staticId: staticId.trim(), term: term.trim(), time: time.trim() };
+            renderLeaders();
         }
 
         document.querySelectorAll('.nav-item').forEach(btn => {
