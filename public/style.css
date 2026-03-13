@@ -148,10 +148,25 @@ body {
 .page-title { font-size: 14px; font-weight: 500; }
 .content-body { padding: 24px; flex-grow: 1; overflow-y: auto; }
 
+/* Плавное появление контента при смене раздела */
+.page-fade {
+    animation: pageFadeIn 0.18s ease-out;
+}
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Карточки статистики (Лидеры и т.п.) */
 .stat-cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 24px;
 }

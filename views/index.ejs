@@ -172,6 +172,14 @@
             }
         }
 
+        function setPageContent(html) {
+            pageContent.innerHTML = html;
+            pageContent.classList.remove('page-fade');
+            // force reflow to restart animation
+            void pageContent.offsetWidth;
+            pageContent.classList.add('page-fade');
+        }
+
         function renderFamilies() {
             const list = families.map((f, i) => {
                 const dbId = f.dbId != null ? f.dbId : '';
@@ -187,7 +195,7 @@
                     </td>
                 </tr>`;
             }).join('');
-            pageContent.innerHTML = `
+            setPageContent(`
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -201,7 +209,7 @@
                         </thead>
                         <tbody>${list}</tbody>
                     </table>
-                </div>`;
+                </div>`);
         }
 
         function escapeHtml(s) {
@@ -231,6 +239,24 @@
             return leaders.filter(isLeaderActive).length;
         }
 
+        function getNearestRemoval() {
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const now = new Date();
+            let best = null;
+            leaders.forEach(L => {
+                if (!L.time) return;
+                const d = new Date(L.time);
+                if (isNaN(d.getTime())) return;
+                const d30 = new Date(d);
+                d30.setDate(d30.getDate() + 30);
+                const days = Math.round((d30 - now) / msPerDay);
+                if (best === null || days < best.days) {
+                    best = { days, faction: L.faction };
+                }
+            });
+            return best;
+        }
+
         function getTimeTooltip(isoDate) {
             if (!isoDate) return '';
             const d = new Date(isoDate);
@@ -252,6 +278,9 @@
             const flagSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
             const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
             const activeCount = getActiveLeadersCount();
+            const nearest = getNearestRemoval();
+            const nearestText = nearest ? `через ${nearest.days} дн.` : 'нет данных';
+            const nearestFaction = nearest ? nearest.faction : '—';
             const cardsHtml = `
                 <div class="stat-card">
                     <span class="stat-card-title">Активных лидеров</span>
@@ -260,22 +289,10 @@
                     <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-card-title">Активные фракции</span>
-                    <div class="stat-card-value">5</div>
-                    <div class="stat-card-label">с онлайном</div>
+                    <span class="stat-card-title">Ближайшее снятие</span>
+                    <div class="stat-card-value">${nearestText}</div>
+                    <div class="stat-card-label">${nearestFaction}</div>
                     <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-card-title">Лидеры в сети</span>
-                    <div class="stat-card-value">0</div>
-                    <div class="stat-card-label">онлайн</div>
-                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg></div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-card-title">Премии</span>
-                    <div class="stat-card-value">0$</div>
-                    <div class="stat-card-label">0 шт</div>
-                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M12 2v4"></path><path d="M12 18v4"></path></svg></div>
                 </div>`;
             const rowsHtml = leaders.map((L, i) => {
                 const timeTitle = getTimeTooltip(L.time);
@@ -294,7 +311,7 @@
                     </td>
                 </tr>`;
             }).join('');
-            pageContent.innerHTML = `
+            setPageContent(`
                 <div class="stat-cards">${cardsHtml}</div>
                 <div class="table-container">
                     <table class="data-table">
@@ -311,7 +328,7 @@
                         </thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
-                </div>`;
+                </div>`);
         }
 
         async function toggleLeaderFlag(i) {
@@ -375,7 +392,7 @@
                     renderLeaders();
                 } else {
                     headerActions.style.display = 'none';
-                    pageContent.innerHTML = `<p style="color:#444">Раздел "${title}" находится в разработке.</p>`;
+                    setPageContent(`<p style="color:#444">Раздел "${title}" находится в разработке.</p>`);
                 }
             });
         });
@@ -506,7 +523,7 @@
             renderLeaders();
         };
 
-        pageContent.innerHTML = `<p style="color:#444">Выберите раздел в меню слева.</p>`;
+        setPageContent(`<p style="color:#444">Выберите раздел в меню слева.</p>`);
     </script>
 </body>
 </html>
