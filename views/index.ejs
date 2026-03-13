@@ -175,6 +175,104 @@
             return div.innerHTML;
         }
 
+        const leaders = [
+            { id: 8,  faction: 'The Ballas Gang',      leader: '', staticId: '', term: '', time: '2025-04-15', flagged: false },
+            { id: 9,  faction: 'Los Santos Vagos',      leader: '', staticId: '', term: '', time: '', flagged: false },
+            { id: 10, faction: 'The Families',         leader: '', staticId: '', term: '', time: '', flagged: false },
+            { id: 11, faction: 'The Bloods Gang',      leader: '', staticId: '', term: '', time: '', flagged: false },
+            { id: 12, faction: 'Marabunta Grande',      leader: '', staticId: '', term: '', time: '', flagged: false }
+        ];
+
+        function getTimeTooltip(isoDate) {
+            if (!isoDate) return '';
+            const d = new Date(isoDate);
+            if (isNaN(d.getTime())) return '';
+            const d30 = new Date(d);
+            d30.setDate(d30.getDate() + 30);
+            const now = new Date();
+            const diffDays = Math.ceil((d30 - now) / (1000 * 60 * 60 * 24));
+            const fmt = (x) => x.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return 'Дата + 30 дней: ' + fmt(d30) + '\nОсталось: ' + diffDays + ' дн.';
+        }
+        function formatTimeDisplay(isoDate) {
+            if (!isoDate) return '—';
+            const d = new Date(isoDate);
+            return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('ru-RU');
+        }
+
+        function renderLeaders() {
+            const flagSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
+            const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
+            const cardsHtml = `
+                <div class="stat-card">
+                    <span class="stat-card-title">Лидеров всего</span>
+                    <div class="stat-card-value">5</div>
+                    <div class="stat-card-label">записей</div>
+                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-card-title">Активные фракции</span>
+                    <div class="stat-card-value">5</div>
+                    <div class="stat-card-label">с онлайном</div>
+                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-card-title">Лидеры в сети</span>
+                    <div class="stat-card-value">0</div>
+                    <div class="stat-card-label">онлайн</div>
+                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg></div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-card-title">Премии</span>
+                    <div class="stat-card-value">0$</div>
+                    <div class="stat-card-label">0 шт</div>
+                    <div class="stat-card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M12 2v4"></path><path d="M12 18v4"></path></svg></div>
+                </div>`;
+            const rowsHtml = leaders.map((L, i) => {
+                const timeTitle = getTimeTooltip(L.time);
+                const timeDisplay = formatTimeDisplay(L.time);
+                const flagClass = L.flagged ? 'btn-icon btn-icon-flag is-flagged' : 'btn-icon btn-icon-flag';
+                return `<tr>
+                    <td>${L.id}</td>
+                    <td>${escapeHtml(L.faction)}</td>
+                    <td>${escapeHtml(L.leader) || '—'}</td>
+                    <td>${escapeHtml(L.staticId) || '—'}</td>
+                    <td>${escapeHtml(L.term) || '—'}</td>
+                    <td class="time-cell" data-time="${escapeHtml(L.time)}" title="${escapeHtml(timeTitle)}">${timeDisplay}</td>
+                    <td class="cell-actions-leaders">
+                        <button type="button" class="${flagClass}" onclick="toggleLeaderFlag(${i})" title="Отметить">${flagSvg}</button>
+                        <button type="button" class="btn-icon" onclick="editLeader(${i})" title="Редактировать">${editSvg}</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            pageContent.innerHTML = `
+                <div class="stat-cards">${cardsHtml}</div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Фракция</th>
+                                <th>Лидер</th>
+                                <th>Static ID</th>
+                                <th>Срок</th>
+                                <th>Время</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>`;
+        }
+
+        function toggleLeaderFlag(i) {
+            leaders[i].flagged = !leaders[i].flagged;
+            renderLeaders();
+        }
+        function editLeader(i) {
+            console.log('Редактировать лидера', i);
+        }
+
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -186,6 +284,9 @@
                     headerActions.style.display = 'flex';
                     await loadFamilies();
                     renderFamilies();
+                } else if (title === 'Лидеры') {
+                    headerActions.style.display = 'none';
+                    renderLeaders();
                 } else {
                     headerActions.style.display = 'none';
                     pageContent.innerHTML = `<p style="color:#444">Раздел "${title}" находится в разработке.</p>`;
@@ -201,6 +302,10 @@
         }
 
         function closeModal() { document.getElementById('modal-overlay').classList.remove('is-open'); }
+
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
         
         function editFamily(i) {
             const f = families[i];
