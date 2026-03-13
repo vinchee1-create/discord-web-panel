@@ -35,6 +35,40 @@ async function initFamiliesTable() {
     }
 }
 
+async function initLeadersTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS leaders (
+                id SERIAL PRIMARY KEY,
+                display_id INTEGER NOT NULL,
+                faction VARCHAR(255) NOT NULL,
+                leader VARCHAR(255),
+                static_id VARCHAR(64),
+                term VARCHAR(64),
+                time DATE,
+                flagged BOOLEAN DEFAULT FALSE
+            )
+        `);
+        const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM leaders');
+        if (rows[0].count === 0) {
+            await pool.query(
+                `INSERT INTO leaders (display_id, faction) VALUES 
+                 (8, 'The Ballas Gang'),
+                 (9, 'Los Santos Vagos'),
+                 (10, 'The Families'),
+                 (11, 'The Bloods Gang'),
+                 (12, 'Marabunta Grande')`
+            );
+            console.log('✅ Таблица leaders инициализирована начальными данными');
+        } else {
+            console.log('✅ Таблица leaders готова');
+        }
+    } catch (e) {
+        console.error('❌ Ошибка создания/инициализации таблицы leaders:', e.message);
+    }
+}
+
 // --- 2. ИНИЦИАЛИЗАЦИЯ БОТА ---
 const client = new Client({
     intents: [
@@ -104,6 +138,65 @@ app.delete('/api/families/:id', async (req, res) => {
     }
 });
 
+// --- 3.1. API ЛИДЕРОВ (БД Railway) ---
+app.get('/api/leaders', async (req, res) => {
+    if (!pool) {
+        // fallback: статика, если нет БД
+        return res.json([
+            { dbId: null, id: 8, faction: 'The Ballas Gang', leader: '', staticId: '', term: '', time: '', flagged: false },
+            { dbId: null, id: 9, faction: 'Los Santos Vagos', leader: '', staticId: '', term: '', time: '', flagged: false },
+            { dbId: null, id: 10, faction: 'The Families', leader: '', staticId: '', term: '', time: '', flagged: false },
+            { dbId: null, id: 11, faction: 'The Bloods Gang', leader: '', staticId: '', term: '', time: '', flagged: false },
+            { dbId: null, id: 12, faction: 'Marabunta Grande', leader: '', staticId: '', term: '', time: '', flagged: false }
+        ]);
+    }
+    try {
+        const { rows } = await pool.query('SELECT id, display_id, faction, leader, static_id, term, time, flagged FROM leaders ORDER BY display_id');
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            id: r.display_id,
+            faction: r.faction,
+            leader: r.leader || '',
+            staticId: r.static_id || '',
+            term: r.term || '',
+            time: r.time ? r.time.toISOString().slice(0, 10) : '',
+            flagged: !!r.flagged
+        })));
+    } catch (e) {
+        console.error('GET /api/leaders:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/leaders/:id', async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { leader, staticId, term, time, flagged } = req.body || {};
+    try {
+        await pool.query(
+            'UPDATE leaders SET leader=$1, static_id=$2, term=$3, time=$4, flagged=$5 WHERE id=$6',
+            [leader || null, staticId || null, term || null, time || null, !!flagged, dbId]
+        );
+        const { rows } = await pool.query('SELECT id, display_id, faction, leader, static_id, term, time, flagged FROM leaders WHERE id=$1', [dbId]);
+        if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+        const r = rows[0];
+        res.json({
+            dbId: r.id,
+            id: r.display_id,
+            faction: r.faction,
+            leader: r.leader || '',
+            staticId: r.static_id || '',
+            term: r.term || '',
+            time: r.time ? r.time.toISOString().slice(0, 10) : '',
+            flagged: !!r.flagged
+        });
+    } catch (e) {
+        console.error('PUT /api/leaders:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 4. МАРШРУТЫ САЙТА (ROUTES) ---
 app.get('/', (req, res) => {
     // Создаем объект data, который ожидает твой index.ejs
@@ -129,6 +222,7 @@ const TOKEN = process.env.BOT_TOKEN;
 
 (async () => {
     await initFamiliesTable();
+    await initLeadersTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });

@@ -28,7 +28,7 @@ body {
 /* Смещаем хедер сайдбара, чтобы выровнять Boston Crime Bot с Панелью управления */
 .sidebar-header { 
     padding: 10px 16px; 
-    margin-top: -7px; 
+    margin-top: -8px; 
 }
 
 .brand-button {

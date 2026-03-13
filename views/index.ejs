@@ -210,13 +210,18 @@
             return div.innerHTML;
         }
 
-        const leaders = [
-            { id: 8,  faction: 'The Ballas Gang',      leader: '', staticId: '', term: '', time: '', flagged: false },
-            { id: 9,  faction: 'Los Santos Vagos',     leader: '', staticId: '', term: '', time: '', flagged: false },
-            { id: 10, faction: 'The Families',         leader: '', staticId: '', term: '', time: '', flagged: false },
-            { id: 11, faction: 'The Bloods Gang',      leader: '', staticId: '', term: '', time: '', flagged: false },
-            { id: 12, faction: 'Marabunta Grande',     leader: '', staticId: '', term: '', time: '', flagged: false }
-        ];
+        let leaders = [];
+
+        async function loadLeaders() {
+            try {
+                const res = await fetch('/api/leaders');
+                const data = await res.json();
+                leaders = Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.error('Ошибка загрузки лидеров:', e);
+                leaders = [];
+            }
+        }
 
         function isLeaderActive(L) {
             return Boolean(L.leader && L.staticId && L.term && L.time);
@@ -232,9 +237,10 @@
             if (isNaN(d.getTime())) return '';
             const d30 = new Date(d);
             d30.setDate(d30.getDate() + 30);
-            const diffDays = Math.round((d30 - d) / (1000 * 60 * 60 * 24));
+            const now = new Date();
+            const diffDays = Math.round((d30 - now) / (1000 * 60 * 60 * 24));
             const fmt = (x) => x.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            return 'Дата + 30 дней: ' + fmt(d30) + '\nОсталось: ' + diffDays + ' дн.';
+            return fmt(d30) + '\nОсталось: ' + diffDays + ' дн.';
         }
         function formatTimeDisplay(isoDate) {
             if (!isoDate) return '—';
@@ -308,8 +314,24 @@
                 </div>`;
         }
 
-        function toggleLeaderFlag(i) {
-            leaders[i].flagged = !leaders[i].flagged;
+        async function toggleLeaderFlag(i) {
+            const current = leaders[i];
+            const updated = { ...current, flagged: !current.flagged };
+            leaders[i] = updated;
+            if (updated.dbId != null) {
+                try {
+                    const res = await fetch(`/api/leaders/${updated.dbId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    if (!res.ok) throw new Error('Failed to save flag');
+                    leaders[i] = await res.json();
+                } catch (e) {
+                    console.error(e);
+                    alert('Не удалось сохранить флажок.');
+                }
+            }
             renderLeaders();
         }
 
@@ -349,6 +371,7 @@
                     renderFamilies();
                 } else if (title === 'Лидеры') {
                     headerActions.style.display = 'none';
+                    await loadLeaders();
                     renderLeaders();
                 } else {
                     headerActions.style.display = 'none';
@@ -452,7 +475,7 @@
             renderFamilies();
         };
 
-        leaderForm.onsubmit = (e) => {
+        leaderForm.onsubmit = async (e) => {
             e.preventDefault();
             const idx = parseInt(document.getElementById('leader-edit-index').value, 10);
             if (isNaN(idx)) { closeLeaderModal(); return; }
@@ -465,6 +488,20 @@
                 time: document.getElementById('leader-time').value
             };
             leaders[idx] = updated;
+            if (updated.dbId != null) {
+                try {
+                    const res = await fetch(`/api/leaders/${updated.dbId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updated)
+                    });
+                    if (!res.ok) throw new Error('Failed to save leader');
+                    leaders[idx] = await res.json();
+                } catch (err) {
+                    console.error(err);
+                    alert('Не удалось сохранить лидера.');
+                }
+            }
             closeLeaderModal();
             renderLeaders();
         };
