@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { Client, GatewayIntentBits } = require('discord.js');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 
@@ -9,6 +10,30 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
+// PostgreSQL (Railway): переменная DATABASE_URL или POSTGRES_URL
+const pool = process.env.DATABASE_URL || process.env.POSTGRES_URL
+    ? new Pool({ connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL, ssl: { rejectUnauthorized: false } })
+    : null;
+
+async function initFamiliesTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS families (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                family_id VARCHAR(64) NOT NULL,
+                leader VARCHAR(255),
+                discord VARCHAR(64)
+            )
+        `);
+        console.log('✅ Таблица families готова');
+    } catch (e) {
+        console.error('❌ Ошибка создания таблицы families:', e.message);
+    }
+}
 
 // --- 2. ИНИЦИАЛИЗАЦИЯ БОТА ---
 const client = new Client({
@@ -19,7 +44,67 @@ const client = new Client({
     ]
 });
 
-// --- 3. МАРШРУТЫ САЙТА (ROUTES) ---
+// --- 3. API СЕМЕЙ (БД Railway) ---
+app.get('/api/families', async (req, res) => {
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query('SELECT id, name, family_id, leader, discord FROM families ORDER BY id');
+        res.json(rows.map(r => ({ dbId: r.id, name: r.name, id: r.family_id, leader: r.leader || '', discord: r.discord || '' })));
+    } catch (e) {
+        console.error('GET /api/families:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/families', async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { name, id: family_id, leader, discord } = req.body || {};
+    if (!name || !family_id) return res.status(400).json({ error: 'name and id required' });
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO families (name, family_id, leader, discord) VALUES ($1, $2, $3, $4) RETURNING id, name, family_id, leader, discord',
+            [name, String(family_id), leader || null, discord || null]
+        );
+        const r = rows[0];
+        res.status(201).json({ dbId: r.id, name: r.name, id: r.family_id, leader: r.leader || '', discord: r.discord || '' });
+    } catch (e) {
+        console.error('POST /api/families:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/families/:id', async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { name, id: family_id, leader, discord } = req.body || {};
+    if (!name || !family_id) return res.status(400).json({ error: 'name and id required' });
+    try {
+        await pool.query(
+            'UPDATE families SET name=$1, family_id=$2, leader=$3, discord=$4 WHERE id=$5',
+            [name, String(family_id), leader || null, discord || null, dbId]
+        );
+        res.json({ dbId, name, id: family_id, leader: leader || '', discord: discord || '' });
+    } catch (e) {
+        console.error('PUT /api/families:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/families/:id', async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM families WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/families:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- 4. МАРШРУТЫ САЙТА (ROUTES) ---
 app.get('/', (req, res) => {
     // Создаем объект data, который ожидает твой index.ejs
     const data = {
@@ -38,20 +123,20 @@ client.once('ready', () => {
     console.log(`✅ Бот запущен как: ${client.user.tag}`);
 });
 
-// --- 5. ЗАПУСК ВСЕЙ СИСТЕМЫ ---
+// --- 6. ЗАПУСК ВСЕЙ СИСТЕМЫ ---
 const PORT = process.env.PORT || 3000;
 const TOKEN = process.env.BOT_TOKEN;
 
-if (!TOKEN) {
-    console.error('❌ ОШИБКА: Переменная BOT_TOKEN не установлена в Railway!');
-} else {
-    // Сначала запускаем сайт
+(async () => {
+    await initFamiliesTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
-
-    // Затем логиним бота
-    client.login(TOKEN).catch(err => {
-        console.error('❌ Ошибка подключения бота к Discord:', err.message);
-    });
-}
+    if (TOKEN) {
+        client.login(TOKEN).catch(err => {
+            console.error('❌ Ошибка подключения бота к Discord:', err.message);
+        });
+    } else {
+        console.warn('⚠️ BOT_TOKEN не задан — бот не запущен');
+    }
+})();

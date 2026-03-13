@@ -120,13 +120,38 @@
     </div>
 
     <script>
-        let families = [{ name: "Marabunta", id: "101", leader: "Dmitry Black", discord: "293847561023" }];
+        let families = [];
         
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
         const headerActions = document.getElementById('header-actions');
 
+        async function loadFamilies() {
+            try {
+                const res = await fetch('/api/families');
+                const data = await res.json();
+                families = Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.error('Ошибка загрузки семей:', e);
+                families = [];
+            }
+        }
+
         function renderFamilies() {
+            const list = families.map((f, i) => {
+                const dbId = f.dbId != null ? f.dbId : '';
+                return `
+                <tr>
+                    <td>${escapeHtml(f.name)}</td>
+                    <td><span class="id-tag">#${escapeHtml(f.id)}</span></td>
+                    <td>${escapeHtml(f.leader || '—')}</td>
+                    <td>${escapeHtml(f.discord || '—')}</td>
+                    <td class="cell-actions">
+                        <button type="button" class="btn-icon" onclick="editFamily(${i})" title="Редактировать"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button type="button" class="btn-icon btn-icon-delete" onclick="deleteFamily(${i})" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></button>
+                    </td>
+                </tr>`;
+            }).join('');
             pageContent.innerHTML = `
                 <div class="table-container">
                     <table class="data-table">
@@ -139,26 +164,19 @@
                                 <th style="text-align:right">Действие</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${families.map((f, i) => `
-                                <tr>
-                                    <td>${f.name}</td>
-                                    <td><span class="id-tag">#${f.id}</span></td>
-                                    <td>${f.leader || '—'}</td>
-                                    <td>${f.discord || '—'}</td>
-                                    <td class="cell-actions">
-                                        <button type="button" class="btn-icon" onclick="editFamily(${i})" title="Редактировать"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                                        <button type="button" class="btn-icon btn-icon-delete" onclick="deleteFamily(${i})" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
+                        <tbody>${list}</tbody>
                     </table>
                 </div>`;
         }
 
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
         document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
                 btn.classList.add('active');
@@ -166,6 +184,7 @@
                 pageTitle.textContent = title;
                 if (title === 'Семьи') {
                     headerActions.style.display = 'flex';
+                    await loadFamilies();
                     renderFamilies();
                 } else {
                     headerActions.style.display = 'none';
@@ -187,35 +206,84 @@
             const f = families[i];
             document.getElementById('fam-name').value = f.name;
             document.getElementById('fam-id').value = f.id;
-            document.getElementById('fam-leader').value = f.leader;
-            document.getElementById('fam-discord').value = f.discord;
+            document.getElementById('fam-leader').value = f.leader || '';
+            document.getElementById('fam-discord').value = f.discord || '';
             document.getElementById('edit-index').value = i;
             document.getElementById('modal-title').textContent = "Редактировать семью";
             document.getElementById('modal-overlay').classList.add('is-open');
         }
 
-        function deleteFamily(i) {
-            if (confirm('Удалить эту семью?')) {
-                families.splice(i, 1);
-                renderFamilies();
+        async function deleteFamily(i) {
+            if (!confirm('Удалить эту семью?')) return;
+            const f = families[i];
+            if (f.dbId != null) {
+                try {
+                    const res = await fetch(`/api/families/${f.dbId}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(await res.text());
+                } catch (e) {
+                    console.error(e);
+                    alert('Не удалось удалить запись.');
+                    return;
+                }
             }
+            families.splice(i, 1);
+            renderFamilies();
         }
 
-        document.getElementById('family-form').onsubmit = (e) => {
+        document.getElementById('family-form').onsubmit = async (e) => {
             e.preventDefault();
-            const i = document.getElementById('edit-index').value;
+            const editIndex = document.getElementById('edit-index').value;
             const data = {
-                name: document.getElementById('fam-name').value,
-                id: document.getElementById('fam-id').value,
-                leader: document.getElementById('fam-leader').value,
-                discord: document.getElementById('fam-discord').value
+                name: document.getElementById('fam-name').value.trim(),
+                id: document.getElementById('fam-id').value.trim(),
+                leader: document.getElementById('fam-leader').value.trim(),
+                discord: document.getElementById('fam-discord').value.trim()
             };
-            if(i === "") families.push(data); else families[i] = data;
+            if (data.name === '' || data.id === '') {
+                alert('Заполните название и ID семьи.');
+                return;
+            }
+            if (editIndex === '') {
+                try {
+                    const res = await fetch('/api/families', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+                    const created = await res.json();
+                    families.push(created);
+                } catch (err) {
+                    console.error(err);
+                    alert('Не удалось добавить семью: ' + err.message);
+                    return;
+                }
+            } else {
+                const idx = parseInt(editIndex, 10);
+                const f = families[idx];
+                if (f.dbId == null) {
+                    families[idx] = { ...f, ...data };
+                } else {
+                    try {
+                        const res = await fetch(`/api/families/${f.dbId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+                        const updated = await res.json();
+                        families[idx] = updated;
+                    } catch (err) {
+                        console.error(err);
+                        alert('Не удалось сохранить изменения: ' + err.message);
+                        return;
+                    }
+                }
+            }
             closeModal();
             renderFamilies();
         };
 
-        // Начальная загрузка
         pageContent.innerHTML = `<p style="color:#444">Выберите раздел в меню слева.</p>`;
     </script>
 </body>
