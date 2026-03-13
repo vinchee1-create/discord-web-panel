@@ -81,6 +81,9 @@
                 <div class="header-separator"></div>
                 <span class="page-title" id="current-title">Панель управления</span>
             </div>
+            <div class="header-actions" id="header-actions" style="display: none;">
+                <button type="button" class="btn-pill" id="btn-add-family" onclick="openModal()">Добавить семью</button>
+            </div>
         </header>
 
         <div class="content-body" id="page-content">
@@ -121,12 +124,10 @@
         
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
+        const headerActions = document.getElementById('header-actions');
 
         function renderFamilies() {
             pageContent.innerHTML = `
-                <div class="table-header-box">
-                    <button class="btn-primary" onclick="openModal()">Добавить семью</button>
-                </div>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -147,6 +148,7 @@
                                     <td>${f.discord || '—'}</td>
                                     <td style="text-align:right">
                                         <button class="btn-edit" onclick="editFamily(${i})">Изменить</button>
+                                        <button class="btn-edit btn-delete" onclick="deleteFamily(${i})">Удалить</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -162,8 +164,13 @@
                 btn.classList.add('active');
                 const title = btn.getAttribute('data-title');
                 pageTitle.textContent = title;
-                if(title === 'Семьи') renderFamilies();
-                else pageContent.innerHTML = `<p style="color:#444">Раздел "${title}" находится в разработке.</p>`;
+                if (title === 'Семьи') {
+                    headerActions.style.display = 'flex';
+                    renderFamilies();
+                } else {
+                    headerActions.style.display = 'none';
+                    pageContent.innerHTML = `<p style="color:#444">Раздел "${title}" находится в разработке.</p>`;
+                }
             });
         });
 
@@ -185,6 +192,13 @@
             document.getElementById('edit-index').value = i;
             document.getElementById('modal-title').textContent = "Редактировать семью";
             document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function deleteFamily(i) {
+            if (confirm('Удалить эту семью?')) {
+                families.splice(i, 1);
+                renderFamilies();
+            }
         }
 
         document.getElementById('family-form').onsubmit = (e) => {
