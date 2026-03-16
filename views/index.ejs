@@ -63,6 +63,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         <span>Модерация</span>
                     </a>
+                    <% if (user && user.role_level >= 4) { %>
+                    <a href="#" class="nav-item" data-title="Аккаунты">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>Аккаунты</span>
+                    </a>
+                    <% } %>
+
                     <a href="#" class="nav-item" data-title="Настройки">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         <span>Настройки</span>
@@ -160,6 +167,7 @@
         const headerActions = document.getElementById('header-actions');
         const leaderModal = document.getElementById('leader-modal-overlay');
         const leaderForm = document.getElementById('leader-form');
+        const currentUser = <%- JSON.stringify(user || null) %>;
 
         async function loadFamilies() {
             try {
@@ -169,6 +177,91 @@
             } catch (e) {
                 console.error('Ошибка загрузки семей:', e);
                 families = [];
+            }
+        }
+
+        let accounts = [];
+        async function loadAccounts() {
+            try {
+                const res = await fetch('/api/accounts');
+                if (!res.ok) throw new Error('forbidden');
+                const data = await res.json();
+                accounts = Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.error('Ошибка загрузки аккаунтов:', e);
+                accounts = [];
+            }
+        }
+
+        function renderAccounts() {
+            const rows = accounts.map((a, i) => `
+                <tr>
+                    <td>${escapeHtml(a.nickname || '—')}</td>
+                    <td>${a.lvl ?? '—'}</td>
+                    <td>${escapeHtml(a.server || '—')}</td>
+                    <td>${escapeHtml(a.login || '—')}</td>
+                    <td>${escapeHtml(a.password || '—')}</td>
+                </tr>
+            `).join('');
+
+            setPageContent(`
+                <div class="nick-page-header">
+                    <div class="nick-month-control">
+                        <button type="button" class="btn-month">
+                            <span class="btn-month-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                            </span>
+                            <span>Редактировать</span>
+                        </button>
+                    </div>
+                    <button type="button" class="btn-month" onclick="openAddAccount()">
+                        <span class="btn-month-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+                        </span>
+                        <span>Добавить аккаунт</span>
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Никнейм</th>
+                                <th>LVL</th>
+                                <th>Сервер</th>
+                                <th>Логин</th>
+                                <th>Пароль</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `);
+        }
+
+        async function openAddAccount() {
+            const nickname = prompt('Никнейм');
+            if (nickname === null || nickname.trim() === '') return;
+            const lvl = prompt('LVL');
+            if (lvl === null) return;
+            const server = prompt('Сервер');
+            if (server === null) return;
+            const login = prompt('Логин');
+            if (login === null) return;
+            const password = prompt('Пароль');
+            if (password === null) return;
+            try {
+                const res = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname: nickname.trim(), lvl: lvl.trim(), server: server.trim(), login: login.trim(), password: password.trim() })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'error');
+                await loadAccounts();
+                renderAccounts();
+            } catch (e) {
+                console.error(e);
+                alert('Не удалось добавить аккаунт');
             }
         }
 
@@ -526,6 +619,10 @@
                 } else if (title === 'Модерация') {
                     headerActions.style.display = 'none';
                     renderNicknames();
+                } else if (title === 'Аккаунты') {
+                    headerActions.style.display = 'none';
+                    await loadAccounts();
+                    renderAccounts();
                 } else {
                     headerActions.style.display = 'none';
                     setPageContent(`<p style="color:#444">Раздел "${title}" находится в разработке.</p>`);

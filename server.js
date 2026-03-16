@@ -3,6 +3,9 @@ const express = require('express');
 const { Client, GatewayIntentBits } = require('discord.js');
 const path = require('path');
 const { Pool } = require('pg');
+const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -13,9 +16,86 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // PostgreSQL (Railway): переменная DATABASE_URL или POSTGRES_URL
-const pool = process.env.DATABASE_URL || process.env.POSTGRES_URL
-    ? new Pool({ connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL, ssl: { rejectUnauthorized: false } })
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const pool = connectionString
+    ? new Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 10000
+    })
     : null;
+
+if (!pool) {
+    console.warn('⚠️ DATABASE_URL/POSTGRES_URL не задан — авторизация и БД-функции работать не будут');
+}
+
+const ROLE_LEVELS = {
+    Curator: 1,
+    Senior: 2,
+    Chief: 3,
+    Admin: 4
+};
+
+app.use(session({
+    store: pool ? new PgSession({ pool, tableName: 'session' }) : undefined,
+    secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax'
+    }
+}));
+
+function requireAuth(req, res, next) {
+    if (req.session && req.session.user) return next();
+    return res.redirect('/login');
+}
+
+function requireRole(minRoleName) {
+    const min = ROLE_LEVELS[minRoleName] ?? 999;
+    return (req, res, next) => {
+        const lvl = req.session?.user?.role_level ?? 0;
+        if (lvl >= min) return next();
+        return res.status(403).send('Forbidden');
+    };
+}
+
+async function initUsersTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(64) UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role_name VARCHAR(16) NOT NULL,
+                role_level INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
+        if (rows[0].count === 0) {
+            const adminUser = process.env.ADMIN_USERNAME || 'admin';
+            const adminPass = process.env.ADMIN_PASSWORD;
+            if (!adminPass) {
+                console.warn('⚠️ ADMIN_PASSWORD не задан — админ пользователь не создан');
+                return;
+            }
+            const hash = await bcrypt.hash(adminPass, 10);
+            await pool.query(
+                'INSERT INTO users (username, password_hash, role_name, role_level) VALUES ($1, $2, $3, $4)',
+                [adminUser, hash, 'Admin', ROLE_LEVELS.Admin]
+            );
+            console.log('✅ Создан admin пользователь:', adminUser);
+        } else {
+            console.log('✅ Таблица users готова');
+        }
+    } catch (e) {
+        console.error('❌ Ошибка users:', e.message);
+    }
+}
 
 async function initFamiliesTable() {
     if (!pool) return;
@@ -69,6 +149,26 @@ async function initLeadersTable() {
     }
 }
 
+async function initAccountsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS accounts (
+                id SERIAL PRIMARY KEY,
+                nickname VARCHAR(255) NOT NULL,
+                lvl INTEGER,
+                server VARCHAR(64),
+                login VARCHAR(255),
+                password VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        console.log('✅ Таблица accounts готова');
+    } catch (e) {
+        console.error('❌ Ошибка accounts:', e.message);
+    }
+}
+
 // --- 2. ИНИЦИАЛИЗАЦИЯ БОТА ---
 const client = new Client({
     intents: [
@@ -78,8 +178,37 @@ const client = new Client({
     ]
 });
 
-// --- 3. API СЕМЕЙ (БД Railway) ---
+// --- 3. AUTH PAGES ---
+app.get('/login', (req, res) => {
+    if (req.session?.user) return res.redirect('/');
+    res.render('login', { error: null });
+});
+
+app.post('/login', express.urlencoded({ extended: true }), async (req, res) => {
+    if (!pool) return res.render('login', { error: 'База данных не настроена' });
+    const { username, password } = req.body || {};
+    if (!username || !password) return res.render('login', { error: 'Введите логин и пароль' });
+    try {
+        const { rows } = await pool.query('SELECT id, username, password_hash, role_name, role_level FROM users WHERE username=$1', [String(username)]);
+        const u = rows[0];
+        if (!u) return res.render('login', { error: 'Неверный логин или пароль' });
+        const ok = await bcrypt.compare(String(password), u.password_hash);
+        if (!ok) return res.render('login', { error: 'Неверный логин или пароль' });
+        req.session.user = { id: u.id, username: u.username, role_name: u.role_name, role_level: u.role_level };
+        res.redirect('/');
+    } catch (e) {
+        console.error('POST /login:', e.message);
+        res.render('login', { error: 'Ошибка входа' });
+    }
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => res.redirect('/login'));
+});
+
+// --- 4. API СЕМЕЙ (БД Railway) ---
 app.get('/api/families', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.json([]);
     try {
         const { rows } = await pool.query('SELECT id, name, family_id, leader, discord FROM families ORDER BY id');
@@ -91,6 +220,7 @@ app.get('/api/families', async (req, res) => {
 });
 
 app.post('/api/families', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const { name, id: family_id, leader, discord } = req.body || {};
     if (!name || !family_id) return res.status(400).json({ error: 'name and id required' });
@@ -108,6 +238,7 @@ app.post('/api/families', async (req, res) => {
 });
 
 app.put('/api/families/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const dbId = parseInt(req.params.id, 10);
     if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
@@ -126,6 +257,7 @@ app.put('/api/families/:id', async (req, res) => {
 });
 
 app.delete('/api/families/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const dbId = parseInt(req.params.id, 10);
     if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
@@ -140,6 +272,7 @@ app.delete('/api/families/:id', async (req, res) => {
 
 // --- 3.1. API ЛИДЕРОВ (БД Railway) ---
 app.get('/api/leaders', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) {
         // fallback: статика, если нет БД
         return res.json([
@@ -169,6 +302,7 @@ app.get('/api/leaders', async (req, res) => {
 });
 
 app.put('/api/leaders/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const dbId = parseInt(req.params.id, 10);
     if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
@@ -197,8 +331,75 @@ app.put('/api/leaders/:id', async (req, res) => {
     }
 });
 
-// --- 4. МАРШРУТЫ САЙТА (ROUTES) ---
-app.get('/', (req, res) => {
+// --- 3.2. API АККАУНТОВ (ТОЛЬКО ADMIN) ---
+app.get('/api/accounts', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query('SELECT id, nickname, lvl, server, login, password FROM accounts ORDER BY id DESC');
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            nickname: r.nickname,
+            lvl: r.lvl ?? null,
+            server: r.server ?? '',
+            login: r.login ?? '',
+            password: r.password ?? ''
+        })));
+    } catch (e) {
+        console.error('GET /api/accounts:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/accounts', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { nickname, lvl, server, login, password } = req.body || {};
+    if (!nickname) return res.status(400).json({ error: 'nickname required' });
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO accounts (nickname, lvl, server, login, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, nickname, lvl, server, login, password',
+            [String(nickname), lvl === '' || lvl == null ? null : Number(lvl), server || null, login || null, password || null]
+        );
+        const r = rows[0];
+        res.status(201).json({ dbId: r.id, nickname: r.nickname, lvl: r.lvl ?? null, server: r.server ?? '', login: r.login ?? '', password: r.password ?? '' });
+    } catch (e) {
+        console.error('POST /api/accounts:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/accounts/:id', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { nickname, lvl, server, login, password } = req.body || {};
+    if (!nickname) return res.status(400).json({ error: 'nickname required' });
+    try {
+        await pool.query(
+            'UPDATE accounts SET nickname=$1, lvl=$2, server=$3, login=$4, password=$5 WHERE id=$6',
+            [String(nickname), lvl === '' || lvl == null ? null : Number(lvl), server || null, login || null, password || null, dbId]
+        );
+        res.json({ dbId, nickname, lvl: lvl === '' || lvl == null ? null : Number(lvl), server: server || '', login: login || '', password: password || '' });
+    } catch (e) {
+        console.error('PUT /api/accounts:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/accounts/:id', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM accounts WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/accounts:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
+app.get('/', requireAuth, (req, res) => {
     // Создаем объект data, который ожидает твой index.ejs
     const data = {
         botStatus: client.user ? "В сети" : "Подключение...",
@@ -208,7 +409,7 @@ app.get('/', (req, res) => {
     };
     
     // Передаем этот объект в шаблон
-    res.render('index', { data: data }); 
+    res.render('index', { data: data, user: req.session.user }); 
 });
 
 // --- 4. СОБЫТИЯ БОТА ---
@@ -221,8 +422,10 @@ const PORT = process.env.PORT || 3000;
 const TOKEN = process.env.BOT_TOKEN;
 
 (async () => {
+    await initUsersTable();
     await initFamiliesTable();
     await initLeadersTable();
+    await initAccountsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
