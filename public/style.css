@@ -224,6 +224,12 @@ body {
     filter: invert(1);
 }
 
+.nick-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
 /* Тултип для ячейки Время */
 .time-cell[data-time] { cursor: help; }
 .data-table .cell-actions-leaders { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }

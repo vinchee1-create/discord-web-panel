@@ -59,9 +59,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         <span>Собрания</span>
                     </a>
-                    <a href="#" class="nav-item" data-title="Никнеймы">
+                    <a href="#" class="nav-item" data-title="Модерация">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <span>Никнеймы</span>
+                        <span>Модерация</span>
                     </a>
                     <a href="#" class="nav-item" data-title="Настройки">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -262,12 +262,12 @@
             return best;
         }
 
-        function getNickDatesForMonth(year, monthIndex) {
+        function getNickDatesForMonth(year, monthIndex, allowedDays) {
             const dates = [];
             const d = new Date(year, monthIndex, 1);
             while (d.getMonth() === monthIndex) {
-                const day = d.getDay(); // 0 - вс, 1 - пн, 2 - вт, ..., 4 - чт
-                if (day === 2 || day === 4) {
+                const day = d.getDay(); // 0 - вс, 1 - пн, ...
+                if (allowedDays.includes(day)) {
                     dates.push(new Date(d));
                 }
                 d.setDate(d.getDate() + 1);
@@ -277,7 +277,8 @@
 
         function renderNicknames() {
             const { year, month } = nickMonth;
-            const dates = getNickDatesForMonth(year, month);
+            const datesTueThu = getNickDatesForMonth(year, month, [2, 4]); // вт, чт
+            const datesMon = getNickDatesForMonth(year, month, [1]); // пн
             const factions = [
                 'The Ballas Gang',
                 'Los Santos Vagos',
@@ -286,13 +287,24 @@
                 'Marabunta Grande'
             ];
             const monthValue = `${year}-${String(month + 1).padStart(2, '0')}`;
-            const headerCells = dates.map(d => {
+            const headerCellsTop = datesTueThu.map(d => {
                 const dd = String(d.getDate()).padStart(2, '0');
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 return `<th>${dd}.${mm}</th>`;
             }).join('');
-            const bodyRows = factions.map(name => {
-                const cells = dates.map(() => `<td>—</td>`).join('');
+            const headerCellsBottom = datesMon.map(d => {
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                return `<th>${dd}.${mm}</th>`;
+            }).join('');
+
+            const bodyRowsTop = factions.map(name => {
+                const cells = datesTueThu.map(() => `<td>—</td>`).join('');
+                return `<tr><td>${escapeHtml(name)}</td>${cells}</tr>`;
+            }).join('');
+
+            const bodyRowsBottom = factions.map(name => {
+                const cells = datesMon.map(() => `<td>—</td>`).join('');
                 return `<tr><td>${escapeHtml(name)}</td>${cells}</tr>`;
             }).join('');
 
@@ -312,11 +324,25 @@
                             <thead>
                                 <tr>
                                     <th>Фракции</th>
-                                    ${headerCells}
+                                    ${headerCellsTop}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${bodyRows}
+                                ${bodyRowsTop}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Собрания</th>
+                                    ${headerCellsBottom}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bodyRowsBottom}
                             </tbody>
                         </table>
                     </div>
@@ -470,7 +496,7 @@
                     headerActions.style.display = 'none';
                     await loadLeaders();
                     renderLeaders();
-                } else if (title === 'Никнеймы') {
+                } else if (title === 'Модерация') {
                     headerActions.style.display = 'none';
                     renderNicknames();
                 } else {
