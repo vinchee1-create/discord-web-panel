@@ -279,6 +279,7 @@
             const { year, month } = nickMonth;
             const datesTueThu = getNickDatesForMonth(year, month, [2, 4]); // вт, чт
             const datesMon = getNickDatesForMonth(year, month, [1]); // пн
+            const maxLen = Math.max(datesTueThu.length, datesMon.length);
             const factions = [
                 'The Ballas Gang',
                 'Los Santos Vagos',
@@ -286,38 +287,50 @@
                 'The Bloods Gang',
                 'Marabunta Grande'
             ];
-            const monthValue = `${year}-${String(month + 1).padStart(2, '0')}`;
-            const headerCellsTop = datesTueThu.map(d => {
+            const headerCellsTop = Array.from({ length: maxLen }).map((_, idx) => {
+                const d = datesTueThu[idx];
+                if (!d) return `<th></th>`;
                 const dd = String(d.getDate()).padStart(2, '0');
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 return `<th>${dd}.${mm}</th>`;
             }).join('');
-            const headerCellsBottom = datesMon.map(d => {
+            const headerCellsBottom = Array.from({ length: maxLen }).map((_, idx) => {
+                const d = datesMon[idx];
+                if (!d) return `<th></th>`;
                 const dd = String(d.getDate()).padStart(2, '0');
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 return `<th>${dd}.${mm}</th>`;
             }).join('');
 
             const bodyRowsTop = factions.map(name => {
-                const cells = datesTueThu.map(() => `<td>—</td>`).join('');
+                const cells = Array.from({ length: maxLen }).map((_, idx) => {
+                    return datesTueThu[idx] ? `<td>—</td>` : `<td></td>`;
+                }).join('');
                 return `<tr><td>${escapeHtml(name)}</td>${cells}</tr>`;
             }).join('');
 
             const bodyRowsBottom = factions.map(name => {
-                const cells = datesMon.map(() => `<td>—</td>`).join('');
+                const cells = Array.from({ length: maxLen }).map((_, idx) => {
+                    return datesMon[idx] ? `<td>—</td>` : `<td></td>`;
+                }).join('');
                 return `<tr><td>${escapeHtml(name)}</td>${cells}</tr>`;
             }).join('');
 
             setPageContent(`
-                <div class="nick-page">
+                    <div class="nick-page">
                     <div class="nick-page-header">
                         <div>
                             <div class="nick-title">Проверка никнеймов</div>
                         </div>
-                        <label class="nick-month-control">
-                            <span>Месяц</span>
-                            <input type="month" id="nick-month-input" value="${monthValue}">
-                        </label>
+                        <div class="nick-month-control">
+                            <button type="button" class="btn-month" id="nick-month-button">
+                                <span class="btn-month-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </span>
+                                <span>Месяц</span>
+                            </button>
+                            <div class="nick-month-dropdown" id="nick-month-dropdown"></div>
+                        </div>
                     </div>
                     <div class="table-container">
                         <table class="data-table">
@@ -333,11 +346,12 @@
                         </table>
                     </div>
 
+                    <div class="nick-section-title">Собрания</div>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Собрания</th>
+                                    <th>Фракции</th>
                                     ${headerCellsBottom}
                                 </tr>
                             </thead>
@@ -349,16 +363,26 @@
                 </div>
             `);
 
-            const monthInput = document.getElementById('nick-month-input');
-            if (monthInput) {
-                monthInput.addEventListener('change', (e) => {
-                    const value = e.target.value;
-                    const [y, m] = value.split('-').map(Number);
-                    if (!isNaN(y) && !isNaN(m)) {
-                        nickMonth.year = y;
-                        nickMonth.month = m - 1;
-                        renderNicknames();
-                    }
+            const dropdown = document.getElementById('nick-month-dropdown');
+            const button = document.getElementById('nick-month-button');
+            if (dropdown && button) {
+                const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+                dropdown.innerHTML = monthNames.map((name, idx) => {
+                    return `<button type="button" data-month="${idx}">${name}</button>`;
+                }).join('');
+
+                button.onclick = () => {
+                    dropdown.classList.toggle('open');
+                };
+                dropdown.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const m = Number(e.currentTarget.getAttribute('data-month'));
+                        if (!isNaN(m)) {
+                            nickMonth.month = m;
+                            dropdown.classList.remove('open');
+                            renderNicknames();
+                        }
+                    });
                 });
             }
         }

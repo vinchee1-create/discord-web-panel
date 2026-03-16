@@ -203,31 +203,79 @@ body {
 .nick-month-control {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: #151515;
-    border-radius: 8px;
-    border: 1px solid #262626;
-    padding: 6px 10px;
-    font-size: 13px;
-    color: #ffffff;
-}
-.nick-month-control input[type="month"] {
-    background: transparent;
-    border: none;
-    color: inherit;
-    font: inherit;
-    padding: 0;
-    outline: none;
-    cursor: pointer;
-}
-.nick-month-control input[type="month"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    position: relative;
 }
 
 .nick-page {
     display: flex;
     flex-direction: column;
     gap: 24px;
+}
+
+.nick-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 4px 0 8px;
+}
+
+/* Кнопка выбора месяца (как на скрине) */
+.btn-month {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #2b2b2b;
+    background: #e0e0e0;
+    color: #111;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.btn-month:hover {
+    background: #f0f0f0;
+}
+.btn-month-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-month-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.nick-month-dropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    min-width: 180px;
+    background: #151515;
+    border-radius: 10px;
+    border: 1px solid #262626;
+    padding: 10px;
+    margin-top: 6px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    display: none;
+    z-index: 20;
+}
+.nick-month-dropdown.open {
+    display: block;
+}
+.nick-month-dropdown button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 6px 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    border-radius: 6px;
+    cursor: pointer;
+}
+.nick-month-dropdown button:hover {
+    background: #222;
 }
 
 /* Тултип для ячейки Время */
