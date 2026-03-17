@@ -439,6 +439,17 @@
         let accounts = [];
         async function loadAccounts() { accounts = []; }
 
+        async function loadFamilyMaterials() {
+            try {
+                const res = await fetch('/api/family-materials');
+                const data = await res.json();
+                familyMaterials = Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.error('Ошибка загрузки материалов семей:', e);
+                familyMaterials = [];
+            }
+        }
+
         let usersList = [];
         async function loadUsers() {
             try {
@@ -966,6 +977,7 @@
                         btn.onclick = openMaterialsModal;
                         btn.querySelector('span:last-child').textContent = 'Добавить';
                     }
+                    await loadFamilyMaterials();
                     renderFamilyMaterials();
                 } else if (title === 'Модерация') {
                     headerActions.style.display = 'none';
@@ -1015,6 +1027,7 @@
                     btn.onclick = openMaterialsModal;
                     btn.querySelector('span:last-child').textContent = 'Добавить';
                 }
+                await loadFamilyMaterials();
                 renderFamilyMaterials();
             } else if (initialPage === 'Модерация') {
                 pageTitle.textContent = 'Модерация';
@@ -1143,26 +1156,83 @@
                 showToast('Заполните заголовок или содержимое.', 'error');
                 return;
             }
-            if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
-                familyMaterials[editingMaterialIndex] = {
-                    ...familyMaterials[editingMaterialIndex],
-                    title,
-                    content
-                };
-            } else {
-                familyMaterials.push({ title, content, issued: false });
-            }
-            closeMaterialsModal();
-            renderFamilyMaterials();
+            (async () => {
+                try {
+                    if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
+                        const item = familyMaterials[editingMaterialIndex];
+                        if (item.dbId != null) {
+                            const res = await fetch(`/api/family-materials/${item.dbId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    title,
+                                    content,
+                                    issued: !!item.issued
+                                })
+                            });
+                            if (!res.ok) throw new Error((await res.json()).error || 'error');
+                            const updated = await res.json();
+                            familyMaterials[editingMaterialIndex] = updated;
+                        } else {
+                            familyMaterials[editingMaterialIndex] = {
+                                ...item,
+                                title,
+                                content
+                            };
+                        }
+                    } else {
+                        const res = await fetch('/api/family-materials', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ title, content })
+                        });
+                        if (!res.ok) throw new Error((await res.json()).error || 'error');
+                        const created = await res.json();
+                        familyMaterials.push(created);
+                    }
+                    closeMaterialsModal();
+                    renderFamilyMaterials();
+                } catch (err) {
+                    console.error(err);
+                    showToast('Не удалось сохранить материал.', 'error');
+                }
+            })();
         });
 
         function renderFamilyMaterials() {
-            const cards = familyMaterials.map((item, idx) => `
-                <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${idx})">
-                    <div class="materials-card-title">${escapeHtml(item.title || 'Без названия')}</div>
-                    <div class="materials-card-content">${escapeHtml(item.content || '')}</div>
-                </div>
-            `).join('');
+            const sorted = familyMaterials
+                .map((item, idx) => ({ ...item, _idx: idx }))
+                .sort((a, b) => {
+                    // невыполненные (pending) всегда выше выданных (issued)
+                    if (a.issued === b.issued) return a._idx - b._idx;
+                    return a.issued ? 1 : -1;
+                });
+
+            const cards = sorted.map((item) => {
+                if (!item.createdAt) {
+                    item.createdAt = new Date().toISOString();
+                }
+                const created = new Date(item.createdAt);
+                const timeLabel = isNaN(created.getTime())
+                    ? ''
+                    : created.toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                const safeTitle = escapeHtml(item.title || 'Без названия');
+                const safeContent = escapeHtml(item.content || '').replace(/\n/g, '<br>');
+                return `
+                <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${item._idx})">
+                    <div class="materials-card-header">
+                        <div class="materials-card-title">${safeTitle}</div>
+                        <div class="materials-card-time">${timeLabel}</div>
+                    </div>
+                    <div class="materials-card-content">${safeContent}</div>
+                </div>`;
+            }).join('');
             setPageContent(`
                 <div class="materials-page">
                     <div class="materials-grid">
@@ -1177,16 +1247,52 @@
         window.deleteCurrentMaterial = function () {
             if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
             const idx = editingMaterialIndex;
-            closeMaterialsModal();
-            familyMaterials.splice(idx, 1);
-            renderFamilyMaterials();
+            (async () => {
+                const item = familyMaterials[idx];
+                try {
+                    if (item && item.dbId != null) {
+                        const res = await fetch(`/api/family-materials/${item.dbId}`, { method: 'DELETE' });
+                        if (!res.ok) throw new Error(await res.text());
+                    }
+                    closeMaterialsModal();
+                    familyMaterials.splice(idx, 1);
+                    renderFamilyMaterials();
+                } catch (e) {
+                    console.error(e);
+                    showToast('Не удалось удалить материал.', 'error');
+                }
+            })();
         };
 
         window.markMaterialIssued = function () {
             if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
-            familyMaterials[editingMaterialIndex].issued = !familyMaterials[editingMaterialIndex].issued;
-            closeMaterialsModal();
-            renderFamilyMaterials();
+            (async () => {
+                const item = familyMaterials[editingMaterialIndex];
+                const newIssued = !item.issued;
+                try {
+                    if (item.dbId != null) {
+                        const res = await fetch(`/api/family-materials/${item.dbId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                title: item.title,
+                                content: item.content,
+                                issued: newIssued
+                            })
+                        });
+                        if (!res.ok) throw new Error((await res.json()).error || 'error');
+                        const updated = await res.json();
+                        familyMaterials[editingMaterialIndex] = updated;
+                    } else {
+                        familyMaterials[editingMaterialIndex].issued = newIssued;
+                    }
+                    closeMaterialsModal();
+                    renderFamilyMaterials();
+                } catch (e) {
+                    console.error(e);
+                    showToast('Не удалось изменить статус выдачи.', 'error');
+                }
+            })();
         };
 
         if (matDeleteBtn) {

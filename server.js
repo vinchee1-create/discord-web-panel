@@ -166,6 +166,24 @@ async function initLeadersTable() {
     }
 }
 
+async function initFamilyMaterialsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS family_materials (
+                id SERIAL PRIMARY KEY,
+                title TEXT,
+                content TEXT,
+                issued BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        console.log('✅ Таблица family_materials готова');
+    } catch (e) {
+        console.error('❌ Ошибка создания таблицы family_materials:', e.message);
+    }
+}
+
 async function initAccountsTable() {
     if (!pool) return;
     try {
@@ -378,6 +396,94 @@ app.delete('/api/families/:id', async (req, res) => {
     }
 });
 
+// --- 4.1. API МАТЕРИАЛОВ СЕМЕЙ ---
+app.get('/api/family-materials', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query(
+            'SELECT id, title, content, issued, created_at FROM family_materials ORDER BY issued ASC, created_at DESC, id DESC'
+        );
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        })));
+    } catch (e) {
+        console.error('GET /api/family-materials:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/family-materials', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { title, content } = req.body || {};
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO family_materials (title, content, issued) VALUES ($1, $2, FALSE) RETURNING id, title, content, issued, created_at',
+            [title || '', content || '']
+        );
+        const r = rows[0];
+        res.status(201).json({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('POST /api/family-materials:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/family-materials/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { title, content, issued } = req.body || {};
+    try {
+        await pool.query(
+            'UPDATE family_materials SET title=$1, content=$2, issued=$3 WHERE id=$4',
+            [title || '', content || '', !!issued, dbId]
+        );
+        const { rows } = await pool.query(
+            'SELECT id, title, content, issued, created_at FROM family_materials WHERE id=$1',
+            [dbId]
+        );
+        if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+        const r = rows[0];
+        res.json({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('PUT /api/family-materials/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/family-materials/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM family_materials WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/family-materials/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 3.1. API ЛИДЕРОВ (БД Railway) ---
 app.get('/api/leaders', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -551,6 +657,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initFamiliesTable();
     await initLeadersTable();
     await initAccountsTable();
+    await initFamilyMaterialsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
