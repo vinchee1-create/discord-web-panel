@@ -206,7 +206,12 @@
                 <span class="page-title" id="current-title">Панель управления</span>
             </div>
             <div class="header-actions" id="header-actions" style="display: none;">
-                <button type="button" class="btn-pill" id="btn-add-family" onclick="openModal()">Добавить семью</button>
+                <button type="button" class="btn-month" id="btn-add-family" onclick="openModal()">
+                    <span class="btn-month-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+                    </span>
+                    <span>Добавить семью</span>
+                </button>
             </div>
         </header>
 
@@ -1007,6 +1012,18 @@
             };
             if (data.name === '' || data.id === '') {
                 alert('Заполните название и ID семьи.');
+                return;
+            }
+            const lowerName = data.name.toLowerCase();
+            const lowerId = data.id.toLowerCase();
+            const editIdxNum = editIndex === '' ? -1 : parseInt(editIndex, 10);
+            const hasDuplicate = families.some((f, idx) => {
+                if (idx === editIdxNum) return false;
+                return f.name && f.name.toLowerCase() === lowerName
+                    || f.id && String(f.id).toLowerCase() === lowerId;
+            });
+            if (hasDuplicate) {
+                alert('Семья с таким названием или ID уже существует.');
                 return;
             }
             if (editIndex === '') {

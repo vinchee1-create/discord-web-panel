@@ -317,6 +317,14 @@ app.post('/api/families', async (req, res) => {
     const { name, id: family_id, leader, discord } = req.body || {};
     if (!name || !family_id) return res.status(400).json({ error: 'name and id required' });
     try {
+        // запрет дубликатов по имени или ID
+        const dup = await pool.query(
+            'SELECT 1 FROM families WHERE LOWER(name)=LOWER($1) OR LOWER(family_id)=LOWER($2) LIMIT 1',
+            [name, String(family_id)]
+        );
+        if (dup.rows[0]) {
+            return res.status(409).json({ error: 'Family with same name or ID already exists' });
+        }
         const { rows } = await pool.query(
             'INSERT INTO families (name, family_id, leader, discord) VALUES ($1, $2, $3, $4) RETURNING id, name, family_id, leader, discord',
             [name, String(family_id), leader || null, discord || null]
@@ -337,6 +345,14 @@ app.put('/api/families/:id', async (req, res) => {
     const { name, id: family_id, leader, discord } = req.body || {};
     if (!name || !family_id) return res.status(400).json({ error: 'name and id required' });
     try {
+        // запрет дубликатов при изменении (исключая текущую запись)
+        const dup = await pool.query(
+            'SELECT 1 FROM families WHERE (LOWER(name)=LOWER($1) OR LOWER(family_id)=LOWER($2)) AND id<>$3 LIMIT 1',
+            [name, String(family_id), dbId]
+        );
+        if (dup.rows[0]) {
+            return res.status(409).json({ error: 'Family with same name or ID already exists' });
+        }
         await pool.query(
             'UPDATE families SET name=$1, family_id=$2, leader=$3, discord=$4 WHERE id=$5',
             [name, String(family_id), leader || null, discord || null, dbId]
