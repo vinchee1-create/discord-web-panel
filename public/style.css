@@ -392,7 +392,7 @@ body, button, input, select {
 .btn-icon-flag:hover { color: rgba(255,255,255,0.7); }
 .btn-icon-flag.is-flagged:hover { color: #f0c800; }
 
-/* ТАБЛИЦА СЕМЬИ — стиль как на референсе */
+/* БАЗОВАЯ ТАБЛИЦА */
 .table-container {
     background: #0d0d0d;
     border: 1px solid #1a1a1a;
@@ -422,6 +422,44 @@ body, button, input, select {
 }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .id-tag { color: #45cd5b; background: rgba(69, 205, 91, 0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+/* ТАБЛИЦА "СЕМЬИ" — палитра и типографика как на референсе */
+.table-families {
+    background: #080808;
+    border-color: #181818;
+}
+.data-table-families {
+    font-size: 14px;
+}
+.data-table-families thead {
+    background: #111111;
+}
+.data-table-families th {
+    padding: 10px 18px;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.7);
+}
+.data-table-families tbody tr {
+    background: #101010;
+}
+.data-table-families tbody tr:nth-child(even) {
+    background: #0b0b0b;
+}
+.data-table-families tbody tr:hover {
+    background: #151515;
+}
+.data-table-families td {
+    padding: 10px 18px;
+    border-bottom-color: #181818;
+    font-weight: 400;
+    font-size: 13px;
+    color: rgba(255,255,255,0.88);
+}
+.data-table-families tbody tr:last-child td {
+    border-bottom: none;
+}
 
 /* КНОПКИ — умеренное закругление как на референсе */
 .btn-pill, .btn-primary {
