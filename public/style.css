@@ -10,7 +10,7 @@ body {
 
 /* Единый шрифт/кернинг ближе к референсу */
 body, button, input, select {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    font-family: "Geist Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     letter-spacing: 0.01em;
 }
 
