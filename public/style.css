@@ -16,6 +16,26 @@ body, button, input, select {
     letter-spacing: 0.01em;
 }
 
+/* Скроллбары под стиль сайта */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #3a3a3a #111111;
+}
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: #111111;
+}
+*::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
+}
+
 /* САЙДБАР */
 .sidebar-container { 
     width: 260px; 
@@ -736,7 +756,7 @@ body, button, input, select {
     box-shadow: 0 16px 40px rgba(80, 200, 120, 0.12);
 }
 .materials-card-title {
-    font-size: 11px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: rgba(255,255,255,0.7);
@@ -786,7 +806,7 @@ body, button, input, select {
     white-space: nowrap;
 }
 .materials-card-meta-line {
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
 .materials-view-card {

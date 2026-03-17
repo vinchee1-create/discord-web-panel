@@ -1358,13 +1358,15 @@
                     <div class="materials-card-header">
                         <div class="materials-card-header-main">
                             <div class="materials-card-title">${safeTitle}</div>
-                            <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openMaterialsModal(${item._idx});" title="Редактировать выдачу">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
-                            </button>
                         </div>
                         <div class="materials-card-time">${timeLabel}</div>
                     </div>
-                    ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.6);">${pairsHtml}</div>` : ''}
+                    ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.8);">${pairsHtml}</div>` : ''}
+                    <div style="margin-top:8px; display:flex; justify-content:flex-start;">
+                        <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openMaterialsModal(${item._idx});" title="Редактировать выдачу">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                        </button>
+                    </div>
                 </div>`;
             }).join('');
             setPageContent(`
