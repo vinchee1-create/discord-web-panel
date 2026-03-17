@@ -290,7 +290,7 @@
                 </div>
                 <div class="form-group">
                     <label>Роль</label>
-                    <select id="user-role" style="width:100%; background:#050505; border:1px solid #222; padding:10px; border-radius:8px; color:white; box-sizing:border-box;">
+                    <select id="user-role" class="select-field">
                         <option value="Curator">Curator</option>
                         <option value="Senior">Senior</option>
                         <option value="Chief">Chief</option>
@@ -316,7 +316,7 @@
                 </div>
                 <div class="form-group">
                     <label>Новая роль</label>
-                    <select id="user-edit-role" style="width:100%; background:#050505; border:1px solid #222; padding:10px; border-radius:8px; color:white; box-sizing:border-box;">
+                    <select id="user-edit-role" class="select-field">
                         <option value="">(не менять)</option>
                         <option value="Curator">Curator</option>
                         <option value="Senior">Senior</option>
@@ -557,6 +557,15 @@
         }
 
         let leaders = [];
+
+        function clearTextSelection() {
+            const sel = window.getSelection && window.getSelection();
+            if (sel && sel.removeAllRanges) {
+                sel.removeAllRanges();
+            } else if (document.selection && document.selection.empty) {
+                document.selection.empty();
+            }
+        }
 
         async function loadLeaders() {
             try {

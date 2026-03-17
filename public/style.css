@@ -525,5 +525,29 @@ body, button, input, select {
 }
 .form-group input::placeholder { color: rgba(255,255,255,0.35); }
 .form-group input:focus { border-color: rgba(255,255,255,0.30); }
+
+.select-field {
+    width: 100%;
+    box-sizing: border-box;
+    background: #101010;
+    border: 1px solid rgba(255,255,255,0.16);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+}
+.select-field:focus {
+    border-color: rgba(255,255,255,0.30);
+}
+.select-field option {
+    background: #101010;
+    color: #ffffff;
+}
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .btn-ghost { background: transparent; border: none; color: #666; cursor: pointer; }
