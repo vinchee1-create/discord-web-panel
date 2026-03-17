@@ -377,15 +377,8 @@
                         <span>Семья</span>
                         <span>Ресурсы</span>
                     </div>
-                    <div class="form-row-2-inputs">
-                        <div class="form-row-item">
-                            <input list="mat-family-list" id="mat-family" class="row-input" placeholder="Выберите семью или введите свою" />
-                            <datalist id="mat-family-list"></datalist>
-                        </div>
-                        <div class="form-row-item">
-                            <input type="text" id="mat-resources" class="row-input" placeholder="Например: 3 аптечки, броня" />
-                        </div>
-                    </div>
+                    <datalist id="mat-family-list"></datalist>
+                    <div id="mat-pairs"></div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
@@ -1130,12 +1123,56 @@
         const materialsForm = document.getElementById('materials-form');
         const matDeleteBtn = document.getElementById('mat-delete-btn');
         const matIssuedBtn = document.getElementById('mat-issued-btn');
+        const matPairsRoot = document.getElementById('mat-pairs');
+
+        function renderMatPairs(pairs) {
+            if (!matPairsRoot) return;
+            const safe = Array.isArray(pairs) ? pairs : [];
+            const rows = (safe.length ? safe : [{ family: '', resources: '' }]).map(p => ({
+                family: p?.family || '',
+                resources: p?.resources || ''
+            }));
+            // всегда держим одну пустую строку внизу
+            rows.push({ family: '', resources: '' });
+            matPairsRoot.innerHTML = rows.map((p, idx) => `
+                <div class="form-row-2-inputs mat-pair-row" data-idx="${idx}">
+                    <div class="form-row-item">
+                        <input list="mat-family-list" class="row-input mat-family-input" value="${escapeHtml(p.family)}" placeholder="Выберите семью или введите свою" />
+                    </div>
+                    <div class="form-row-item">
+                        <input type="text" class="row-input mat-resources-input" value="${escapeHtml(p.resources)}" placeholder="Например: 3 аптечки, броня" />
+                    </div>
+                </div>
+            `).join('');
+
+            // навешиваем логику автодобавления "следующей строки"
+            const rowsEls = Array.from(matPairsRoot.querySelectorAll('.mat-pair-row'));
+            rowsEls.forEach((rowEl, i) => {
+                const famEl = rowEl.querySelector('.mat-family-input');
+                const resEl = rowEl.querySelector('.mat-resources-input');
+                const onInput = () => {
+                    const isLast = i === rowsEls.length - 1;
+                    const fam = famEl?.value.trim() || '';
+                    const res = resEl?.value.trim() || '';
+                    if (isLast && (fam || res)) {
+                        // перерисуем, добавив новую пустую строку
+                        const currentPairs = rowsEls
+                            .map(r => ({
+                                family: r.querySelector('.mat-family-input')?.value || '',
+                                resources: r.querySelector('.mat-resources-input')?.value || ''
+                            }))
+                            .filter(x => (x.family || '').trim() || (x.resources || '').trim());
+                        renderMatPairs(currentPairs);
+                    }
+                };
+                famEl?.addEventListener('input', onInput);
+                resEl?.addEventListener('input', onInput);
+            });
+        }
 
         function openMaterialsModal(index = -1) {
             editingMaterialIndex = typeof index === 'number' ? index : -1;
             const titleEl = document.getElementById('mat-title');
-            const familyEl = document.getElementById('mat-family');
-            const resourcesEl = document.getElementById('mat-resources');
             const familyList = document.getElementById('mat-family-list');
             const heading = materialsModal.querySelector('h2');
 
@@ -1149,15 +1186,22 @@
             if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
                 const item = familyMaterials[editingMaterialIndex];
                 titleEl.value = item.title || '';
-                if (familyEl) familyEl.value = item.familyName || '';
-                if (resourcesEl) resourcesEl.value = item.resources || '';
+                let pairs = item.pairs;
+                if (!pairs) {
+                    try {
+                        const parsed = JSON.parse(item.resources || '[]');
+                        pairs = Array.isArray(parsed) ? parsed : [];
+                    } catch (_) {
+                        pairs = [];
+                    }
+                }
+                renderMatPairs(pairs);
                 heading.textContent = 'Редактировать выдачу';
                 if (matDeleteBtn) matDeleteBtn.style.display = 'inline-flex';
                 if (matIssuedBtn) matIssuedBtn.style.display = 'inline-flex';
             } else {
                 titleEl.value = '';
-                if (familyEl) familyEl.value = '';
-                if (resourcesEl) resourcesEl.value = '';
+                renderMatPairs([]);
                 heading.textContent = 'Добавить выдачу';
                 if (matDeleteBtn) matDeleteBtn.style.display = 'none';
                 if (matIssuedBtn) matIssuedBtn.style.display = 'none';
@@ -1174,9 +1218,7 @@
         materialsForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const title = document.getElementById('mat-title').value.trim();
-            const familyName = document.getElementById('mat-family').value.trim();
-            const resources = document.getElementById('mat-resources').value.trim();
-            if (!title && !familyName && !resources) {
+            if (!title) {
                 showToast('Заполните заголовок или данные по семье/ресурсам.', 'error');
                 return;
             }
