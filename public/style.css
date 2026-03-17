@@ -523,7 +523,7 @@ body, button, input, select {
     pointer-events: auto;
 }
 .modal-card {
-    width: 360px;
+    width: 450px;
     max-width: calc(100% - 48px);
     background: #101010;
     border: 1px solid rgba(255,255,255,0.10);
@@ -755,6 +755,9 @@ body, button, input, select {
     font-size: 11px;
     color: rgba(255,255,255,0.45);
     white-space: nowrap;
+}
+.materials-card-meta-line {
+    margin-top: 2px;
 }
 
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }

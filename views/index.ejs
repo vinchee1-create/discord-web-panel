@@ -373,10 +373,6 @@
                     <input type="text" id="mat-title" maxlength="120" />
                 </div>
                 <div class="form-group">
-                    <label>Содержимое</label>
-                    <textarea id="mat-content" rows="4"></textarea>
-                </div>
-                <div class="form-group">
                     <div class="form-row-2-labels">
                         <span>Семья</span>
                         <span>Ресурсы</span>
@@ -1138,7 +1134,6 @@
         function openMaterialsModal(index = -1) {
             editingMaterialIndex = typeof index === 'number' ? index : -1;
             const titleEl = document.getElementById('mat-title');
-            const contentEl = document.getElementById('mat-content');
             const familyEl = document.getElementById('mat-family');
             const resourcesEl = document.getElementById('mat-resources');
             const familyList = document.getElementById('mat-family-list');
@@ -1154,7 +1149,6 @@
             if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
                 const item = familyMaterials[editingMaterialIndex];
                 titleEl.value = item.title || '';
-                contentEl.value = item.content || '';
                 if (familyEl) familyEl.value = item.familyName || '';
                 if (resourcesEl) resourcesEl.value = item.resources || '';
                 heading.textContent = 'Редактировать выдачу';
@@ -1162,7 +1156,6 @@
                 if (matIssuedBtn) matIssuedBtn.style.display = 'inline-flex';
             } else {
                 titleEl.value = '';
-                contentEl.value = '';
                 if (familyEl) familyEl.value = '';
                 if (resourcesEl) resourcesEl.value = '';
                 heading.textContent = 'Добавить выдачу';
@@ -1181,11 +1174,22 @@
         materialsForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const title = document.getElementById('mat-title').value.trim();
-            const content = document.getElementById('mat-content').value.trim();
             const familyName = document.getElementById('mat-family').value.trim();
             const resources = document.getElementById('mat-resources').value.trim();
-            if (!title && !content) {
-                showToast('Заполните заголовок или содержимое.', 'error');
+            if (!title && !familyName && !resources) {
+                showToast('Заполните заголовок или данные по семье/ресурсам.', 'error');
+                return;
+            }
+            const pairs = [];
+            document.querySelectorAll('.mat-pair-row').forEach(row => {
+                const fam = row.querySelector('.mat-family-input')?.value.trim() || '';
+                const res = row.querySelector('.mat-resources-input')?.value.trim() || '';
+                if (fam || res) {
+                    pairs.push({ family: fam, resources: res });
+                }
+            });
+            if (!pairs.length) {
+                showToast('Заполните хотя бы одну строку "Семья / Ресурсы".', 'error');
                 return;
             }
             (async () => {
@@ -1198,33 +1202,42 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     title,
-                                    content,
+                                    content: '',
                                     issued: !!item.issued,
-                                    familyName,
-                                    resources
+                                    familyName: pairs[0]?.family || '',
+                                    resources: JSON.stringify(pairs)
                                 })
                             });
                             if (!res.ok) throw new Error((await res.json()).error || 'error');
                             const updated = await res.json();
-                            familyMaterials[editingMaterialIndex] = updated;
+                            familyMaterials[editingMaterialIndex] = {
+                                ...updated,
+                                pairs
+                            };
                         } else {
                             familyMaterials[editingMaterialIndex] = {
                                 ...item,
                                 title,
-                                content,
-                                familyName,
-                                resources
+                                content: '',
+                                familyName: pairs[0]?.family || '',
+                                resources: JSON.stringify(pairs),
+                                pairs
                             };
                         }
                     } else {
                         const res = await fetch('/api/family-materials', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ title, content, familyName, resources })
+                            body: JSON.stringify({
+                                title,
+                                content: '',
+                                familyName: pairs[0]?.family || '',
+                                resources: JSON.stringify(pairs)
+                            })
                         });
                         if (!res.ok) throw new Error((await res.json()).error || 'error');
                         const created = await res.json();
-                        familyMaterials.push(created);
+                        familyMaterials.push({ ...created, pairs });
                     }
                     closeMaterialsModal();
                     renderFamilyMaterials();
@@ -1259,19 +1272,30 @@
                         minute: '2-digit'
                     });
                 const safeTitle = escapeHtml(item.title || 'Без названия');
-                const safeContent = escapeHtml(item.content || '').replace(/\n/g, '<br>');
-                const safeFamily = escapeHtml(item.familyName || '');
-                const safeResources = escapeHtml(item.resources || '');
+                let pairs = item.pairs;
+                if (!pairs) {
+                    try {
+                        const parsed = JSON.parse(item.resources || '[]');
+                        if (Array.isArray(parsed)) {
+                            pairs = parsed;
+                        }
+                    } catch (_) {
+                        pairs = [];
+                    }
+                }
+                if (!Array.isArray(pairs)) pairs = [];
+                const pairsHtml = pairs.map(p => {
+                    const fam = escapeHtml(p.family || '');
+                    const res = escapeHtml(p.resources || '');
+                    return `<div class="materials-card-meta-line">${fam ? `Семья: ${fam}` : ''}${fam && res ? ' • ' : ''}${res ? `Ресурсы: ${res}` : ''}</div>`;
+                }).join('');
                 return `
                 <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${item._idx})">
                     <div class="materials-card-header">
                         <div class="materials-card-title">${safeTitle}</div>
                         <div class="materials-card-time">${timeLabel}</div>
                     </div>
-                    <div class="materials-card-content">${safeContent}</div>
-                    ${(safeFamily || safeResources) ? `<div class="materials-card-meta" style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.6);">
-                        ${safeFamily ? `Семья: ${safeFamily}` : ''} ${safeFamily && safeResources ? '• ' : ''}${safeResources ? `Ресурсы: ${safeResources}` : ''}
-                    </div>` : ''}
+                    ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.6);">${pairsHtml}</div>` : ''}
                 </div>`;
             }).join('');
             setPageContent(`
@@ -1317,8 +1341,10 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 title: item.title,
-                                content: item.content,
-                                issued: newIssued
+                                content: '',
+                                issued: newIssued,
+                                familyName: item.familyName,
+                                resources: item.resources
                             })
                         });
                         if (!res.ok) throw new Error((await res.json()).error || 'error');
