@@ -988,6 +988,7 @@
                         btn.onclick = openMaterialsModal;
                         btn.querySelector('span:last-child').textContent = 'Добавить';
                     }
+                    await loadFamilies();
                     await loadFamilyMaterials();
                     renderFamilyMaterials();
                 } else if (title === 'Модерация') {
@@ -1038,6 +1039,7 @@
                     btn.onclick = openMaterialsModal;
                     btn.querySelector('span:last-child').textContent = 'Добавить';
                 }
+                await loadFamilies();
                 await loadFamilyMaterials();
                 renderFamilyMaterials();
             } else if (initialPage === 'Модерация') {
