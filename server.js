@@ -491,18 +491,34 @@ app.delete('/api/accounts/:id', requireRole('Admin'), async (req, res) => {
 });
 
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
-app.get('/', requireAuthStrict, (req, res) => {
-    // Создаем объект data, который ожидает твой index.ejs
+function renderMain(req, res, activePage) {
     const data = {
         botStatus: client.user ? "В сети" : "Подключение...",
-        serverName: "Boston RP", // Можешь заменить на свое
+        serverName: "Boston RP",
         memberCount: client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0) || "1 719",
         botName: client.user ? client.user.username : "Загрузка..."
     };
-    
-    // Передаем этот объект в шаблон
-    res.render('index', { data: data, user: req.session.user }); 
+    res.render('index', { data, user: req.session.user, activePage });
+}
+
+app.get('/', requireAuthStrict, (req, res) => {
+    renderMain(req, res, 'Панель управления');
 });
+
+// Отдельные URL для всех разделов сайдбара
+app.get('/families', requireAuthStrict, (req, res) => renderMain(req, res, 'Семьи'));
+app.get('/leaders', requireAuthStrict, (req, res) => renderMain(req, res, 'Лидеры'));
+app.get('/moderation', requireAuthStrict, (req, res) => renderMain(req, res, 'Модерация'));
+app.get('/users', requireAuthStrict, (req, res) => renderMain(req, res, 'Пользователи'));
+
+// Разделы, которые пока "в разработке", но уже имеют свои URL
+app.get('/events', requireAuthStrict, (req, res) => renderMain(req, res, 'Мероприятия'));
+app.get('/curators', requireAuthStrict, (req, res) => renderMain(req, res, 'Кураторы'));
+app.get('/activity', requireAuthStrict, (req, res) => renderMain(req, res, 'Активность'));
+app.get('/family-materials', requireAuthStrict, (req, res) => renderMain(req, res, 'Материалы семей'));
+app.get('/faction-materials', requireAuthStrict, (req, res) => renderMain(req, res, 'Материалы фракций'));
+app.get('/online', requireAuthStrict, (req, res) => renderMain(req, res, 'Онлайн Л/Ф'));
+app.get('/settings', requireAuthStrict, (req, res) => renderMain(req, res, 'Настройки'));
 
 // --- 4. СОБЫТИЯ БОТА ---
 client.once('ready', () => {
