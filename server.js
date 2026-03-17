@@ -187,6 +187,26 @@ async function initFamilyMaterialsTable() {
     }
 }
 
+async function initFactionMaterialsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS faction_materials (
+                id SERIAL PRIMARY KEY,
+                title TEXT,
+                content TEXT,
+                issued BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        await pool.query(`ALTER TABLE faction_materials ADD COLUMN IF NOT EXISTS faction_name TEXT`);
+        await pool.query(`ALTER TABLE faction_materials ADD COLUMN IF NOT EXISTS resources TEXT`);
+        console.log('✅ Таблица faction_materials готова');
+    } catch (e) {
+        console.error('❌ Ошибка создания таблицы faction_materials:', e.message);
+    }
+}
+
 async function initAccountsTable() {
     if (!pool) return;
     try {
@@ -493,6 +513,100 @@ app.delete('/api/family-materials/:id', async (req, res) => {
     }
 });
 
+// --- 4.2. API МАТЕРИАЛОВ ФРАКЦИЙ ---
+app.get('/api/faction-materials', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query(
+            'SELECT id, title, content, issued, created_at, faction_name, resources FROM faction_materials ORDER BY issued ASC, created_at DESC, id DESC'
+        );
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            factionName: r.faction_name || '',
+            resources: r.resources || ''
+        })));
+    } catch (e) {
+        console.error('GET /api/faction-materials:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/faction-materials', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { title, content, factionName, resources } = req.body || {};
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO faction_materials (title, content, issued, faction_name, resources) VALUES ($1, $2, FALSE, $3, $4) RETURNING id, title, content, issued, created_at, faction_name, resources',
+            [title || '', content || '', factionName || '', resources || '']
+        );
+        const r = rows[0];
+        res.status(201).json({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            factionName: r.faction_name || '',
+            resources: r.resources || ''
+        });
+    } catch (e) {
+        console.error('POST /api/faction-materials:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/faction-materials/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { title, content, issued, factionName, resources } = req.body || {};
+    try {
+        await pool.query(
+            'UPDATE faction_materials SET title=$1, content=$2, issued=$3, faction_name=$4, resources=$5 WHERE id=$6',
+            [title || '', content || '', !!issued, factionName || '', resources || '', dbId]
+        );
+        const { rows } = await pool.query(
+            'SELECT id, title, content, issued, created_at, faction_name, resources FROM faction_materials WHERE id=$1',
+            [dbId]
+        );
+        if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+        const r = rows[0];
+        res.json({
+            dbId: r.id,
+            title: r.title || '',
+            content: r.content || '',
+            issued: !!r.issued,
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            factionName: r.faction_name || '',
+            resources: r.resources || ''
+        });
+    } catch (e) {
+        console.error('PUT /api/faction-materials/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/faction-materials/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM faction_materials WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/faction-materials/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 3.1. API ЛИДЕРОВ (БД Railway) ---
 app.get('/api/leaders', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -667,6 +781,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initLeadersTable();
     await initAccountsTable();
     await initFamilyMaterialsTable();
+    await initFactionMaterialsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
