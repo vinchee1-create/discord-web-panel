@@ -290,12 +290,17 @@
                 </div>
                 <div class="form-group">
                     <label>Роль</label>
-                    <select id="user-role" class="select-field">
-                        <option value="Curator">Curator</option>
-                        <option value="Senior">Senior</option>
-                        <option value="Chief">Chief</option>
-                        <option value="Admin">Admin</option>
-                    </select>
+                    <div class="select-wrapper">
+                        <select id="user-role" class="select-field">
+                            <option value="Curator">Curator</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Chief">Chief</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <span class="select-chevron">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                        </span>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeUserModal()">Отмена</button>
@@ -316,13 +321,18 @@
                 </div>
                 <div class="form-group">
                     <label>Новая роль</label>
-                    <select id="user-edit-role" class="select-field">
-                        <option value="">(не менять)</option>
-                        <option value="Curator">Curator</option>
-                        <option value="Senior">Senior</option>
-                        <option value="Chief">Chief</option>
-                        <option value="Admin">Admin</option>
-                    </select>
+                    <div class="select-wrapper">
+                        <select id="user-edit-role" class="select-field">
+                            <option value="">(не менять)</option>
+                            <option value="Curator">Curator</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Chief">Chief</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <span class="select-chevron">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                        </span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Новый пароль</label>

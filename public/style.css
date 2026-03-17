@@ -526,12 +526,18 @@ body, button, input, select {
 .form-group input::placeholder { color: rgba(255,255,255,0.35); }
 .form-group input:focus { border-color: rgba(255,255,255,0.30); }
 
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .select-field {
     width: 100%;
     box-sizing: border-box;
     background: #101010;
     border: 1px solid rgba(255,255,255,0.16);
-    padding: 10px 12px;
+    padding: 6px 32px 6px 12px;
     border-radius: 8px;
     color: #ffffff;
     font-size: 13px;
@@ -548,6 +554,21 @@ body, button, input, select {
 .select-field option {
     background: #101010;
     color: #ffffff;
+}
+
+.select-chevron {
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.7);
+}
+.select-chevron svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.5;
 }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .btn-ghost { background: transparent; border: none; color: #666; cursor: pointer; }
