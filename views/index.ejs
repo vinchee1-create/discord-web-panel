@@ -764,6 +764,10 @@
             year: new Date().getFullYear(), 
             month: new Date().getMonth() 
         };
+        let eventsMonth = { 
+            year: new Date().getFullYear(), 
+            month: new Date().getMonth() 
+        };
 
         function isLeaderActive(L) {
             return Boolean(L.leader && L.staticId && L.term && L.time);
@@ -802,6 +806,90 @@
                 d.setDate(d.getDate() + 1);
             }
             return dates;
+        }
+
+        function renderEventsCalendar() {
+            const { year, month } = eventsMonth;
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            const monthLabel = `${monthNames[month]} ${year}`;
+
+            const start = new Date(year, month, 1);
+            const end = new Date(year, month + 1, 0); // последний день месяца
+            const daysInMonth = end.getDate();
+
+            // Определяем, с какого дня недели начинается (делаем понедельник первым столбцом)
+            const startWeekday = (start.getDay() + 6) % 7; // 0 = Пн, ..., 6 = Вс
+            const cells = [];
+            const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+            for (let i = 0; i < totalCells; i++) {
+                const dayNum = i - startWeekday + 1;
+                if (dayNum < 1 || dayNum > daysInMonth) {
+                    cells.push('<div class="events-day events-day-empty"></div>');
+                } else {
+                    cells.push(`
+                        <div class="events-day">
+                            <div class="events-day-number">${dayNum}</div>
+                            <div class="events-day-body"></div>
+                        </div>
+                    `);
+                }
+            }
+
+            setPageContent(`
+                <div class="events-page">
+                    <div class="nick-page-header">
+                        <div>
+                            <div class="nick-title">Мероприятия</div>
+                        </div>
+                        <div class="nick-month-control">
+                            <button type="button" class="btn-month" id="events-month-button">
+                                <span class="btn-month-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </span>
+                                <span>${monthLabel}</span>
+                            </button>
+                            <div class="nick-month-dropdown" id="events-month-dropdown"></div>
+                        </div>
+                    </div>
+                    <div class="events-calendar">
+                        <div class="events-weekdays">
+                            <div>Пн</div>
+                            <div>Вт</div>
+                            <div>Ср</div>
+                            <div>Чт</div>
+                            <div>Пт</div>
+                            <div>Сб</div>
+                            <div>Вс</div>
+                        </div>
+                        <div class="events-grid">
+                            ${cells.join('')}
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            // Инициализация выпадающего списка месяцев
+            const dropdown = document.getElementById('events-month-dropdown');
+            const button = document.getElementById('events-month-button');
+            if (dropdown && button) {
+                dropdown.innerHTML = monthNames.map((name, idx) => {
+                    return `<button type="button" data-month="${idx}">${name} ${year}</button>`;
+                }).join('');
+
+                button.onclick = () => {
+                    dropdown.classList.toggle('open');
+                };
+                dropdown.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const m = Number(e.currentTarget.getAttribute('data-month'));
+                        if (!isNaN(m)) {
+                            eventsMonth.month = m;
+                            dropdown.classList.remove('open');
+                            renderEventsCalendar();
+                        }
+                    });
+                });
+            }
         }
 
         function renderNicknames() {
@@ -1063,6 +1151,9 @@
                     headerActions.style.display = 'none';
                     await loadLeaders();
                     renderLeaders();
+                } else if (title === 'Мероприятия') {
+                    headerActions.style.display = 'none';
+                    renderEventsCalendar();
                 } else if (title === 'Материалы семей') {
                     headerActions.style.display = 'flex';
                     const btn = document.getElementById('btn-add-family');
@@ -1123,6 +1214,10 @@
                 headerActions.style.display = 'none';
                 await loadLeaders();
                 renderLeaders();
+            } else if (initialPage === 'Мероприятия') {
+                pageTitle.textContent = 'Мероприятия';
+                headerActions.style.display = 'none';
+                renderEventsCalendar();
             } else if (initialPage === 'Материалы семей') {
                 pageTitle.textContent = 'Материалы семей';
                 headerActions.style.display = 'flex';

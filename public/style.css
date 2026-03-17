@@ -357,6 +357,61 @@ body, button, input, select {
     margin: 4px 0 8px;
 }
 
+.events-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.events-calendar {
+    background: #0d0d0d;
+    border-radius: 10px;
+    border: 1px solid #1a1a1a;
+    padding: 14px 16px 16px;
+}
+.events-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+.events-weekdays > div {
+    text-align: left;
+}
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+.events-day {
+    min-height: 72px;
+    background: #101010;
+    border-radius: 8px;
+    border: 1px solid #202020;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.events-day-empty {
+    background: transparent;
+    border-color: transparent;
+}
+.events-day-number {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+}
+.events-day-body {
+    flex: 1;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+}
+
 /* Кнопка выбора месяца (как на скрине) */
 .btn-month {
     display: inline-flex;
