@@ -396,6 +396,13 @@
         </div>
     </div>
 
+    <div id="materials-view-overlay" class="modal-overlay">
+        <div class="modal-card materials-view-card">
+            <h2 style="margin-top:0; font-size:18px;" id="materials-view-title">Выдача</h2>
+            <div id="materials-view-body" style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.9); white-space:pre-line;"></div>
+        </div>
+    </div>
+
     <div id="toast-root"></div>
 
     <script>
@@ -1124,6 +1131,9 @@
         const matDeleteBtn = document.getElementById('mat-delete-btn');
         const matIssuedBtn = document.getElementById('mat-issued-btn');
         const matPairsRoot = document.getElementById('mat-pairs');
+        const materialsViewModal = document.getElementById('materials-view-overlay');
+        const materialsViewTitle = document.getElementById('materials-view-title');
+        const materialsViewBody = document.getElementById('materials-view-body');
 
         function renderMatPairs(pairs) {
             if (!matPairsRoot) return;
@@ -1218,6 +1228,11 @@
         }
         materialsModal.addEventListener('click', (e) => {
             if (e.target === materialsModal) closeMaterialsModal();
+        });
+        materialsViewModal.addEventListener('click', (e) => {
+            if (e.target === materialsViewModal) {
+                materialsViewModal.classList.remove('is-open');
+            }
         });
         materialsForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1333,12 +1348,20 @@
                 const pairsHtml = pairs.map(p => {
                     const fam = escapeHtml(p.family || '');
                     const res = escapeHtml(p.resources || '');
-                    return `<div class="materials-card-meta-line">${fam ? `Семья: ${fam}` : ''}${fam && res ? ' • ' : ''}${res ? `Ресурсы: ${res}` : ''}</div>`;
+                    if (fam && res) return `<div class="materials-card-meta-line">${fam} - ${res}</div>`;
+                    if (fam) return `<div class="materials-card-meta-line">${fam}</div>`;
+                    if (res) return `<div class="materials-card-meta-line">${res}</div>`;
+                    return '';
                 }).join('');
                 return `
-                <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${item._idx})">
+                <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsView(${item._idx})">
                     <div class="materials-card-header">
-                        <div class="materials-card-title">${safeTitle}</div>
+                        <div class="materials-card-header-main">
+                            <div class="materials-card-title">${safeTitle}</div>
+                            <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openMaterialsModal(${item._idx});" title="Редактировать выдачу">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                            </button>
+                        </div>
                         <div class="materials-card-time">${timeLabel}</div>
                     </div>
                     ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.6);">${pairsHtml}</div>` : ''}
@@ -1354,6 +1377,35 @@
         }
 
         window.openMaterialsModal = openMaterialsModal;
+
+        window.openMaterialsView = function (index) {
+            const item = familyMaterials[index];
+            if (!item || !materialsViewModal) return;
+            const title = item.title || 'Выдача';
+            let pairs = item.pairs;
+            if (!pairs) {
+                try {
+                    const parsed = JSON.parse(item.resources || '[]');
+                    pairs = Array.isArray(parsed) ? parsed : [];
+                } catch (_) {
+                    pairs = [];
+                }
+            }
+            if (!Array.isArray(pairs)) pairs = [];
+            const lines = pairs
+                .map(p => {
+                    const fam = (p.family || '').trim();
+                    const res = (p.resources || '').trim();
+                    if (fam && res) return `${fam} - ${res}`;
+                    if (fam) return fam;
+                    if (res) return res;
+                    return '';
+                })
+                .filter(Boolean);
+            materialsViewTitle.textContent = title;
+            materialsViewBody.textContent = lines.join('\n');
+            materialsViewModal.classList.add('is-open');
+        };
 
         window.deleteCurrentMaterial = function () {
             if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;

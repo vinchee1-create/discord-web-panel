@@ -754,6 +754,32 @@ body, button, input, select {
     justify-content: space-between;
     gap: 8px;
 }
+.materials-card-header-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.materials-edit-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.materials-edit-btn svg {
+    width: 14px;
+    height: 14px;
+}
+.materials-edit-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.95);
+}
 .materials-card-time {
     font-size: 11px;
     color: rgba(255,255,255,0.45);
@@ -761,6 +787,10 @@ body, button, input, select {
 }
 .materials-card-meta-line {
     margin-top: 2px;
+}
+
+.materials-view-card {
+    width: 480px;
 }
 
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
