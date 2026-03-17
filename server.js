@@ -517,6 +517,7 @@ app.get('/curators', requireAuthStrict, (req, res) => renderMain(req, res, 'Ку
 app.get('/activity', requireAuthStrict, (req, res) => renderMain(req, res, 'Активность'));
 app.get('/family-materials', requireAuthStrict, (req, res) => renderMain(req, res, 'Материалы семей'));
 app.get('/faction-materials', requireAuthStrict, (req, res) => renderMain(req, res, 'Материалы фракций'));
+app.get('/capture-map', requireAuthStrict, (req, res) => renderMain(req, res, 'Карта каптов'));
 app.get('/online', requireAuthStrict, (req, res) => renderMain(req, res, 'Онлайн Л/Ф'));
 app.get('/settings', requireAuthStrict, (req, res) => renderMain(req, res, 'Настройки'));
 
