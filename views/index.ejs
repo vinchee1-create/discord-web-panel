@@ -1362,7 +1362,7 @@
                         <div class="materials-card-time">${timeLabel}</div>
                     </div>
                     ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.8);">${pairsHtml}</div>` : ''}
-                    <div style="margin-top:8px; display:flex; justify-content:flex-start;">
+                    <div style="margin-top:8px; display:flex; justify-content:flex-end;">
                         <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openMaterialsModal(${item._idx});" title="Редактировать выдачу">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
                         </button>
@@ -1394,18 +1394,42 @@
                 }
             }
             if (!Array.isArray(pairs)) pairs = [];
-            const lines = pairs
+            materialsViewTitle.textContent = title;
+            const rowsHtml = pairs
                 .map(p => {
                     const fam = (p.family || '').trim();
                     const res = (p.resources || '').trim();
-                    if (fam && res) return `${fam} - ${res}`;
-                    if (fam) return fam;
-                    if (res) return res;
-                    return '';
+                    if (!fam && !res) return '';
+
+                    // ищем id семьи по названию
+                    let famId = '?';
+                    const lowerFam = fam.toLowerCase();
+                    const found = families.find(f => (f.name || '').toLowerCase() === lowerFam);
+                    if (found && found.id) famId = found.id;
+
+                    // определяем цвет по типу ресурса
+                    const lowerRes = res.toLowerCase();
+                    let color = 'green';
+                    if (lowerRes.includes('тех')) color = 'blue';
+                    else if (lowerRes.includes('мед')) color = 'red';
+                    else if (lowerRes.includes('оруж')) color = 'green';
+
+                    // число из строки ресурсов
+                    const m = lowerRes.match(/\d+/);
+                    const amount = m ? m[0] : '0';
+
+                    const cmd = `/setfammaterials ${famId} ${color} ${amount}`;
+                    const textPart = fam && res ? `${fam} - ${res}` : (fam || res);
+
+                    return `<div class="materials-view-row">
+                        <div class="materials-view-text">${escapeHtml(textPart)}</div>
+                        <div class="materials-view-cmd">${escapeHtml(cmd)}</div>
+                    </div>`;
                 })
-                .filter(Boolean);
-            materialsViewTitle.textContent = title;
-            materialsViewBody.textContent = lines.join('\n');
+                .filter(Boolean)
+                .join('');
+
+            materialsViewBody.innerHTML = rowsHtml || '<div class="materials-view-text" style="opacity:0.7;">Нет данных для отображения.</div>';
             materialsViewModal.classList.add('is-open');
         };
 
