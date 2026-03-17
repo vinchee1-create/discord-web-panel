@@ -841,12 +841,11 @@
 
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const href = btn.getAttribute('href');
-                // Для ссылок с реальным href (/, /families) даём браузеру перейти на отдельную страницу
-                if (href && href !== '#') {
-                    return;
-                }
                 e.preventDefault();
+                const href = btn.getAttribute('href');
+                if (href && href !== window.location.pathname) {
+                    window.history.pushState({}, '', href);
+                }
                 document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
                 btn.classList.add('active');
                 const title = btn.getAttribute('data-title');
