@@ -169,6 +169,7 @@ body, button, input, select {
     margin: 0 8px;
     transition: all 0.15s ease; 
     flex-shrink: 0;
+    font-weight: 500;
 }
 
 .nav-item svg { 
