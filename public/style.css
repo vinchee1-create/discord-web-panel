@@ -684,9 +684,21 @@ body, button, input, select {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.materials-card:hover {
+    background: #161616;
+    border-color: #262626;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.7);
+}
+.materials-card.pending {
+    border-color: rgba(255, 80, 80, 0.7);
+    box-shadow: 0 16px 40px rgba(255, 80, 80, 0.12);
 }
 .materials-card.issued {
-    opacity: 0.6;
+    border-color: rgba(80, 200, 120, 0.7);
+    box-shadow: 0 16px 40px rgba(80, 200, 120, 0.12);
 }
 .materials-card-title {
     font-size: 11px;

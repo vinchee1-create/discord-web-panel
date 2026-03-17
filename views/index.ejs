@@ -378,9 +378,15 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
-                    <button type="button" class="btn-ghost" onclick="deleteCurrentMaterial()">Удалить</button>
-                    <button type="button" class="btn-ghost" onclick="markMaterialIssued()">Выдано</button>
-                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                        <button type="button" class="btn-icon btn-icon-delete" id="mat-delete-btn" title="Удалить">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                        </button>
+                        <button type="button" class="btn-icon" id="mat-issued-btn" title="Отметить как выдано">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </button>
+                        <button type="submit" class="btn-primary">Сохранить</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1098,6 +1104,8 @@
 
         const materialsModal = document.getElementById('materials-modal-overlay');
         const materialsForm = document.getElementById('materials-form');
+        const matDeleteBtn = document.getElementById('mat-delete-btn');
+        const matIssuedBtn = document.getElementById('mat-issued-btn');
 
         function openMaterialsModal(index = -1) {
             editingMaterialIndex = typeof index === 'number' ? index : -1;
@@ -1109,10 +1117,14 @@
                 titleEl.value = item.title || '';
                 contentEl.value = item.content || '';
                 heading.textContent = 'Редактировать выдачу';
+                if (matDeleteBtn) matDeleteBtn.style.display = 'inline-flex';
+                if (matIssuedBtn) matIssuedBtn.style.display = 'inline-flex';
             } else {
                 titleEl.value = '';
                 contentEl.value = '';
                 heading.textContent = 'Добавить выдачу';
+                if (matDeleteBtn) matDeleteBtn.style.display = 'none';
+                if (matIssuedBtn) matIssuedBtn.style.display = 'none';
             }
             materialsModal.classList.add('is-open');
         }
@@ -1146,7 +1158,7 @@
 
         function renderFamilyMaterials() {
             const cards = familyMaterials.map((item, idx) => `
-                <div class="materials-card${item.issued ? ' issued' : ''}" onclick="openMaterialsModal(${idx})">
+                <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${idx})">
                     <div class="materials-card-title">${escapeHtml(item.title || 'Без названия')}</div>
                     <div class="materials-card-content">${escapeHtml(item.content || '')}</div>
                 </div>
@@ -1176,6 +1188,19 @@
             closeMaterialsModal();
             renderFamilyMaterials();
         };
+
+        if (matDeleteBtn) {
+            matDeleteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.deleteCurrentMaterial();
+            });
+        }
+        if (matIssuedBtn) {
+            matIssuedBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.markMaterialIssued();
+            });
+        }
 
         async function deleteFamily(i) {
             const doDelete = async () => {
