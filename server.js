@@ -38,7 +38,7 @@ const ROLE_LEVELS = {
 };
 
 app.use(session({
-    store: pool ? new PgSession({ pool, tableName: 'session' }) : undefined,
+    store: pool ? new PgSession({ pool, tableName: 'session', createTableIfMissing: true }) : undefined,
     secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
     resave: false,
     saveUninitialized: false,
@@ -204,6 +204,79 @@ app.post('/login', express.urlencoded({ extended: true }), async (req, res) => {
 
 app.post('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/login'));
+});
+
+// --- 3.0. API USERS (ТОЛЬКО ADMIN) ---
+app.get('/api/users', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query('SELECT id, username, role_name, role_level, created_at FROM users ORDER BY id');
+        res.json(rows.map(u => ({
+            dbId: u.id,
+            username: u.username,
+            roleName: u.role_name,
+            roleLevel: u.role_level,
+            createdAt: u.created_at
+        })));
+    } catch (e) {
+        console.error('GET /api/users:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/users', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { username, password, roleName } = req.body || {};
+    const rn = String(roleName || '');
+    const rl = ROLE_LEVELS[rn];
+    if (!username || !password || !rl) return res.status(400).json({ error: 'username, password, roleName required' });
+    try {
+        const hash = await bcrypt.hash(String(password), 10);
+        const { rows } = await pool.query(
+            'INSERT INTO users (username, password_hash, role_name, role_level) VALUES ($1,$2,$3,$4) RETURNING id, username, role_name, role_level, created_at',
+            [String(username), hash, rn, rl]
+        );
+        const u = rows[0];
+        res.status(201).json({ dbId: u.id, username: u.username, roleName: u.role_name, roleLevel: u.role_level, createdAt: u.created_at });
+    } catch (e) {
+        console.error('POST /api/users:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/users/:id', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { password, roleName } = req.body || {};
+    const rn = roleName ? String(roleName) : null;
+    const rl = rn ? ROLE_LEVELS[rn] : null;
+    try {
+        if (rn && rl) {
+            await pool.query('UPDATE users SET role_name=$1, role_level=$2 WHERE id=$3', [rn, rl, dbId]);
+        }
+        if (password) {
+            const hash = await bcrypt.hash(String(password), 10);
+            await pool.query('UPDATE users SET password_hash=$1 WHERE id=$2', [hash, dbId]);
+        }
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('PUT /api/users:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/users/:id', requireRole('Admin'), async (req, res) => {
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM users WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/users:', e.message);
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // --- 4. API СЕМЕЙ (БД Railway) ---
