@@ -49,8 +49,25 @@ app.use(session({
 }));
 
 function requireAuth(req, res, next) {
-    if (req.session && req.session.user) return next();
-    return res.redirect('/login');
+    if (!(req.session && req.session.user)) return res.redirect('/login');
+    return next();
+}
+
+async function requireAuthStrict(req, res, next) {
+    if (!(req.session && req.session.user)) return res.redirect('/login');
+    if (!pool) return res.redirect('/login');
+    try {
+        const id = req.session.user.id;
+        const { rows } = await pool.query('SELECT id FROM users WHERE id=$1', [id]);
+        if (!rows[0]) {
+            req.session.destroy(() => res.redirect('/login'));
+            return;
+        }
+        return next();
+    } catch (e) {
+        console.error('requireAuthStrict:', e.message);
+        return res.redirect('/login');
+    }
 }
 
 function requireRole(minRoleName) {
@@ -271,6 +288,8 @@ app.delete('/api/users/:id', requireRole('Admin'), async (req, res) => {
     const dbId = parseInt(req.params.id, 10);
     if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
     try {
+        // revoke sessions for that user (connect-pg-simple stores sess JSON)
+        await pool.query("DELETE FROM session WHERE (sess->'user'->>'id')::int = $1", [dbId]);
         await pool.query('DELETE FROM users WHERE id=$1', [dbId]);
         res.status(204).end();
     } catch (e) {
@@ -472,7 +491,7 @@ app.delete('/api/accounts/:id', requireRole('Admin'), async (req, res) => {
 });
 
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
-app.get('/', requireAuth, (req, res) => {
+app.get('/', requireAuthStrict, (req, res) => {
     // Создаем объект data, который ожидает твой index.ejs
     const data = {
         botStatus: client.user ? "В сети" : "Подключение...",
