@@ -351,8 +351,41 @@
         </div>
     </div>
 
+    <div id="confirm-modal-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="margin-top:0; font-size:18px;" id="confirm-title">Подтверждение</h2>
+            <p id="confirm-message" style="margin: 8px 0 18px; font-size:13px; color:rgba(255,255,255,0.75);">
+                Вы уверены, что хотите удалить?
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" id="confirm-cancel">Нет</button>
+                <button type="button" class="btn-primary" id="confirm-ok">Да</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-root"></div>
+
     <script>
         let families = [];
+
+        const toastRoot = document.getElementById('toast-root');
+        function showToast(message, variant = 'error', timeout = 3000) {
+            if (!toastRoot) return;
+            const el = document.createElement('div');
+            el.className = `toast toast-${variant}`;
+            el.textContent = message;
+            toastRoot.appendChild(el);
+            // force reflow
+            void el.offsetWidth;
+            el.classList.add('toast-show');
+            setTimeout(() => {
+                el.classList.remove('toast-show');
+                setTimeout(() => {
+                    el.remove();
+                }, 200);
+            }, timeout);
+        }
         
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
@@ -984,21 +1017,56 @@
             document.getElementById('modal-overlay').classList.add('is-open');
         }
 
+        const confirmModal = document.getElementById('confirm-modal-overlay');
+        const confirmTitleEl = document.getElementById('confirm-title');
+        const confirmMessageEl = document.getElementById('confirm-message');
+        const confirmOkBtn = document.getElementById('confirm-ok');
+        const confirmCancelBtn = document.getElementById('confirm-cancel');
+        let confirmCallback = null;
+
+        function openConfirm(options) {
+            const { title, message, onConfirm } = options || {};
+            confirmTitleEl.textContent = title || 'Подтверждение';
+            confirmMessageEl.textContent = message || 'Вы уверены, что хотите выполнить это действие?';
+            confirmCallback = typeof onConfirm === 'function' ? onConfirm : null;
+            confirmModal.classList.add('is-open');
+        }
+        function closeConfirm() {
+            confirmModal.classList.remove('is-open');
+            confirmCallback = null;
+        }
+        confirmCancelBtn.addEventListener('click', closeConfirm);
+        confirmOkBtn.addEventListener('click', () => {
+            const cb = confirmCallback;
+            closeConfirm();
+            if (cb) cb();
+        });
+        confirmModal.addEventListener('click', (e) => {
+            if (e.target === confirmModal) closeConfirm();
+        });
+
         async function deleteFamily(i) {
-            if (!confirm('Удалить эту семью?')) return;
-            const f = families[i];
-            if (f.dbId != null) {
-                try {
-                    const res = await fetch(`/api/families/${f.dbId}`, { method: 'DELETE' });
-                    if (!res.ok) throw new Error(await res.text());
-                } catch (e) {
-                    console.error(e);
-                    alert('Не удалось удалить запись.');
-                    return;
+            const doDelete = async () => {
+                const f = families[i];
+                if (!f) return;
+                if (f.dbId != null) {
+                    try {
+                        const res = await fetch(`/api/families/${f.dbId}`, { method: 'DELETE' });
+                        if (!res.ok) throw new Error(await res.text());
+                    } catch (e) {
+                        console.error(e);
+                        alert('Не удалось удалить запись.');
+                        return;
+                    }
                 }
-            }
-            families.splice(i, 1);
-            renderFamilies();
+                families.splice(i, 1);
+                renderFamilies();
+            };
+            openConfirm({
+                title: 'Удалить семью',
+                message: 'Вы уверены, что хотите удалить эту семью?',
+                onConfirm: doDelete
+            });
         }
 
         document.getElementById('family-form').onsubmit = async (e) => {
@@ -1011,19 +1079,22 @@
                 discord: document.getElementById('fam-discord').value.trim()
             };
             if (data.name === '' || data.id === '') {
-                alert('Заполните название и ID семьи.');
+                showToast('Заполните название и ID семьи.', 'error');
                 return;
             }
             const lowerName = data.name.toLowerCase();
             const lowerId = data.id.toLowerCase();
             const editIdxNum = editIndex === '' ? -1 : parseInt(editIndex, 10);
-            const hasDuplicate = families.some((f, idx) => {
+            let nameExists = false;
+            let idExists = false;
+            families.forEach((f, idx) => {
                 if (idx === editIdxNum) return false;
-                return f.name && f.name.toLowerCase() === lowerName
-                    || f.id && String(f.id).toLowerCase() === lowerId;
+                if (f.name && f.name.toLowerCase() === lowerName) nameExists = true;
+                if (f.id && String(f.id).toLowerCase() === lowerId) idExists = true;
             });
-            if (hasDuplicate) {
-                alert('Семья с таким названием или ID уже существует.');
+            if (nameExists || idExists) {
+                if (nameExists) showToast('Семья с таким названием уже существует.', 'error');
+                if (idExists) showToast('Семья с таким ID уже существует.', 'error');
                 return;
             }
             if (editIndex === '') {
