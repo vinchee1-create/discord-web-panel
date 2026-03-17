@@ -6,31 +6,106 @@
   <title>Вход</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body { margin:0; font-family: Inter, sans-serif; background:#0a0a0a; color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; }
-    .card { width:360px; background:#111; border:1px solid #222; border-radius:12px; padding:24px; }
-    .title { font-size:18px; font-weight:600; margin:0 0 16px; }
-    .group { margin-bottom:12px; }
-    label { display:block; font-size:12px; color:rgba(255,255,255,0.55); margin-bottom:6px; }
-    input { width:100%; box-sizing:border-box; background:#050505; border:1px solid #222; padding:10px; border-radius:8px; color:#fff; outline:none; }
-    .error { color:#ff6b6b; font-size:12px; margin-bottom:12px; }
-    button { width:100%; background:#2e2e2e; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
-    button:hover { background:#3a3a3a; }
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(620px, 100%);
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+    .title-x {
+      font-size: 22px;
+      font-weight: 500;
+      opacity: 0.6;
+      line-height: 1;
+    }
+    .subtitle {
+      text-align: center;
+      margin: 0 0 22px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+    }
+    .group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+    }
+    input::placeholder { color: rgba(255,255,255,0.35); }
+    input:focus { border-color: rgba(255,255,255,0.24); }
+    .error { color:#ff6b6b; font-size:12px; margin: 0 0 12px; text-align:center; }
+    button {
+      width: 100%;
+      background: #e6e6e6;
+      border: 1px solid #e6e6e6;
+      color: #111;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    button:hover { background: #ffffff; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1 class="title">Вход</h1>
+    <div class="title-row">
+      <h1 class="title">Majestic</h1>
+      <div class="title-x">×</div>
+      <h1 class="title">Curator</h1>
+    </div>
+    <p class="subtitle">Войдите с помощью логина и пароля</p>
     <% if (error) { %><div class="error"><%= error %></div><% } %>
     <form method="post" action="/login">
       <div class="group">
         <label>Логин</label>
-        <input name="username" autocomplete="username" />
+        <input name="username" autocomplete="username" placeholder="Логин" />
       </div>
       <div class="group">
         <label>Пароль</label>
-        <input name="password" type="password" autocomplete="current-password" />
+        <input name="password" type="password" autocomplete="current-password" placeholder="Пароль" />
       </div>
-      <button type="submit">Войти</button>
+      <button type="submit">Продолжить</button>
     </form>
   </div>
 </body>
