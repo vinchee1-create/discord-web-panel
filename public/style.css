@@ -564,6 +564,23 @@ body, button, input, select {
 .form-group input::placeholder { color: rgba(255,255,255,0.35); }
 .form-group input:focus { border-color: rgba(255,255,255,0.30); }
 
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 96px; /* примерно в 4 раза выше строки */
+}
+.form-group textarea::placeholder { color: rgba(255,255,255,0.35); }
+.form-group textarea:focus { border-color: rgba(255,255,255,0.30); }
+
 .select-wrapper {
     position: relative;
     display: flex;
@@ -646,5 +663,40 @@ body, button, input, select {
     background: rgba(220, 53, 69, 0.95);
     color: #fff;
 }
+
+/* Материалы семей — карточки */
+.materials-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.materials-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+.materials-card {
+    background: #101010;
+    border-radius: 12px;
+    border: 1px solid #1b1b1b;
+    padding: 14px 16px 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.materials-card-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+}
+.materials-card-content {
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .btn-ghost { background: transparent; border: none; color: #666; cursor: pointer; }

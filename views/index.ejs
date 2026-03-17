@@ -364,10 +364,31 @@
         </div>
     </div>
 
+    <div id="materials-modal-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="margin-top:0; font-size:18px;">Добавить материал</h2>
+            <form id="materials-form">
+                <div class="form-group">
+                    <label>Заголовок</label>
+                    <input type="text" id="mat-title" maxlength="120" />
+                </div>
+                <div class="form-group">
+                    <label>Содержимое</label>
+                    <textarea id="mat-content" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="toast-root"></div>
 
     <script>
         let families = [];
+        let familyMaterials = [];
 
         const toastRoot = document.getElementById('toast-root');
         function showToast(message, variant = 'error', timeout = 3000) {
@@ -918,12 +939,25 @@
                 pageTitle.textContent = title;
                 if (title === 'Семьи') {
                     headerActions.style.display = 'flex';
+                    const btn = document.getElementById('btn-add-family');
+                    if (btn) {
+                        btn.onclick = openModal;
+                        btn.querySelector('span:last-child').textContent = 'Добавить семью';
+                    }
                     await loadFamilies();
                     renderFamilies();
                 } else if (title === 'Лидеры') {
                     headerActions.style.display = 'none';
                     await loadLeaders();
                     renderLeaders();
+                } else if (title === 'Материалы семей') {
+                    headerActions.style.display = 'flex';
+                    const btn = document.getElementById('btn-add-family');
+                    if (btn) {
+                        btn.onclick = openMaterialsModal;
+                        btn.querySelector('span:last-child').textContent = 'Добавить';
+                    }
+                    renderFamilyMaterials();
                 } else if (title === 'Модерация') {
                     headerActions.style.display = 'none';
                     renderNicknames();
@@ -952,6 +986,11 @@
             if (initialPage === 'Семьи') {
                 pageTitle.textContent = 'Семьи';
                 headerActions.style.display = 'flex';
+                const btn = document.getElementById('btn-add-family');
+                if (btn) {
+                    btn.onclick = openModal;
+                    btn.querySelector('span:last-child').textContent = 'Добавить семью';
+                }
                 await loadFamilies();
                 renderFamilies();
             } else if (initialPage === 'Лидеры') {
@@ -959,6 +998,15 @@
                 headerActions.style.display = 'none';
                 await loadLeaders();
                 renderLeaders();
+            } else if (initialPage === 'Материалы семей') {
+                pageTitle.textContent = 'Материалы семей';
+                headerActions.style.display = 'flex';
+                const btn = document.getElementById('btn-add-family');
+                if (btn) {
+                    btn.onclick = openMaterialsModal;
+                    btn.querySelector('span:last-child').textContent = 'Добавить';
+                }
+                renderFamilyMaterials();
             } else if (initialPage === 'Модерация') {
                 pageTitle.textContent = 'Модерация';
                 headerActions.style.display = 'none';
@@ -1044,6 +1092,49 @@
         confirmModal.addEventListener('click', (e) => {
             if (e.target === confirmModal) closeConfirm();
         });
+
+        const materialsModal = document.getElementById('materials-modal-overlay');
+        const materialsForm = document.getElementById('materials-form');
+
+        function openMaterialsModal() {
+            document.getElementById('mat-title').value = '';
+            document.getElementById('mat-content').value = '';
+            materialsModal.classList.add('is-open');
+        }
+        function closeMaterialsModal() {
+            materialsModal.classList.remove('is-open');
+        }
+        materialsModal.addEventListener('click', (e) => {
+            if (e.target === materialsModal) closeMaterialsModal();
+        });
+        materialsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('mat-title').value.trim();
+            const content = document.getElementById('mat-content').value.trim();
+            if (!title && !content) {
+                showToast('Заполните заголовок или содержимое.', 'error');
+                return;
+            }
+            familyMaterials.push({ title, content });
+            closeMaterialsModal();
+            renderFamilyMaterials();
+        });
+
+        function renderFamilyMaterials() {
+            const cards = familyMaterials.map(item => `
+                <div class="materials-card">
+                    <div class="materials-card-title">${escapeHtml(item.title || 'Без названия')}</div>
+                    <div class="materials-card-content">${escapeHtml(item.content || '')}</div>
+                </div>
+            `).join('');
+            setPageContent(`
+                <div class="materials-page">
+                    <div class="materials-grid">
+                        ${cards || '<div style="color:rgba(255,255,255,0.5);font-size:13px;">Пока нет материалов.</div>'}
+                    </div>
+                </div>
+            `);
+        }
 
         async function deleteFamily(i) {
             const doDelete = async () => {
