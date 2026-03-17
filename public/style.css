@@ -593,7 +593,10 @@ body, button, input, select {
 }
 .form-row-2-inputs {
     display: flex;
-    gap: 8px;
+    gap: 14px;
+}
+.mat-pair-row + .mat-pair-row {
+    margin-top: 10px;
 }
 .form-row-item {
     flex: 1;

@@ -1127,47 +1127,51 @@
 
         function renderMatPairs(pairs) {
             if (!matPairsRoot) return;
-            const safe = Array.isArray(pairs) ? pairs : [];
-            const rows = (safe.length ? safe : [{ family: '', resources: '' }]).map(p => ({
-                family: p?.family || '',
-                resources: p?.resources || ''
-            }));
-            // всегда держим одну пустую строку внизу
-            rows.push({ family: '', resources: '' });
-            matPairsRoot.innerHTML = rows.map((p, idx) => `
-                <div class="form-row-2-inputs mat-pair-row" data-idx="${idx}">
-                    <div class="form-row-item">
-                        <input list="mat-family-list" class="row-input mat-family-input" value="${escapeHtml(p.family)}" placeholder="Выберите семью или введите свою" />
-                    </div>
-                    <div class="form-row-item">
-                        <input type="text" class="row-input mat-resources-input" value="${escapeHtml(p.resources)}" placeholder="Например: 3 аптечки, броня" />
-                    </div>
-                </div>
-            `).join('');
 
-            // навешиваем логику автодобавления "следующей строки"
-            const rowsEls = Array.from(matPairsRoot.querySelectorAll('.mat-pair-row'));
-            rowsEls.forEach((rowEl, i) => {
+            const safe = Array.isArray(pairs) ? pairs : [];
+            const initialRows = safe.length ? safe : [{ family: '', resources: '' }];
+
+            matPairsRoot.innerHTML = '';
+
+            const createRow = (familyValue = '', resourcesValue = '') => {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'form-row-2-inputs mat-pair-row';
+                rowEl.innerHTML = `
+                    <div class="form-row-item">
+                        <input list="mat-family-list" class="row-input mat-family-input" placeholder="Выберите семью или введите свою" />
+                    </div>
+                    <div class="form-row-item">
+                        <input type="text" class="row-input mat-resources-input" placeholder="Например: 3 аптечки, броня" />
+                    </div>
+                `;
                 const famEl = rowEl.querySelector('.mat-family-input');
                 const resEl = rowEl.querySelector('.mat-resources-input');
-                const onInput = () => {
-                    const isLast = i === rowsEls.length - 1;
-                    const fam = famEl?.value.trim() || '';
-                    const res = resEl?.value.trim() || '';
-                    if (isLast && (fam || res)) {
-                        // перерисуем, добавив новую пустую строку
-                        const currentPairs = rowsEls
-                            .map(r => ({
-                                family: r.querySelector('.mat-family-input')?.value || '',
-                                resources: r.querySelector('.mat-resources-input')?.value || ''
-                            }))
-                            .filter(x => (x.family || '').trim() || (x.resources || '').trim());
-                        renderMatPairs(currentPairs);
+                if (famEl) famEl.value = familyValue || '';
+                if (resEl) resEl.value = resourcesValue || '';
+
+                const ensureEmptyRow = () => {
+                    const rows = Array.from(matPairsRoot.querySelectorAll('.mat-pair-row'));
+                    const last = rows[rows.length - 1];
+                    if (!last) return;
+                    const lf = last.querySelector('.mat-family-input')?.value.trim() || '';
+                    const lr = last.querySelector('.mat-resources-input')?.value.trim() || '';
+                    if (lf || lr) {
+                        matPairsRoot.appendChild(createRow('', ''));
                     }
                 };
+
+                const onInput = () => ensureEmptyRow();
                 famEl?.addEventListener('input', onInput);
                 resEl?.addEventListener('input', onInput);
+
+                return rowEl;
+            };
+
+            initialRows.forEach(r => {
+                matPairsRoot.appendChild(createRow(r?.family || '', r?.resources || ''));
             });
+            // пустая строка внизу
+            matPairsRoot.appendChild(createRow('', ''));
         }
 
         function openMaterialsModal(index = -1) {
