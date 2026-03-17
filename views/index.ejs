@@ -902,9 +902,6 @@
 
         // Инициализация контента при первой загрузке страницы
         (async () => {
-            const pageTitle = document.getElementById('page-title');
-            const headerActions = document.getElementById('header-actions');
-
             // Сбрасываем active у всех пунктов и выставляем для текущего URL
             const currentPath = window.location.pathname || '/';
             const currentNav = Array.from(document.querySelectorAll('.nav-item'))
