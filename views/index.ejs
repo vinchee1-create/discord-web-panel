@@ -1420,12 +1420,17 @@
                     const m = lowerRes.match(/\d+/);
                     const amount = m ? m[0] : '0';
 
-                    const cmd = `/setfammaterials ${famId} ${color} ${amount}`;
                     const textPart = fam && res ? `${fam} - ${res}` : (fam || res);
+
+                    let cmdHtml = '';
+                    if (lowerRes.includes('материал')) {
+                        const cmd = `/setfammaterials ${famId} ${color} ${amount}`;
+                        cmdHtml = `<div class="materials-view-cmd">${escapeHtml(cmd)}</div>`;
+                    }
 
                     return `<div class="materials-view-row">
                         <div class="materials-view-text">${escapeHtml(textPart)}</div>
-                        <div class="materials-view-cmd">${escapeHtml(cmd)}</div>
+                        ${cmdHtml}
                     </div>`;
                 })
                 .filter(Boolean)
