@@ -672,8 +672,8 @@ body, button, input, select {
 }
 .materials-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
 }
 .materials-card {
     background: #101010;
@@ -684,6 +684,9 @@ body, button, input, select {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+.materials-card.issued {
+    opacity: 0.6;
 }
 .materials-card-title {
     font-size: 11px;

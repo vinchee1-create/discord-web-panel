@@ -378,6 +378,8 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
+                    <button type="button" class="btn-ghost" onclick="deleteCurrentMaterial()">Удалить</button>
+                    <button type="button" class="btn-ghost" onclick="markMaterialIssued()">Выдано</button>
                     <button type="submit" class="btn-primary">Сохранить</button>
                 </div>
             </form>
@@ -389,6 +391,7 @@
     <script>
         let families = [];
         let familyMaterials = [];
+        let editingMaterialIndex = -1;
 
         const toastRoot = document.getElementById('toast-root');
         function showToast(message, variant = 'error', timeout = 3000) {
@@ -1096,13 +1099,26 @@
         const materialsModal = document.getElementById('materials-modal-overlay');
         const materialsForm = document.getElementById('materials-form');
 
-        function openMaterialsModal() {
-            document.getElementById('mat-title').value = '';
-            document.getElementById('mat-content').value = '';
+        function openMaterialsModal(index = -1) {
+            editingMaterialIndex = typeof index === 'number' ? index : -1;
+            const titleEl = document.getElementById('mat-title');
+            const contentEl = document.getElementById('mat-content');
+            const heading = materialsModal.querySelector('h2');
+            if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
+                const item = familyMaterials[editingMaterialIndex];
+                titleEl.value = item.title || '';
+                contentEl.value = item.content || '';
+                heading.textContent = 'Редактировать выдачу';
+            } else {
+                titleEl.value = '';
+                contentEl.value = '';
+                heading.textContent = 'Добавить выдачу';
+            }
             materialsModal.classList.add('is-open');
         }
         function closeMaterialsModal() {
             materialsModal.classList.remove('is-open');
+            editingMaterialIndex = -1;
         }
         materialsModal.addEventListener('click', (e) => {
             if (e.target === materialsModal) closeMaterialsModal();
@@ -1115,14 +1131,22 @@
                 showToast('Заполните заголовок или содержимое.', 'error');
                 return;
             }
-            familyMaterials.push({ title, content });
+            if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
+                familyMaterials[editingMaterialIndex] = {
+                    ...familyMaterials[editingMaterialIndex],
+                    title,
+                    content
+                };
+            } else {
+                familyMaterials.push({ title, content, issued: false });
+            }
             closeMaterialsModal();
             renderFamilyMaterials();
         });
 
         function renderFamilyMaterials() {
-            const cards = familyMaterials.map(item => `
-                <div class="materials-card">
+            const cards = familyMaterials.map((item, idx) => `
+                <div class="materials-card${item.issued ? ' issued' : ''}" onclick="openMaterialsModal(${idx})">
                     <div class="materials-card-title">${escapeHtml(item.title || 'Без названия')}</div>
                     <div class="materials-card-content">${escapeHtml(item.content || '')}</div>
                 </div>
@@ -1135,6 +1159,23 @@
                 </div>
             `);
         }
+
+        window.openMaterialsModal = openMaterialsModal;
+
+        window.deleteCurrentMaterial = function () {
+            if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
+            const idx = editingMaterialIndex;
+            closeMaterialsModal();
+            familyMaterials.splice(idx, 1);
+            renderFamilyMaterials();
+        };
+
+        window.markMaterialIssued = function () {
+            if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
+            familyMaterials[editingMaterialIndex].issued = !familyMaterials[editingMaterialIndex].issued;
+            closeMaterialsModal();
+            renderFamilyMaterials();
+        };
 
         async function deleteFamily(i) {
             const doDelete = async () => {
