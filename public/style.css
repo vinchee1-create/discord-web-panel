@@ -473,6 +473,7 @@ body, button, input, select {
     pointer-events: none;
     transition: opacity 0.18s ease;
     background:
+        #070707,
         radial-gradient(700px 420px at 55% 45%, rgba(255,255,255,0.06), transparent 60%),
         radial-gradient(520px 320px at 35% 65%, rgba(255,255,255,0.04), transparent 60%),
         radial-gradient(520px 320px at 70% 70%, rgba(0,0,0,0.55), transparent 60%),
@@ -486,7 +487,7 @@ body, button, input, select {
 .modal-card {
     width: 360px;
     max-width: calc(100% - 48px);
-    background: rgba(16,16,16,0.9);
+    background: #101010;
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 12px;
     padding: 22px 22px 18px;
