@@ -376,6 +376,21 @@
                     <label>Содержимое</label>
                     <textarea id="mat-content" rows="4"></textarea>
                 </div>
+                <div class="form-group">
+                    <div class="form-row-2-labels">
+                        <span>Семья</span>
+                        <span>Ресурсы</span>
+                    </div>
+                    <div class="form-row-2-inputs">
+                        <div class="form-row-item">
+                            <input list="mat-family-list" id="mat-family" class="row-input" placeholder="Выберите семью или введите свою" />
+                            <datalist id="mat-family-list"></datalist>
+                        </div>
+                        <div class="form-row-item">
+                            <input type="text" id="mat-resources" class="row-input" placeholder="Например: 3 аптечки, броня" />
+                        </div>
+                    </div>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
                     <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
@@ -1124,17 +1139,32 @@
             editingMaterialIndex = typeof index === 'number' ? index : -1;
             const titleEl = document.getElementById('mat-title');
             const contentEl = document.getElementById('mat-content');
+            const familyEl = document.getElementById('mat-family');
+            const resourcesEl = document.getElementById('mat-resources');
+            const familyList = document.getElementById('mat-family-list');
             const heading = materialsModal.querySelector('h2');
+
+            // заполнение списка семей для выбора
+            if (familyList) {
+                familyList.innerHTML = families.map(f => {
+                    return `<option value="${escapeHtml(f.name)}"></option>`;
+                }).join('');
+            }
+
             if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
                 const item = familyMaterials[editingMaterialIndex];
                 titleEl.value = item.title || '';
                 contentEl.value = item.content || '';
+                if (familyEl) familyEl.value = item.familyName || '';
+                if (resourcesEl) resourcesEl.value = item.resources || '';
                 heading.textContent = 'Редактировать выдачу';
                 if (matDeleteBtn) matDeleteBtn.style.display = 'inline-flex';
                 if (matIssuedBtn) matIssuedBtn.style.display = 'inline-flex';
             } else {
                 titleEl.value = '';
                 contentEl.value = '';
+                if (familyEl) familyEl.value = '';
+                if (resourcesEl) resourcesEl.value = '';
                 heading.textContent = 'Добавить выдачу';
                 if (matDeleteBtn) matDeleteBtn.style.display = 'none';
                 if (matIssuedBtn) matIssuedBtn.style.display = 'none';
@@ -1152,6 +1182,8 @@
             e.preventDefault();
             const title = document.getElementById('mat-title').value.trim();
             const content = document.getElementById('mat-content').value.trim();
+            const familyName = document.getElementById('mat-family').value.trim();
+            const resources = document.getElementById('mat-resources').value.trim();
             if (!title && !content) {
                 showToast('Заполните заголовок или содержимое.', 'error');
                 return;
@@ -1167,7 +1199,9 @@
                                 body: JSON.stringify({
                                     title,
                                     content,
-                                    issued: !!item.issued
+                                    issued: !!item.issued,
+                                    familyName,
+                                    resources
                                 })
                             });
                             if (!res.ok) throw new Error((await res.json()).error || 'error');
@@ -1177,14 +1211,16 @@
                             familyMaterials[editingMaterialIndex] = {
                                 ...item,
                                 title,
-                                content
+                                content,
+                                familyName,
+                                resources
                             };
                         }
                     } else {
                         const res = await fetch('/api/family-materials', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ title, content })
+                            body: JSON.stringify({ title, content, familyName, resources })
                         });
                         if (!res.ok) throw new Error((await res.json()).error || 'error');
                         const created = await res.json();
@@ -1224,6 +1260,8 @@
                     });
                 const safeTitle = escapeHtml(item.title || 'Без названия');
                 const safeContent = escapeHtml(item.content || '').replace(/\n/g, '<br>');
+                const safeFamily = escapeHtml(item.familyName || '');
+                const safeResources = escapeHtml(item.resources || '');
                 return `
                 <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsModal(${item._idx})">
                     <div class="materials-card-header">
@@ -1231,6 +1269,9 @@
                         <div class="materials-card-time">${timeLabel}</div>
                     </div>
                     <div class="materials-card-content">${safeContent}</div>
+                    ${(safeFamily || safeResources) ? `<div class="materials-card-meta" style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.6);">
+                        ${safeFamily ? `Семья: ${safeFamily}` : ''} ${safeFamily && safeResources ? '• ' : ''}${safeResources ? `Ресурсы: ${safeResources}` : ''}
+                    </div>` : ''}
                 </div>`;
             }).join('');
             setPageContent(`

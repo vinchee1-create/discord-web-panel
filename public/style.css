@@ -581,6 +581,38 @@ body, button, input, select {
 .form-group textarea::placeholder { color: rgba(255,255,255,0.35); }
 .form-group textarea:focus { border-color: rgba(255,255,255,0.30); }
 
+.form-row-2-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.form-row-2-inputs {
+    display: flex;
+    gap: 8px;
+}
+.form-row-item {
+    flex: 1;
+}
+.row-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
+}
+.row-input::placeholder { color: rgba(255,255,255,0.35); }
+.row-input:focus { border-color: rgba(255,255,255,0.30); }
+
 .select-wrapper {
     position: relative;
     display: flex;

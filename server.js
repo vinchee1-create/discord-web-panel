@@ -178,6 +178,9 @@ async function initFamilyMaterialsTable() {
                 created_at TIMESTAMP DEFAULT NOW()
             )
         `);
+        // дополнительные поля для связи с семьями и описания ресурсов
+        await pool.query(`ALTER TABLE family_materials ADD COLUMN IF NOT EXISTS family_name TEXT`);
+        await pool.query(`ALTER TABLE family_materials ADD COLUMN IF NOT EXISTS resources TEXT`);
         console.log('✅ Таблица family_materials готова');
     } catch (e) {
         console.error('❌ Ошибка создания таблицы family_materials:', e.message);
@@ -402,14 +405,16 @@ app.get('/api/family-materials', async (req, res) => {
     if (!pool) return res.json([]);
     try {
         const { rows } = await pool.query(
-            'SELECT id, title, content, issued, created_at FROM family_materials ORDER BY issued ASC, created_at DESC, id DESC'
+            'SELECT id, title, content, issued, created_at, family_name, resources FROM family_materials ORDER BY issued ASC, created_at DESC, id DESC'
         );
         res.json(rows.map(r => ({
             dbId: r.id,
             title: r.title || '',
             content: r.content || '',
             issued: !!r.issued,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            familyName: r.family_name || '',
+            resources: r.resources || ''
         })));
     } catch (e) {
         console.error('GET /api/family-materials:', e.message);
@@ -420,11 +425,11 @@ app.get('/api/family-materials', async (req, res) => {
 app.post('/api/family-materials', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
-    const { title, content } = req.body || {};
+    const { title, content, familyName, resources } = req.body || {};
     try {
         const { rows } = await pool.query(
-            'INSERT INTO family_materials (title, content, issued) VALUES ($1, $2, FALSE) RETURNING id, title, content, issued, created_at',
-            [title || '', content || '']
+            'INSERT INTO family_materials (title, content, issued, family_name, resources) VALUES ($1, $2, FALSE, $3, $4) RETURNING id, title, content, issued, created_at, family_name, resources',
+            [title || '', content || '', familyName || '', resources || '']
         );
         const r = rows[0];
         res.status(201).json({
@@ -432,7 +437,9 @@ app.post('/api/family-materials', async (req, res) => {
             title: r.title || '',
             content: r.content || '',
             issued: !!r.issued,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            familyName: r.family_name || '',
+            resources: r.resources || ''
         });
     } catch (e) {
         console.error('POST /api/family-materials:', e.message);
@@ -445,14 +452,14 @@ app.put('/api/family-materials/:id', async (req, res) => {
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const dbId = parseInt(req.params.id, 10);
     if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
-    const { title, content, issued } = req.body || {};
+    const { title, content, issued, familyName, resources } = req.body || {};
     try {
         await pool.query(
-            'UPDATE family_materials SET title=$1, content=$2, issued=$3 WHERE id=$4',
-            [title || '', content || '', !!issued, dbId]
+            'UPDATE family_materials SET title=$1, content=$2, issued=$3, family_name=$4, resources=$5 WHERE id=$6',
+            [title || '', content || '', !!issued, familyName || '', resources || '', dbId]
         );
         const { rows } = await pool.query(
-            'SELECT id, title, content, issued, created_at FROM family_materials WHERE id=$1',
+            'SELECT id, title, content, issued, created_at, family_name, resources FROM family_materials WHERE id=$1',
             [dbId]
         );
         if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -462,7 +469,9 @@ app.put('/api/family-materials/:id', async (req, res) => {
             title: r.title || '',
             content: r.content || '',
             issued: !!r.issued,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            familyName: r.family_name || '',
+            resources: r.resources || ''
         });
     } catch (e) {
         console.error('PUT /api/family-materials/:id:', e.message);
