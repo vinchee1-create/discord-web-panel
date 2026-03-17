@@ -9,6 +9,12 @@ body {
     overflow: hidden;
 }
 
+/* Единый шрифт/кернинг ближе к референсу */
+body, button, input, select {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+}
+
 /* САЙДБАР */
 .sidebar-container { 
     width: 260px; 
@@ -80,7 +86,7 @@ body {
 /* Профиль внизу сайдбара */
 .sidebar-footer {
     margin-top: auto;
-    padding: 8px 8px 0;
+    padding: 8px 8px 12px;
     position: relative;
 }
 .profile-button {
@@ -88,23 +94,23 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #1b1b1b;
-    border: 1px solid #262626;
-    border-radius: 12px;
-    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
     cursor: pointer;
     color: #fff;
 }
-.profile-button:hover { background: #202020; }
+.profile-button:hover { background-color: #222; color: white; }
 .profile-avatar {
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: #2a2a2a;
+    background: #0a0a0a;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 600;
     color: #fff;
     flex-shrink: 0;
 }
