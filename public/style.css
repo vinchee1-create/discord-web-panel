@@ -537,7 +537,7 @@ body, button, input, select {
     box-sizing: border-box;
     background: #101010;
     border: 1px solid rgba(255,255,255,0.16);
-    padding: 6px 32px 6px 12px;
+    padding: 10px 32px 10px 12px; /* высота как у input (10px вертикальные отступы) */
     border-radius: 8px;
     color: #ffffff;
     font-size: 13px;
