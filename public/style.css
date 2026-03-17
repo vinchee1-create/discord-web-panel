@@ -79,7 +79,7 @@ body, button, input, select {
 .nav-list { 
     display: flex; 
     flex-direction: column; 
-    gap: 2px; 
+    gap: 4px; 
     margin-top: 12px; 
     overflow-y: auto; 
 }
@@ -162,7 +162,7 @@ body, button, input, select {
     gap: 8px; 
     padding: 8px;
     text-decoration: none; 
-    font-size: 14px; 
+    font-size: 13px; 
     height: 32px;
     color: #ffffff; /* Текст белый */
     border-radius: 8px; 
