@@ -98,6 +98,7 @@
         <path d="M3 17h18"></path>
       </svg>
       <span>Материалы семей</span>
+      <span class="nav-badge" id="nav-badge-family-materials" style="display:none">0</span>
     </a>
 
     <a href="/faction-materials" class="nav-item" data-title="Материалы фракций">
@@ -427,6 +428,18 @@
                 }, 200);
             }, timeout);
         }
+
+        const familyMaterialsBadge = document.getElementById('nav-badge-family-materials');
+        function updateFamilyMaterialsBadge() {
+            if (!familyMaterialsBadge) return;
+            const pending = (familyMaterials || []).filter(x => !x.issued).length;
+            if (pending > 0) {
+                familyMaterialsBadge.textContent = String(pending);
+                familyMaterialsBadge.style.display = 'inline-flex';
+            } else {
+                familyMaterialsBadge.style.display = 'none';
+            }
+        }
         
         const pageContent = document.getElementById('page-content');
         const pageTitle = document.getElementById('current-title');
@@ -455,9 +468,11 @@
                 const res = await fetch('/api/family-materials');
                 const data = await res.json();
                 familyMaterials = Array.isArray(data) ? data : [];
+                updateFamilyMaterialsBadge();
             } catch (e) {
                 console.error('Ошибка загрузки материалов семей:', e);
                 familyMaterials = [];
+                updateFamilyMaterialsBadge();
             }
         }
 
@@ -1059,6 +1074,11 @@
                     setPageContent(`<p style="color:#444">Раздел "${initialPage}" находится в разработке.</p>`);
                 }
             }
+
+            // Бейдж "Материалы семей" (красные выдачи) — подгружаем в фоне для сайдбара
+            try {
+                await loadFamilyMaterials();
+            } catch (_) {}
         })();
 
         const profileButton = document.getElementById('profile-button');
@@ -1378,6 +1398,7 @@
                     </div>
                 </div>
             `);
+            updateFamilyMaterialsBadge();
         }
 
         window.openMaterialsModal = openMaterialsModal;
