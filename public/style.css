@@ -373,7 +373,7 @@ body, button, input, select {
 .events-month-control {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
 }
 .events-month-nav {
@@ -690,13 +690,13 @@ body, button, input, select {
     border-bottom-width: 0;
 }
 .events-day-number {
-    width: 126.271px;
+    width: 24px;
     height: 24px;
     line-height: 24px;
     font-size: 12px;
     font-weight: 500;
     color: oklch(0.985 0 0);
-    text-align: left;
+    text-align: center;
     transform: translateX(3px);
 }
 .events-day-body {
