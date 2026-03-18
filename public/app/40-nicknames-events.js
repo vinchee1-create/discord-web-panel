@@ -65,7 +65,7 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                     </button>
                     <div class="events-month-label" id="events-month-label">
                         <span class="events-month-name">${monthName}</span>
-                        <span class="events-month-year"> ${year}</span>
+                        <span class="events-month-year">${year}</span>
                     </div>
                     <button type="button" class="events-month-nav" id="events-month-next-btn" aria-label="Следующий месяц">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

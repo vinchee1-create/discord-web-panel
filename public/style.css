@@ -422,6 +422,7 @@ body, button, input, select {
     font-weight: 600;
     color: inherit;
     line-height: 24px;
+    margin-left: 6px; /* вернуть визуальный пробел между месяцем и годом */
 }
 .events-month-name {
     font-weight: 700;
@@ -843,10 +844,10 @@ body, button, input, select {
     display: flex;
     gap: 10px;
     align-items: flex-start;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.04);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 .events-day-item-title {
     font-size: 13px;
