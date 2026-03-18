@@ -65,14 +65,9 @@ function renderDayPills(isoDate) {
   const pills = shown.map(ev => {
     const cls = ev.kind === 'system' ? 'events-day-pill system' : 'events-day-pill';
     const title = window.escapeHtml(ev.title || '');
-    // Слева название, справа теги — как на референсе
     return `
       <div class="${cls}" title="${title}">
         <div class="events-day-pill-title">${title}</div>
-        <div class="events-day-pill-right">
-          <span class="events-day-pill-tag">Плановый</span>
-          <span class="events-day-pill-tag">Одобрено</span>
-        </div>
       </div>
     `;
   }).join('');
@@ -149,8 +144,6 @@ function renderEventsDayList(isoDate) {
         <div style="min-width:0; flex:1;">
           <div class="events-day-item-title">${title}</div>
           <div class="events-day-item-meta">
-            <span class="events-tag-pill">Плановый</span>
-            <span class="events-tag-pill">Одобрено</span>
             <div class="events-day-item-date">${window.escapeHtml(dateRange)}</div>
           </div>
           ${desc ? `<div class="events-day-item-desc">${desc}</div>` : ''}
@@ -249,17 +242,9 @@ function renderEventsRightPanel() {
     const isSystem = ev.kind === 'system';
     const title = window.escapeHtml(ev.title || '');
     const dateRu = fmtDateCenter(todayIso);
-    // In the reference these are visible tags; we don't have extra fields in DB,
-    // so we render the same labels for all items.
-    const tagA = 'Плановый';
-    const tagB = 'Одобрено';
     return `
       <div class="events-right-card">
         <div class="events-right-card-title">${title}</div>
-        <div class="events-right-card-tags">
-          <span class="events-tag-pill">${window.escapeHtml(tagA)}</span>
-          <span class="events-tag-pill">${window.escapeHtml(tagB)}</span>
-        </div>
         <div class="events-right-card-date">${window.escapeHtml(dateRu)} — ${window.escapeHtml(dateRu)}</div>
       </div>
     `;

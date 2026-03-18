@@ -525,9 +525,17 @@ body, button, input, select {
     flex-wrap: wrap;
 }
 .events-right-card-date {
-    font-size: 11px;
-    color: rgba(255,255,255,0.55);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(0.708 0 0);
+    line-height: 16px;
+    height: 16px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    max-width: 322.667px;
 }
 .events-tag-pill {
     display: inline-flex;
@@ -560,6 +568,7 @@ body, button, input, select {
     text-transform: none;
     letter-spacing: normal;
     margin: 0;
+    border-bottom: 1.33333px solid oklch(1 0 0 / 0.1);
 }
 .events-weekdays > div {
     height: 32px;
@@ -589,7 +598,7 @@ body, button, input, select {
     background: #101010;
     border-radius: 0;
     border-top-width: 0px;
-    border-bottom-width: 0px;
+    border-bottom-width: 1.33333px;
     border-left-width: 0px;
     border-right-width: 1.33333px;
     border-style: solid;
@@ -609,7 +618,7 @@ body, button, input, select {
 .events-day:not(.events-day-empty):hover,
 .events-day.is-active {
     background-color: #2a2a2a;
-    border-color: #2a2a2a;
+    border-color: oklch(1 0 0 / 0.1);
 }
 .events-day.is-expanded {
     background-color: #2a2a2a;
@@ -622,6 +631,16 @@ body, button, input, select {
 .events-day-empty {
     background: transparent;
     border-color: oklch(1 0 0 / 0.1);
+}
+
+/* Не рисуем двойную вертикальную линию справа у последней колонки */
+.events-grid .events-day:nth-child(7n) {
+    border-right-width: 0;
+}
+
+/* Не рисуем двойную нижнюю линию на последней строке (граница контейнера) */
+.events-grid .events-day:nth-last-child(-n+7) {
+    border-bottom-width: 0;
 }
 .events-day-number {
     width: 126.271px;
@@ -684,7 +703,7 @@ body, button, input, select {
     padding: 6px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -786,10 +805,7 @@ body, button, input, select {
 }
 .events-day-item-meta {
     margin-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    display: block;
 }
 .events-modal-chip {
     display: inline-flex;
@@ -803,9 +819,17 @@ body, button, input, select {
     font-weight: 600;
 }
 .events-day-item-date {
-    font-size: 11px;
-    color: rgba(255,255,255,0.55);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(0.708 0 0);
+    line-height: 16px;
+    height: 16px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    max-width: 322.667px;
 }
 
 .events-modal-footer {
