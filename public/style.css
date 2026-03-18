@@ -340,12 +340,15 @@ body, button, input, select {
     column-gap: 8px;
     row-gap: 8px;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
     box-sizing: border-box;
-    padding-right: 16px; /* сдвигаем панель выбора месяца левее */
+    padding-right: 0;
 }
 .events-page .nick-title {
+    display: none;
+}
+.events-page .nick-page-header > div:first-child {
     display: none;
 }
 .nick-title {
@@ -463,9 +466,10 @@ body, button, input, select {
     flex-direction: column;
     gap: 12px;
     padding: 16px;
-    height: 248px;
+    height: auto;
+    min-height: 248px;
     margin-top: 0;
-    overflow: hidden;
+    overflow: visible;
     background-color: oklch(0.205 0 0);
     border: 1.33333px solid oklch(1 0 0 / 0.1);
     border-radius: 10px;
@@ -497,14 +501,14 @@ body, button, input, select {
     width: 345.333px;
     height: auto;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
     display: block;
 }
 .events-right-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: hidden;
+    overflow-y: visible;
     padding-right: 0;
     width: 345.333px;
     height: auto;
