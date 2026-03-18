@@ -40,8 +40,9 @@ window.renderEventsCalendar = function renderEventsCalendar() {
     if (dayNum < 1 || dayNum > daysInMonth) {
       cells.push('<div class="events-day events-day-empty"></div>');
     } else {
+      const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
       cells.push(`
-                <div class="events-day">
+                <div class="events-day" data-date="${isoDate}">
                     <div class="events-day-number">${dayNum}</div>
                     <div class="events-day-body"></div>
                 </div>
@@ -81,6 +82,17 @@ window.renderEventsCalendar = function renderEventsCalendar() {
             </div>
         </div>
     `);
+
+  // load & bind events for this month
+  if (typeof window.loadEventsForMonth === 'function') {
+    window.loadEventsForMonth(year, month).then(() => {
+      if (typeof window.attachEventsCalendarInteractions === 'function') {
+        window.attachEventsCalendarInteractions(year, month);
+      }
+    });
+  } else if (typeof window.attachEventsCalendarInteractions === 'function') {
+    window.attachEventsCalendarInteractions(year, month);
+  }
 
   // Инициализация выпадающего списка месяцев
   const dropdown = document.getElementById('events-month-dropdown');

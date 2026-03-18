@@ -207,6 +207,26 @@ async function initFactionMaterialsTable() {
     }
 }
 
+async function initEventsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS events (
+                id SERIAL PRIMARY KEY,
+                event_date DATE NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                created_by INTEGER,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date)`);
+        console.log('✅ Таблица events готова');
+    } catch (e) {
+        console.error('❌ Ошибка создания таблицы events:', e.message);
+    }
+}
+
 async function initAccountsTable() {
     if (!pool) return;
     try {
@@ -735,6 +755,83 @@ app.delete('/api/accounts/:id', requireRole('Admin'), async (req, res) => {
     }
 });
 
+// --- 4.3. API МЕРОПРИЯТИЙ ---
+app.get('/api/events', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.json([]);
+    const { from, to } = req.query || {};
+    const fromStr = typeof from === 'string' ? from : '';
+    const toStr = typeof to === 'string' ? to : '';
+    // expecting YYYY-MM-DD
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fromStr) || !/^\d{4}-\d{2}-\d{2}$/.test(toStr)) {
+        return res.status(400).json({ error: 'from and to (YYYY-MM-DD) are required' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `SELECT id, event_date, title, description, created_by, created_at
+             FROM events
+             WHERE event_date >= $1::date AND event_date <= $2::date
+             ORDER BY event_date ASC, id ASC`,
+            [fromStr, toStr]
+        );
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+            title: r.title || '',
+            description: r.description || '',
+            createdBy: r.created_by ?? null,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        })));
+    } catch (e) {
+        console.error('GET /api/events:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/events', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { date, title, description } = req.body || {};
+    const dateStr = typeof date === 'string' ? date : '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return res.status(400).json({ error: 'date (YYYY-MM-DD) required' });
+    if (!title || !String(title).trim()) return res.status(400).json({ error: 'title required' });
+    try {
+        const createdBy = req.session.user?.id ?? null;
+        const { rows } = await pool.query(
+            `INSERT INTO events (event_date, title, description, created_by)
+             VALUES ($1::date, $2, $3, $4)
+             RETURNING id, event_date, title, description, created_by, created_at`,
+            [dateStr, String(title).trim(), description ? String(description) : null, createdBy]
+        );
+        const r = rows[0];
+        res.status(201).json({
+            dbId: r.id,
+            date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+            title: r.title || '',
+            description: r.description || '',
+            createdBy: r.created_by ?? null,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('POST /api/events:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/events/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM events WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/events/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
 function renderMain(req, res, activePage) {
     const data = {
@@ -782,6 +879,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initAccountsTable();
     await initFamilyMaterialsTable();
     await initFactionMaterialsTable();
+    await initEventsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });

@@ -397,6 +397,18 @@ body, button, input, select {
     flex-direction: column;
     gap: 4px;
 }
+.events-day:not(.events-day-empty) {
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.events-day:not(.events-day-empty):hover,
+.events-day.is-active {
+    background-color: #2a2a2a;
+    border-color: #2a2a2a;
+}
+.events-day.is-today {
+    border-color: rgba(255,255,255,0.25);
+}
 .events-day-empty {
     background: transparent;
     border-color: transparent;
@@ -411,6 +423,52 @@ body, button, input, select {
     font-size: 11px;
     color: rgba(255,255,255,0.6);
 }
+.events-day-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.78);
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.events-day-chip.system {
+    background: rgba(110, 170, 255, 0.10);
+    border-color: rgba(110, 170, 255, 0.18);
+}
+
+.events-day-card { width: 520px; }
+.events-day-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.events-day-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+}
+.events-day-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.92);
+}
+.events-day-item-desc {
+    margin-top: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.70);
+}
+.events-day-item-actions { margin-left: auto; display: flex; gap: 6px; }
 
 /* Кнопка выбора месяца (как на скрине) */
 .btn-month {
