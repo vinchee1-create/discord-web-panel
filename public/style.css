@@ -335,6 +335,8 @@ body, button, input, select {
     max-width: 100%;
     height: 32px;
     margin-bottom: 12px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 0;
     border: 0;
     column-gap: 8px;
@@ -411,6 +413,13 @@ body, button, input, select {
     line-height: 20px;
     text-align: center;
     text-transform: capitalize;
+}
+
+/* Чтобы "Март" и "2026" имели одинаковую жирность */
+.events-month-name,
+.events-month-year {
+    font-weight: 600;
+    color: inherit;
 }
 
 .nick-page {
@@ -688,6 +697,7 @@ body, button, input, select {
     font-weight: 500;
     color: oklch(0.985 0 0);
     text-align: left;
+    transform: translateX(3px);
 }
 .events-day-body {
     flex: 1;

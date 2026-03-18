@@ -132,7 +132,6 @@ function renderEventsDayList(isoDate) {
     const title = window.escapeHtml(ev.title || '');
     const desc = window.escapeHtml(ev.description || '');
     const dateRu = fmtDateCenter(isoDate);
-    const dateRange = `${dateRu} — ${dateRu}`;
     const actions = isSystem ? '' : `
       <div class="events-day-item-actions">
         <button type="button" class="btn-icon" title="Редактировать" onclick="startEditEvent(${ev.dbId})">${editIconSvg()}</button>
@@ -143,9 +142,6 @@ function renderEventsDayList(isoDate) {
       <div class="events-day-item">
         <div style="min-width:0; flex:1;">
           <div class="events-day-item-title">${title}</div>
-          <div class="events-day-item-meta">
-            <div class="events-day-item-date">${window.escapeHtml(dateRange)}</div>
-          </div>
           ${desc ? `<div class="events-day-item-desc">${desc}</div>` : ''}
         </div>
         ${actions}

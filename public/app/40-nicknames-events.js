@@ -26,6 +26,7 @@ window.renderEventsCalendar = function renderEventsCalendar() {
   const { year, month } = window.eventsMonth;
   const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   const monthLabel = `${monthNames[month]} ${year}`;
+  const monthName = monthNames[month];
 
   const start = new Date(year, month, 1);
   const end = new Date(year, month + 1, 0); // последний день месяца
@@ -62,7 +63,10 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                             <path d="M15 18l-6-6 6-6"></path>
                         </svg>
                     </button>
-                    <div class="events-month-label" id="events-month-label">${monthLabel}</div>
+                    <div class="events-month-label" id="events-month-label">
+                        <span class="events-month-name">${monthName}</span>
+                        <span class="events-month-year"> ${year}</span>
+                    </div>
                     <button type="button" class="events-month-nav" id="events-month-next-btn" aria-label="Следующий месяц">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 18l6-6-6-6"></path>
