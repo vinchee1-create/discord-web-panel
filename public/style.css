@@ -456,7 +456,7 @@ body, button, input, select {
     height: 1011.31px;
     min-height: 957px;
     margin: 0;
-    background-color: oklch(0.205 0 0);
+    background-color: #0a0a0a;
 }
 .events-right-panel {
     width: 380px;
@@ -472,7 +472,7 @@ body, button, input, select {
     align-self: start;
     margin-top: 0;
     overflow: visible;
-    background-color: oklch(0.205 0 0);
+    background-color: #0a0a0a;
     border: 1.33333px solid oklch(1 0 0 / 0.1);
     border-radius: 10px;
 }
