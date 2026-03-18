@@ -472,8 +472,8 @@ body, button, input, select {
     align-self: start;
     margin-top: 0;
     overflow: visible;
-    background-color: #0a0a0a;
-    border: 1.33333px solid oklch(1 0 0 / 0.1);
+    background-color: #ffffff;
+    border: 1.33333px solid rgba(0,0,0,0.10);
     border-radius: 10px;
 }
 .events-right-header {
@@ -489,13 +489,13 @@ body, button, input, select {
 .events-right-title {
     font-size: 14px;
     font-weight: 700;
-    color: oklch(0.985 0 0);
+    color: rgba(0,0,0,0.92);
     line-height: 20px;
     margin: 0;
 }
 .events-right-subtitle {
     font-size: 13px;
-    color: rgba(255,255,255,0.75);
+    color: rgba(0,0,0,0.55);
     margin-top: 0;
     line-height: 20px;
 }
@@ -525,8 +525,8 @@ body, button, input, select {
     height: 62.6667px;
     border-radius: 10px;
     padding: 10px;
-    background-color: oklab(0.269 0 0 / 0.2);
-    border: 1.33333px solid oklch(1 0 0 / 0.1);
+    background-color: rgba(0,0,0,0.06);
+    border: 1.33333px solid rgba(0,0,0,0.10);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -536,7 +536,7 @@ body, button, input, select {
 .events-right-card-title {
     font-size: 12px;
     font-weight: 700;
-    color: rgba(255,255,255,0.95);
+    color: rgba(0,0,0,0.92);
 }
 .events-right-card-tags {
     display: flex;
@@ -547,7 +547,7 @@ body, button, input, select {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 12px;
     font-weight: 500;
-    color: oklch(0.708 0 0);
+    color: rgba(0,0,0,0.55);
     line-height: 16px;
     height: 16px;
     white-space: nowrap;
@@ -645,8 +645,26 @@ body, button, input, select {
     min-height: 260px;
 }
 .events-day.is-today {
-    /* Чтобы не было "лишних" линий на рамках сегодняшней даты */
+    /* Подсветка сегодня только внутри числа (круг), рамку не меняем */
     border-color: oklch(1 0 0 / 0.1);
+}
+
+/* Круг вокруг числа "сегодня" */
+.events-day.is-today .events-day-number {
+    width: 24px;
+    height: 24px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: oklch(0.922 0 0);
+    color: oklch(0.205 0 0);
+    border-radius: 3355443px; /* очень большой радиус как в сниппете */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transform: translateX(3px); /* чуть правее */
+    box-sizing: border-box;
 }
 .events-day-empty {
     background: transparent;
@@ -875,12 +893,18 @@ body, button, input, select {
     width: 345.333px;
     height: 32px;
     border-radius: 8px;
-    background-color: oklab(1 0 0 / 0.045);
-    border: 1.33333px solid oklch(1 0 0 / 0.15);
+    background-color: rgba(0,0,0,0.04);
+    border: 1.33333px solid rgba(0,0,0,0.12);
     margin-top: 4px;
     font-size: 14px;
     line-height: 20px;
     padding: 0;
+    color: rgba(0,0,0,0.92);
+}
+
+.events-right-panel .events-new-btn:hover {
+    background: rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.16);
 }
 .events-new-btn:hover {
     background: rgba(255,255,255,0.07);
