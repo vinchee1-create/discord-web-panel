@@ -1,8 +1,11 @@
 // Navigation + initial page bootstrap + profile menu.
+// Helps prevent "old page" flashes when users switch tabs quickly.
+window.__navRequestId = window.__navRequestId ?? 0;
 
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
+    const navReqId = ++window.__navRequestId;
     const href = btn.getAttribute('href');
     if (href && href !== window.location.pathname) {
       window.history.pushState({}, '', href);
@@ -11,6 +14,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.add('active');
     const title = btn.getAttribute('data-title');
     window.pageTitle.textContent = title;
+    // Clear content immediately to avoid showing the previous page during async loads.
+    window.setPageContent(`<p style="color:rgba(255,255,255,0.55)">Загрузка...</p>`);
     if (title === 'Семьи') {
       window.headerActions.style.display = 'flex';
       const b = document.getElementById('btn-add-family');
@@ -19,13 +24,16 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         b.querySelector('span:last-child').textContent = 'Добавить семью';
       }
       await window.loadFamilies();
+      if (window.__navRequestId !== navReqId) return;
       window.renderFamilies();
     } else if (title === 'Лидеры') {
       window.headerActions.style.display = 'none';
       await window.loadLeaders();
+      if (window.__navRequestId !== navReqId) return;
       window.renderLeaders();
     } else if (title === 'Мероприятия') {
       window.headerActions.style.display = 'none';
+      if (window.__navRequestId !== navReqId) return;
       window.renderEventsCalendar();
     } else if (title === 'Материалы семей') {
       window.headerActions.style.display = 'flex';
@@ -35,7 +43,9 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         b.querySelector('span:last-child').textContent = 'Добавить';
       }
       await window.loadFamilies();
+      if (window.__navRequestId !== navReqId) return;
       await window.loadFamilyMaterials();
+      if (window.__navRequestId !== navReqId) return;
       window.renderFamilyMaterials();
     } else if (title === 'Материалы фракций') {
       window.headerActions.style.display = 'flex';
@@ -45,17 +55,22 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         b.querySelector('span:last-child').textContent = 'Добавить';
       }
       await window.loadLeaders();
+      if (window.__navRequestId !== navReqId) return;
       await window.loadFactionMaterials();
+      if (window.__navRequestId !== navReqId) return;
       window.renderFactionMaterials();
     } else if (title === 'Модерация') {
       window.headerActions.style.display = 'none';
+      if (window.__navRequestId !== navReqId) return;
       window.renderNicknames();
     } else if (title === 'Пользователи') {
       window.headerActions.style.display = 'none';
       await window.loadUsers();
+      if (window.__navRequestId !== navReqId) return;
       window.renderUsers();
     } else {
       window.headerActions.style.display = 'none';
+      if (window.__navRequestId !== navReqId) return;
       window.setPageContent(`<p style="color:#444">Раздел "${title}" находится в разработке.</p>`);
     }
   });
