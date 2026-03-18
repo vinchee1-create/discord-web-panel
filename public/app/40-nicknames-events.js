@@ -66,19 +66,37 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                     <div class="nick-month-dropdown" id="events-month-dropdown"></div>
                 </div>
             </div>
-            <div class="events-calendar">
-                <div class="events-weekdays">
-                    <div>Пн</div>
-                    <div>Вт</div>
-                    <div>Ср</div>
-                    <div>Чт</div>
-                    <div>Пт</div>
-                    <div>Сб</div>
-                    <div>Вс</div>
+            <div class="events-calendar-layout">
+                <div class="events-calendar">
+                    <div class="events-weekdays">
+                        <div>Пн</div>
+                        <div>Вт</div>
+                        <div>Ср</div>
+                        <div>Чт</div>
+                        <div>Пт</div>
+                        <div>Сб</div>
+                        <div>Вс</div>
+                    </div>
+                    <div class="events-grid">
+                        ${cells.join('')}
+                    </div>
                 </div>
-                <div class="events-grid">
-                    ${cells.join('')}
-                </div>
+
+                <aside class="events-right-panel" id="events-right-panel">
+                    <div class="events-right-title">Сегодня</div>
+                    <div class="events-right-subtitle" id="events-right-subtitle"></div>
+                    <div class="events-right-list" id="events-right-list"></div>
+                    <button type="button" class="events-new-btn events-right-new-btn" id="events-right-new-btn">
+                        <span class="events-new-btn-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 8v8"></path>
+                                <path d="M8 12h8"></path>
+                            </svg>
+                        </span>
+                        Новое мероприятие
+                    </button>
+                </aside>
             </div>
         </div>
     `);

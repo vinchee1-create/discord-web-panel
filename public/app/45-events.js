@@ -89,6 +89,11 @@ function fmtDateCenter(isoDate) {
   return `${d}.${m}.${y}`;
 }
 
+function toTodayISO() {
+  const now = new Date();
+  return toISODateLocal(now);
+}
+
 function editIconSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>`;
 }
@@ -131,7 +136,7 @@ function renderEventsDayList(isoDate) {
         <div style="min-width:0; flex:1;">
           <div class="events-day-item-title">${title}</div>
           <div class="events-day-item-meta">
-            <span class="events-modal-chip">${window.escapeHtml(typeChip)}</span>
+            <span class="events-tag-pill">${window.escapeHtml(typeChip)}</span>
             <div class="events-day-item-date">${window.escapeHtml(dateRange)}</div>
           </div>
           ${desc ? `<div class="events-day-item-desc">${desc}</div>` : ''}
@@ -194,6 +199,60 @@ eventsDayCancelBtn?.addEventListener('click', () => {
   hideEventsForm();
 });
 
+// Right panel (sticky "Сегодня")
+function getEventsRightDom() {
+  return {
+    subtitle: document.getElementById('events-right-subtitle'),
+    list: document.getElementById('events-right-list'),
+    newBtn: document.getElementById('events-right-new-btn')
+  };
+}
+
+function renderEventsRightPanel() {
+  const { subtitle, list } = getEventsRightDom();
+  if (!list) return;
+  const todayIso = toTodayISO();
+  // Subtitle can be empty; keep similar spacing to reference.
+  if (subtitle) {
+    const [y, m, d] = todayIso.split('-');
+    // Example: "13 марта 2026"
+    const dt = new Date(Number(y), Number(m) - 1, Number(d));
+    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const weekdayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+    subtitle.textContent = `${d} ${monthNames[dt.getMonth()]} ${y} (${weekdayNames[dt.getDay()]})`;
+  }
+
+  const items = getEventsForDate(todayIso);
+  if (!items.length) {
+    list.innerHTML = '';
+    return;
+  }
+
+  const html = items.map(ev => {
+    const isSystem = ev.kind === 'system';
+    const title = window.escapeHtml(ev.title || '');
+    const dateRu = fmtDateCenter(todayIso);
+    // In the reference these are visible tags; we don't have extra fields in DB,
+    // so we render the same labels for all items.
+    const tagA = 'Плановый';
+    const tagB = 'Одобрено';
+    const tagClassA = isSystem ? 'events-tag-pill system' : 'events-tag-pill';
+    const tagClassB = isSystem ? 'events-tag-pill approved' : 'events-tag-pill approved';
+    return `
+      <div class="events-right-card">
+        <div class="events-right-card-title">${title}</div>
+        <div class="events-right-card-tags">
+          <span class="${tagClassA}">${window.escapeHtml(tagA)}</span>
+          <span class="${tagClassB}">${window.escapeHtml(tagB)}</span>
+        </div>
+        <div class="events-right-card-date">${window.escapeHtml(dateRu)} — ${window.escapeHtml(dateRu)}</div>
+      </div>
+    `;
+  }).join('');
+
+  list.innerHTML = html;
+}
+
 window.startEditEvent = function startEditEvent(dbId) {
   const ev = (window.events || []).find(x => x.dbId === dbId);
   if (!ev) return;
@@ -212,6 +271,7 @@ window.deleteEvent = async function deleteEvent(dbId) {
     window.events = (window.events || []).filter(e => e.dbId !== dbId);
     if (window.eventsSelectedDate) renderEventsDayList(window.eventsSelectedDate);
     updateCalendarCells();
+    renderEventsRightPanel();
   } catch (e) {
     console.error(e);
     window.showToast('Не удалось удалить мероприятие.', 'error');
@@ -247,6 +307,7 @@ eventsDayForm?.addEventListener('submit', async (e) => {
     hideEventsForm();
     renderEventsDayList(date);
     updateCalendarCells();
+    renderEventsRightPanel();
   } catch (err) {
     console.error(err);
     window.showToast('Не удалось сохранить мероприятие.', 'error');
@@ -269,5 +330,15 @@ window.attachEventsCalendarInteractions = function attachEventsCalendarInteracti
     });
   });
   updateCalendarCells();
+  renderEventsRightPanel();
+
+  const { newBtn } = getEventsRightDom();
+  if (newBtn) {
+    // Prevent multiple bindings across re-render.
+    if (window.__eventsRightNewBoundEl !== newBtn) {
+      window.__eventsRightNewBoundEl = newBtn;
+      newBtn.onclick = () => window.openEventsDayModal(toTodayISO());
+    }
+  }
 };
 

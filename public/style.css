@@ -368,6 +368,89 @@ body, button, input, select {
     border: 1px solid #1a1a1a;
     padding: 14px 16px 16px;
 }
+.events-calendar-layout {
+    display: grid;
+    grid-template-columns: 661px 380px;
+    justify-content: center;
+    column-gap: 16px;
+}
+.events-right-panel {
+    width: 380px;
+    position: sticky;
+    top: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    height: 246px;
+    max-height: 246px;
+    overflow: hidden;
+    background-color: #333333;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+}
+.events-right-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+}
+.events-right-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    margin-top: -6px;
+}
+.events-right-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.events-right-card {
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 12px 12px;
+    background: rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.events-right-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+}
+.events-right-card-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.events-right-card-date {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+}
+.events-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background-color: rgba(0,0,0,0.24);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.92);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.events-tag-pill.system {
+    background-color: rgba(0,160,255,0.12);
+    border-color: rgba(0,160,255,0.20);
+}
+.events-tag-pill.approved {
+    background-color: rgba(60, 200, 120, 0.12);
+    border-color: rgba(60, 200, 120, 0.18);
+}
 .events-weekdays {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -431,8 +514,10 @@ body, button, input, select {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 12px;
     text-align: left;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 .events-day-text {
     max-width: 100%;
@@ -458,27 +543,38 @@ body, button, input, select {
 
 .events-day-pill {
     width: 100%;
-    background: rgba(40, 160, 105, 0.14);
-    border: 1px solid rgba(40, 160, 105, 0.24);
-    border-radius: 6px;
-    padding: 2px 6px;
+    background-color: oklch(0.205 0 0);
+    border-bottom: 1px solid oklch(1 0 0 / 0.1);
+    border-left: 1px solid oklch(1 0 0 / 0.1);
+    border-right: 1px solid oklch(1 0 0 / 0.1);
+    border-top: 1px solid oklch(1 0 0 / 0.1);
+    border-radius: 10px;
     box-sizing: border-box;
-    color: rgba(220, 255, 235, 0.95);
+    color: oklch(0.985 0 0);
     font-size: 11px;
     font-weight: 650;
-    line-height: 1.25;
+    line-height: 24px;
+    height: 33px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    position: relative;
+    user-select: none;
+    transition: color 0.15s, background-color 0.15s, border-color 0.15s;
 }
 .events-day-pill.system {
-    background: rgba(0, 160, 255, 0.14);
-    border-color: rgba(0, 160, 255, 0.22);
-    color: rgba(210, 240, 255, 0.95);
+    background-color: oklch(0.205 0 0);
 }
 .events-day-pill.more {
     background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.10);
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    border-left: 1px solid rgba(255,255,255,0.10);
+    border-right: 1px solid rgba(255,255,255,0.10);
+    border-top: 1px solid rgba(255,255,255,0.10);
     color: rgba(255,255,255,0.75);
 }
 
