@@ -87,9 +87,13 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                 </div>
 
                 <aside class="events-right-panel" id="events-right-panel">
-                    <div class="events-right-title">Сегодня</div>
-                    <div class="events-right-subtitle" id="events-right-subtitle"></div>
-                    <div class="events-right-list" id="events-right-list"></div>
+                    <div class="events-right-header">
+                        <div class="events-right-title">Сегодня</div>
+                        <div class="events-right-subtitle" id="events-right-subtitle"></div>
+                    </div>
+                    <div class="events-right-items-wrap">
+                        <div class="events-right-list" id="events-right-list"></div>
+                    </div>
                     <button type="button" class="events-new-btn events-right-new-btn" id="events-right-new-btn">
                         <span class="events-new-btn-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

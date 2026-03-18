@@ -233,7 +233,10 @@ function renderEventsRightPanel() {
     const dt = new Date(Number(y), Number(m) - 1, Number(d));
     const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
     const weekdayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-    subtitle.textContent = `${d} ${monthNames[dt.getMonth()]} ${y} (${weekdayNames[dt.getDay()]})`;
+    const monthCap = monthNames[dt.getMonth()].replace(/^\w/, c => c.toUpperCase());
+    const weekdayCap = weekdayNames[dt.getDay()].replace(/^\w/, c => c.toUpperCase());
+    // Short, one-line header to fit the reference panel.
+    subtitle.textContent = `${weekdayCap}, ${d} ${monthCap}`;
   }
 
   const items = getEventsForDate(todayIso);

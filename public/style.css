@@ -454,39 +454,65 @@ body, button, input, select {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
     padding: 16px;
-    height: 100%;
+    height: 248px;
+    margin-top: 44px;
     overflow: hidden;
-    background-color: #333333;
-    border: 1px solid rgba(255,255,255,0.10);
+    background-color: oklch(0.205 0 0);
+    border: 1.33333px solid oklch(1 0 0 / 0.1);
     border-radius: 10px;
+}
+.events-right-header {
+    width: 345.333px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 8px;
+    row-gap: 8px;
+    box-sizing: border-box;
 }
 .events-right-title {
     font-size: 14px;
     font-weight: 700;
-    color: rgba(255,255,255,0.95);
+    color: oklch(0.985 0 0);
+    line-height: 20px;
+    margin: 0;
 }
 .events-right-subtitle {
     font-size: 13px;
     color: rgba(255,255,255,0.75);
-    margin-top: -6px;
+    margin-top: 0;
+    line-height: 20px;
+}
+.events-right-items-wrap {
+    width: 345.333px;
+    height: 133.333px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: block;
 }
 .events-right-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
     overflow-y: hidden;
-    padding-right: 2px;
+    padding-right: 0;
+    width: 345.333px;
+    height: 133.333px;
 }
 .events-right-card {
-    border: 1px solid rgba(255,255,255,0.10);
+    height: 62.6667px;
     border-radius: 10px;
-    padding: 12px 12px;
-    background: rgba(0,0,0,0.18);
+    padding: 10px;
+    background-color: oklab(0.269 0 0 / 0.2);
+    border: 1.33333px solid oklch(1 0 0 / 0.1);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    align-items: flex-start;
+    box-sizing: border-box;
 }
 .events-right-card-title {
     font-size: 12px;
@@ -800,6 +826,17 @@ body, button, input, select {
     font-size: 13px;
     font-weight: 650;
     transition: background 0.15s ease, border-color 0.15s ease;
+}
+.events-right-new-btn.events-new-btn {
+    width: 345.333px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: oklab(1 0 0 / 0.045);
+    border: 1.33333px solid oklch(1 0 0 / 0.15);
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    padding: 0;
 }
 .events-new-btn:hover {
     background: rgba(255,255,255,0.07);
