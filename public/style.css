@@ -447,6 +447,7 @@ body, button, input, select {
     display: grid;
     grid-template-columns: 980px 380px;
     justify-content: center;
+    align-items: start;
     column-gap: 48px;
     padding: 0;
     row-gap: 0;
@@ -468,6 +469,7 @@ body, button, input, select {
     padding: 16px;
     height: auto;
     min-height: 0;
+    align-self: start;
     margin-top: 0;
     overflow: visible;
     background-color: oklch(0.205 0 0);
