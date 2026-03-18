@@ -328,6 +328,22 @@ body, button, input, select {
     align-items: center;
     margin-bottom: 16px;
 }
+
+/* Events: панель над календарем (выбор месяца) */
+.events-page .nick-page-header {
+    width: 661px;
+    max-width: 100%;
+    height: 32px;
+    margin-bottom: 12px;
+    padding: 0;
+    border: 0;
+    column-gap: 8px;
+    row-gap: 8px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
 .nick-title {
     font-size: 16px;
     font-weight: 600;
@@ -342,6 +358,52 @@ body, button, input, select {
     display: inline-flex;
     align-items: center;
     position: relative;
+}
+
+/* Events: панель выбора месяца (как на референсе) */
+.events-month-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.events-month-nav {
+    appearance: button;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    user-select: none;
+    border-radius: 8px;
+    background-color: oklab(1 0 0 / 0.045);
+    border: 1px solid oklch(1 0 0 / 0.15);
+    color: oklch(0.985 0 0);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.events-month-nav svg {
+    width: 16px;
+    height: 16px;
+    opacity: 1;
+}
+.events-month-label {
+    width: 160px;
+    min-width: 160px;
+    height: 24px;
+    display: block;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: oklab(1 0 0 / 0.045);
+    border: 1px solid oklch(1 0 0 / 0.15);
+    color: oklch(0.985 0 0);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+    text-transform: capitalize;
 }
 
 .nick-page {
@@ -363,16 +425,27 @@ body, button, input, select {
     gap: 16px;
 }
 .events-calendar {
-    background: #0d0d0d;
+    background-color: oklch(0.205 0 0);
     border-radius: 10px;
-    border: 1px solid #1a1a1a;
-    padding: 14px 16px 16px;
+    border: 1px solid oklch(1 0 0 / 0.1);
+    padding: 0;
+    margin: 0 0 12px 0;
+    width: 661px;
+    height: 604.938px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 .events-calendar-layout {
     display: grid;
     grid-template-columns: 661px 380px;
     justify-content: center;
     column-gap: 16px;
+    padding: 0;
+    row-gap: 16px;
+    width: 1057px;
+    max-width: 100%;
+    height: 676.938px;
 }
 .events-right-panel {
     width: 380px;
@@ -381,10 +454,9 @@ body, button, input, select {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
     padding: 16px;
-    height: 246px;
-    max-height: 246px;
+    height: 100%;
     overflow: hidden;
     background-color: #333333;
     border: 1px solid rgba(255,255,255,0.10);
@@ -404,7 +476,7 @@ body, button, input, select {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: auto;
+    overflow-y: hidden;
     padding-right: 2px;
 }
 .events-right-card {
@@ -453,29 +525,52 @@ body, button, input, select {
 }
 .events-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.55);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
+    grid-template-columns: repeat(6, 94.1406px) 94.1562px;
+    width: 659px;
+    height: 33px;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(0.708 0 0);
+    text-transform: none;
+    letter-spacing: normal;
+    margin: 0;
 }
 .events-weekdays > div {
-    text-align: left;
+    height: 32px;
+    padding: 8px 0;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: oklch(0.708 0 0);
 }
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 4px;
+    grid-template-columns: repeat(6, 94.1406px) 94.1562px;
+    width: 659px;
+    height: 569.938px;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
 }
 .events-day {
-    min-height: 72px;
+    width: 94.1406px;
+    height: 94.1406px;
+    aspect-ratio: 1 / 1;
     background: #101010;
-    border-radius: 8px;
-    border: 1px solid #202020;
-    padding: 6px 8px;
+    border-radius: 0;
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+    border-left-width: 0px;
+    border-right-width: 1px;
+    border-style: solid;
+    border-color: oklch(1 0 0 / 0.1);
+    padding: 6px;
     box-sizing: border-box;
+    cursor: default;
+    user-select: none;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -499,7 +594,7 @@ body, button, input, select {
 }
 .events-day-empty {
     background: transparent;
-    border-color: transparent;
+    border-color: oklch(1 0 0 / 0.1);
 }
 .events-day-number {
     font-size: 11px;

@@ -56,14 +56,18 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                 <div>
                     <div class="nick-title">Мероприятия</div>
                 </div>
-                <div class="nick-month-control">
-                    <button type="button" class="btn-month" id="events-month-button">
-                        <span class="btn-month-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        </span>
-                        <span>${monthLabel}</span>
+                <div class="events-month-control">
+                    <button type="button" class="events-month-nav" id="events-month-prev-btn" aria-label="Предыдущий месяц">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 18l-6-6 6-6"></path>
+                        </svg>
                     </button>
-                    <div class="nick-month-dropdown" id="events-month-dropdown"></div>
+                    <div class="events-month-label" id="events-month-label">${monthLabel}</div>
+                    <button type="button" class="events-month-nav" id="events-month-next-btn" aria-label="Следующий месяц">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <div class="events-calendar-layout">
@@ -112,26 +116,29 @@ window.renderEventsCalendar = function renderEventsCalendar() {
     window.attachEventsCalendarInteractions(year, month);
   }
 
-  // Инициализация выпадающего списка месяцев
-  const dropdown = document.getElementById('events-month-dropdown');
-  const button = document.getElementById('events-month-button');
-  if (dropdown && button) {
-    dropdown.innerHTML = monthNames.map((name, idx) => {
-      return `<button type="button" data-month="${idx}">${name} ${year}</button>`;
-    }).join('');
+  // Переключение месяцев: prev/next
+  const prevBtn = document.getElementById('events-month-prev-btn');
+  const nextBtn = document.getElementById('events-month-next-btn');
 
-    button.onclick = () => {
-      dropdown.classList.toggle('open');
-    };
-    dropdown.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const m = Number(e.currentTarget.getAttribute('data-month'));
-        if (!isNaN(m)) {
-          window.eventsMonth.month = m;
-          dropdown.classList.remove('open');
-          window.renderEventsCalendar();
-        }
-      });
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      window.eventsMonth.month -= 1;
+      if (window.eventsMonth.month < 0) {
+        window.eventsMonth.month = 11;
+        window.eventsMonth.year -= 1;
+      }
+      window.renderEventsCalendar();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      window.eventsMonth.month += 1;
+      if (window.eventsMonth.month > 11) {
+        window.eventsMonth.month = 0;
+        window.eventsMonth.year += 1;
+      }
+      window.renderEventsCalendar();
     });
   }
 };
