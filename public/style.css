@@ -427,28 +427,62 @@ body, button, input, select {
     flex: 1;
     font-size: 11px;
     color: rgba(255,255,255,0.6);
-}
-.events-day-chip {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+}
+.events-day-text {
     max-width: 100%;
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.78);
-    font-size: 10px;
+    color: rgba(255,255,255,0.88);
+    font-size: 13px;
+    font-weight: 650;
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0;
+    background: transparent;
+    border: none;
 }
-.events-day-chip.system {
-    background: rgba(110, 170, 255, 0.10);
-    border-color: rgba(110, 170, 255, 0.18);
+.events-day-text.system {
+    color: rgba(170, 205, 255, 0.95);
+}
+.events-day-more {
+    font-size: 12px;
+    font-weight: 650;
+    color: rgba(255,255,255,0.65);
 }
 
-.events-day-card { width: 520px; }
+.events-day-card { width: 560px; }
+.events-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 2px;
+    margin-bottom: 12px;
+}
+.events-modal-date {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.95);
+    text-align: center;
+}
+.events-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 8px 0 10px;
+}
+.events-modal-form {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+    margin-top: 8px;
+}
 .events-day-list {
     display: flex;
     flex-direction: column;

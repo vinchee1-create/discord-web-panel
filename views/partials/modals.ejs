@@ -223,10 +223,16 @@
 
 <div id="events-day-modal-overlay" class="modal-overlay">
     <div class="modal-card events-day-card">
-        <h2 style="margin-top:0; font-size:18px;" id="events-day-title">Мероприятия</h2>
-        <div id="events-day-list" style="margin: 10px 0 14px;"></div>
+        <div class="events-modal-header">
+            <div id="events-day-title" class="events-modal-date">00.00.0000</div>
+            <button type="button" class="btn-icon" id="events-day-add-btn" title="Добавить">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+            </button>
+        </div>
 
-        <form id="events-day-form">
+        <div id="events-day-list" class="events-modal-list"></div>
+
+        <form id="events-day-form" class="events-modal-form" style="display:none;">
             <input type="hidden" id="events-day-date" />
             <div class="form-group">
                 <label>Название *</label>
@@ -237,8 +243,8 @@
                 <input type="text" id="events-day-input-desc" maxlength="250" />
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn-ghost" onclick="closeEventsDayModal()">Закрыть</button>
-                <button type="submit" class="btn-primary">Добавить</button>
+                <button type="button" class="btn-ghost" id="events-day-cancel-btn">Отмена</button>
+                <button type="submit" class="btn-primary" id="events-day-submit-btn">Добавить</button>
             </div>
         </form>
     </div>
