@@ -141,9 +141,7 @@ function renderEventsDayList(isoDate) {
     return `
       <div class="events-day-item">
         <div style="min-width:0; flex:1;">
-          <div class="events-day-item-title-wrap">
-            <div class="events-day-item-title">${title}</div>
-          </div>
+          <div class="events-day-item-title">${title}</div>
           ${desc ? `<div class="events-day-item-desc">${desc}</div>` : ''}
         </div>
         ${actions}

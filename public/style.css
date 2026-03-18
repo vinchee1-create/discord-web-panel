@@ -743,9 +743,9 @@ body, button, input, select {
 }
 
 .events-day-pill {
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
-    align-self: flex-start;
+    align-self: stretch;
     background-color: oklch(0.205 0 0);
     border-bottom: 1px solid oklch(1 0 0 / 0.1);
     border-left: 1px solid oklch(1 0 0 / 0.1);
@@ -756,9 +756,9 @@ body, button, input, select {
     color: oklch(0.985 0 0);
     font-size: 11px;
     font-weight: 650;
-    line-height: 24px;
-    height: 33px;
-    padding: 6px;
+    line-height: 20px;
+    height: 26px;
+    padding: 4px 6px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -846,18 +846,13 @@ body, button, input, select {
     display: flex;
     gap: 10px;
     align-items: flex-start;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    border-radius: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
 }
 .events-day-item-title-wrap {
-    width: 100%;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    padding: 6px 8px;
-    box-sizing: border-box;
+    display: none;
 }
 .events-day-item-title {
     font-size: 13px;
