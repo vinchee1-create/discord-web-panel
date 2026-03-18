@@ -331,7 +331,7 @@ body, button, input, select {
 
 /* Events: панель над календарем (выбор месяца) */
 .events-page .nick-page-header {
-    width: 661px;
+    width: 980px;
     max-width: 100%;
     height: 32px;
     margin-bottom: 12px;
@@ -427,25 +427,25 @@ body, button, input, select {
 .events-calendar {
     background-color: oklch(0.205 0 0);
     border-radius: 10px;
-    border: 1px solid oklch(1 0 0 / 0.1);
+    border: 1.33333px solid oklch(1 0 0 / 0.1);
     padding: 0;
     margin: 0 0 12px 0;
-    width: 661px;
-    height: 604.938px;
+    width: 980px;
+    height: 880.417px;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: hidden;
 }
 .events-calendar-layout {
     display: grid;
-    grid-template-columns: 661px 380px;
+    grid-template-columns: 980px 380px;
     justify-content: center;
     column-gap: 16px;
     padding: 0;
     row-gap: 16px;
-    width: 1057px;
+    width: 1521.33px;
     max-width: 100%;
-    height: 676.938px;
+    height: 952.417px;
 }
 .events-right-panel {
     width: 380px;
@@ -525,9 +525,9 @@ body, button, input, select {
 }
 .events-weekdays {
     display: grid;
-    grid-template-columns: repeat(6, 94.1406px) 94.1562px;
-    width: 659px;
-    height: 33px;
+    grid-template-columns: 139.604px 139.625px 139.625px 139.604px 139.625px 139.625px 139.625px;
+    width: 977.333px;
+    height: 33.3333px;
     font-size: 12px;
     font-weight: 500;
     color: oklch(0.708 0 0);
@@ -537,7 +537,8 @@ body, button, input, select {
 }
 .events-weekdays > div {
     height: 32px;
-    padding: 8px 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
     box-sizing: border-box;
     text-align: center;
     font-size: 12px;
@@ -547,24 +548,24 @@ body, button, input, select {
 }
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(6, 94.1406px) 94.1562px;
-    width: 659px;
-    height: 569.938px;
+    grid-template-columns: 139.604px 139.625px 139.625px 139.604px 139.625px 139.625px 139.625px;
+    width: 977.333px;
+    height: 844.417px;
     gap: 0;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
 .events-day {
-    width: 94.1406px;
-    height: 94.1406px;
+    width: 139.604px;
+    height: 139.604px;
     aspect-ratio: 1 / 1;
     background: #101010;
     border-radius: 0;
     border-top-width: 0px;
     border-bottom-width: 0px;
     border-left-width: 0px;
-    border-right-width: 1px;
+    border-right-width: 1.33333px;
     border-style: solid;
     border-color: oklch(1 0 0 / 0.1);
     padding: 6px;
@@ -597,9 +598,13 @@ body, button, input, select {
     border-color: oklch(1 0 0 / 0.1);
 }
 .events-day-number {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.7);
+    width: 126.271px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(0.985 0 0);
+    text-align: left;
 }
 .events-day-body {
     flex: 1;
@@ -653,7 +658,7 @@ body, button, input, select {
     padding: 6px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -671,6 +676,35 @@ body, button, input, select {
     border-right: 1px solid rgba(255,255,255,0.10);
     border-top: 1px solid rgba(255,255,255,0.10);
     color: rgba(255,255,255,0.75);
+}
+
+.events-day-pill-title {
+    min-width: 0;
+    flex: 1;
+    color: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 650;
+    font-size: 11px;
+    line-height: 16px;
+    padding-left: 2px;
+}
+.events-day-pill-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.events-day-pill-tag {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 12px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.92);
 }
 
 .events-day-card { width: 520px; }
