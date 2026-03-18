@@ -225,12 +225,28 @@
     <div class="modal-card events-day-card">
         <div class="events-modal-header">
             <div id="events-day-title" class="events-modal-date">00.00.0000</div>
-            <button type="button" class="btn-icon" id="events-day-add-btn" title="Добавить">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+            <button type="button" class="btn-icon" id="events-day-close-btn" title="Закрыть">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="M6 6 18 18"></path>
+                </svg>
             </button>
         </div>
 
         <div id="events-day-list" class="events-modal-list"></div>
+
+        <div class="events-modal-footer">
+            <button type="button" class="events-new-btn" id="events-day-new-btn">
+                <span class="events-new-btn-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 8v8"></path>
+                        <path d="M8 12h8"></path>
+                    </svg>
+                </span>
+                Новое мероприятие
+            </button>
+        </div>
 
         <form id="events-day-form" class="events-modal-form" style="display:none;">
             <input type="hidden" id="events-day-date" />

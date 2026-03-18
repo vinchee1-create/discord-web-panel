@@ -3,6 +3,7 @@
 window.events = []; // stored events loaded from DB for current month range
 window.eventsSelectedDate = null; // YYYY-MM-DD
 window.eventsEditingId = null; // dbId | null
+window.eventsActiveCell = null; // currently selected day cell
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 function toISODateLocal(d) {
@@ -47,16 +48,26 @@ window.loadEventsForMonth = async function loadEventsForMonth(year, monthIndex) 
   }
 };
 
-function renderDayTexts(isoDate) {
+function formatDateWithWeekday(isoDate) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const weekdayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+  const dd = d;
+  return `${dd} ${monthNames[dt.getMonth()]} ${dt.getFullYear()}, ${weekdayNames[dt.getDay()]}`;
+}
+
+function renderDayPills(isoDate) {
   const all = getEventsForDate(isoDate);
   if (!all.length) return '';
-  const shown = all.slice(0, 2);
-  const lines = shown.map(ev => {
-    const cls = ev.kind === 'system' ? 'events-day-text system' : 'events-day-text';
+
+  const shown = all.slice(0, 3);
+  const pills = shown.map(ev => {
+    const cls = ev.kind === 'system' ? 'events-day-pill system' : 'events-day-pill';
     return `<div class="${cls}" title="${window.escapeHtml(ev.title)}">${window.escapeHtml(ev.title)}</div>`;
   }).join('');
-  const more = all.length > 2 ? `<div class="events-day-more" title="Ещё">+${all.length - 2}</div>` : '';
-  return lines + more;
+  const more = all.length > 3 ? `<div class="events-day-pill more" title="Ещё">+${all.length - 3}</div>` : '';
+  return pills + more;
 }
 
 function updateCalendarCells() {
@@ -65,7 +76,7 @@ function updateCalendarCells() {
   document.querySelectorAll('.events-day[data-date]').forEach(cell => {
     const iso = cell.getAttribute('data-date');
     const body = cell.querySelector('.events-day-body');
-    if (body) body.innerHTML = renderDayTexts(iso);
+    if (body) body.innerHTML = renderDayPills(iso);
     // today marker
     const now = new Date();
     const todayIso = toISODateLocal(now);
@@ -90,7 +101,8 @@ const eventsDayModal = document.getElementById('events-day-modal-overlay');
 const eventsDayTitle = document.getElementById('events-day-title');
 const eventsDayList = document.getElementById('events-day-list');
 const eventsDayForm = document.getElementById('events-day-form');
-const eventsDayAddBtn = document.getElementById('events-day-add-btn');
+const eventsDayCloseBtn = document.getElementById('events-day-close-btn');
+const eventsDayNewBtn = document.getElementById('events-day-new-btn');
 const eventsDayCancelBtn = document.getElementById('events-day-cancel-btn');
 const eventsDaySubmitBtn = document.getElementById('events-day-submit-btn');
 
@@ -105,6 +117,9 @@ function renderEventsDayList(isoDate) {
     const isSystem = ev.kind === 'system';
     const title = window.escapeHtml(ev.title || '');
     const desc = window.escapeHtml(ev.description || '');
+    const typeChip = isSystem ? 'Системное' : 'Пользовательское';
+    const dateRu = fmtDateCenter(isoDate);
+    const dateRange = `${dateRu} — ${dateRu}`;
     const actions = isSystem ? '' : `
       <div class="events-day-item-actions">
         <button type="button" class="btn-icon" title="Редактировать" onclick="startEditEvent(${ev.dbId})">${editIconSvg()}</button>
@@ -115,6 +130,10 @@ function renderEventsDayList(isoDate) {
       <div class="events-day-item">
         <div style="min-width:0; flex:1;">
           <div class="events-day-item-title">${title}</div>
+          <div class="events-day-item-meta">
+            <span class="events-modal-chip">${window.escapeHtml(typeChip)}</span>
+            <div class="events-day-item-date">${window.escapeHtml(dateRange)}</div>
+          </div>
           ${desc ? `<div class="events-day-item-desc">${desc}</div>` : ''}
         </div>
         ${actions}
@@ -128,6 +147,7 @@ function renderEventsDayList(isoDate) {
 function hideEventsForm() {
   window.eventsEditingId = null;
   eventsDayForm.style.display = 'none';
+  if (eventsDayNewBtn) eventsDayNewBtn.style.display = '';
   document.getElementById('events-day-input-title').value = '';
   document.getElementById('events-day-input-desc').value = '';
   eventsDaySubmitBtn.textContent = 'Добавить';
@@ -135,13 +155,14 @@ function hideEventsForm() {
 
 function showEventsForm() {
   eventsDayForm.style.display = '';
+  if (eventsDayNewBtn) eventsDayNewBtn.style.display = 'none';
   setTimeout(() => document.getElementById('events-day-input-title')?.focus(), 0);
 }
 
 window.openEventsDayModal = function openEventsDayModal(isoDate) {
   window.eventsSelectedDate = isoDate;
   document.getElementById('events-day-date').value = isoDate;
-  eventsDayTitle.textContent = fmtDateCenter(isoDate);
+  eventsDayTitle.textContent = formatDateWithWeekday(isoDate);
   renderEventsDayList(isoDate);
   hideEventsForm();
   eventsDayModal.classList.add('is-open');
@@ -151,13 +172,17 @@ window.closeEventsDayModal = function closeEventsDayModal() {
   eventsDayModal.classList.remove('is-open');
   window.eventsSelectedDate = null;
   hideEventsForm();
+  if (window.eventsActiveCell) window.eventsActiveCell.classList.remove('is-active');
+  window.eventsActiveCell = null;
 };
 
 eventsDayModal.addEventListener('click', function (e) {
   if (e.target === this) window.closeEventsDayModal();
 });
 
-eventsDayAddBtn?.addEventListener('click', () => {
+eventsDayCloseBtn?.addEventListener('click', () => window.closeEventsDayModal());
+
+eventsDayNewBtn?.addEventListener('click', () => {
   window.eventsEditingId = null;
   eventsDaySubmitBtn.textContent = 'Добавить';
   document.getElementById('events-day-input-title').value = '';
@@ -239,6 +264,7 @@ window.attachEventsCalendarInteractions = function attachEventsCalendarInteracti
       const iso = cell.getAttribute('data-date');
       document.querySelectorAll('.events-day').forEach(x => x.classList.remove('is-active'));
       cell.classList.add('is-active');
+      window.eventsActiveCell = cell;
       window.openEventsDayModal(iso);
     });
   });

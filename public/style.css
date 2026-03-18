@@ -429,10 +429,10 @@ body, button, input, select {
     color: rgba(255,255,255,0.6);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    text-align: center;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 4px;
+    text-align: left;
 }
 .events-day-text {
     max-width: 100%;
@@ -456,12 +456,38 @@ body, button, input, select {
     color: rgba(255,255,255,0.65);
 }
 
-.events-day-card { width: 560px; }
+.events-day-pill {
+    width: 100%;
+    background: rgba(40, 160, 105, 0.14);
+    border: 1px solid rgba(40, 160, 105, 0.24);
+    border-radius: 6px;
+    padding: 2px 6px;
+    box-sizing: border-box;
+    color: rgba(220, 255, 235, 0.95);
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.events-day-pill.system {
+    background: rgba(0, 160, 255, 0.14);
+    border-color: rgba(0, 160, 255, 0.22);
+    color: rgba(210, 240, 255, 0.95);
+}
+.events-day-pill.more {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.75);
+}
+
+.events-day-card { width: 520px; }
 .events-modal-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 12px;
     margin-top: 2px;
     margin-bottom: 12px;
 }
@@ -470,7 +496,7 @@ body, button, input, select {
     font-weight: 800;
     letter-spacing: 0.02em;
     color: rgba(255,255,255,0.95);
-    text-align: center;
+    text-align: left;
 }
 .events-modal-list {
     display: flex;
@@ -507,7 +533,67 @@ body, button, input, select {
     font-size: 12px;
     color: rgba(255,255,255,0.70);
 }
+.events-day-item-meta {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.events-modal-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    font-weight: 600;
+}
+.events-day-item-date {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+}
+
+.events-modal-footer {
+    margin-top: 14px;
+}
+.events-new-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: rgba(255,255,255,0.92);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 650;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.events-new-btn:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.16);
+}
+.events-new-btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
 .events-day-item-actions { margin-left: auto; display: flex; gap: 6px; }
+.events-day-item-actions {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+.events-day-item:hover .events-day-item-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
 
 .events-expanded {
     margin-top: 6px;
