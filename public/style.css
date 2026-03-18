@@ -343,6 +343,7 @@ body, button, input, select {
     justify-content: flex-end;
     align-items: center;
     box-sizing: border-box;
+    padding-right: 16px; /* сдвигаем панель выбора месяца левее */
 }
 .events-page .nick-title {
     display: none;
@@ -494,7 +495,7 @@ body, button, input, select {
 }
 .events-right-items-wrap {
     width: 345.333px;
-    height: 133.333px;
+    height: auto;
     box-sizing: border-box;
     overflow: hidden;
     display: block;
@@ -506,7 +507,7 @@ body, button, input, select {
     overflow-y: hidden;
     padding-right: 0;
     width: 345.333px;
-    height: 133.333px;
+    height: auto;
 }
 .events-right-card {
     height: 62.6667px;
