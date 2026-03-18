@@ -335,7 +335,7 @@ body, button, input, select {
     max-width: 100%;
     height: 32px;
     margin-bottom: 12px;
-    margin-left: 0;
+    margin-left: 108px;
     margin-right: 0;
     padding: 0;
     border: 0;
@@ -844,15 +844,24 @@ body, button, input, select {
     display: flex;
     gap: 10px;
     align-items: flex-start;
-    padding: 8px 10px;
-    border: 1px solid rgba(255,255,255,0.08);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+}
+.events-day-item-title-wrap {
+    width: 100%;
     background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
+    padding: 6px 8px;
+    box-sizing: border-box;
 }
 .events-day-item-title {
     font-size: 13px;
     font-weight: 600;
     color: rgba(255,255,255,0.92);
+    text-align: left;
 }
 .events-day-item-desc {
     margin-top: 4px;
