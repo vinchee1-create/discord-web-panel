@@ -153,5 +153,8 @@ document.addEventListener('click', (e) => {
 profileMenu?.addEventListener('click', (e) => e.stopPropagation());
 
 // Default placeholder
-window.setPageContent(`<p style="color:#444">Выберите раздел в меню слева.</p>`);
+// Important: this must not overwrite already-rendered pages on reload.
+if (window.initialPage === 'Панель управления') {
+  window.setPageContent(`<p style="color:#444">Выберите раздел в меню слева.</p>`);
+}
 
