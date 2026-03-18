@@ -505,6 +505,9 @@ body, button, input, select {
     box-sizing: border-box;
     overflow: visible;
     display: block;
+    flex: 1;
+    min-height: 0;
+    background-color: oklch(0.205 0 0);
 }
 .events-right-list {
     display: flex;
@@ -514,6 +517,9 @@ body, button, input, select {
     padding-right: 0;
     width: 345.333px;
     height: auto;
+    flex: 1;
+    min-height: 0;
+    background-color: oklch(0.205 0 0);
 }
 .events-right-card {
     height: 62.6667px;
