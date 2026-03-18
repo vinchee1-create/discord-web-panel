@@ -818,6 +818,38 @@ app.post('/api/events', async (req, res) => {
     }
 });
 
+app.put('/api/events/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { title, description } = req.body || {};
+    if (!title || !String(title).trim()) return res.status(400).json({ error: 'title required' });
+    try {
+        await pool.query(
+            'UPDATE events SET title=$1, description=$2 WHERE id=$3',
+            [String(title).trim(), description ? String(description) : null, dbId]
+        );
+        const { rows } = await pool.query(
+            'SELECT id, event_date, title, description, created_by, created_at FROM events WHERE id=$1',
+            [dbId]
+        );
+        if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+        const r = rows[0];
+        res.json({
+            dbId: r.id,
+            date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+            title: r.title || '',
+            description: r.description || '',
+            createdBy: r.created_by ?? null,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('PUT /api/events/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.delete('/api/events/:id', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });

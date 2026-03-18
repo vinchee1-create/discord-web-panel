@@ -406,6 +406,11 @@ body, button, input, select {
     background-color: #2a2a2a;
     border-color: #2a2a2a;
 }
+.events-day.is-expanded {
+    background-color: #2a2a2a;
+    border-color: #2a2a2a;
+    min-height: 260px;
+}
 .events-day.is-today {
     border-color: rgba(255,255,255,0.25);
 }
@@ -469,6 +474,57 @@ body, button, input, select {
     color: rgba(255,255,255,0.70);
 }
 .events-day-item-actions { margin-left: auto; display: flex; gap: 6px; }
+
+.events-expanded {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+}
+.events-expanded-date {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+}
+.events-expanded-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: auto;
+    padding-right: 2px;
+}
+.events-expanded-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    background: rgba(0,0,0,0.18);
+}
+.events-expanded-item-title {
+    font-size: 12px;
+    font-weight: 650;
+    color: rgba(255,255,255,0.92);
+}
+.events-expanded-item-desc {
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.70);
+}
+.events-expanded-actions { margin-left: auto; display: flex; gap: 6px; }
+.events-expanded-form {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 10px;
+    margin-top: 2px;
+}
+.events-expanded-form .form-group { margin-bottom: 8px; }
+.events-expanded-form .modal-actions { margin-top: 12px; }
 
 /* Кнопка выбора месяца (как на скрине) */
 .btn-month {
