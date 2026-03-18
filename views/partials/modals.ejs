@@ -1,0 +1,223 @@
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 id="modal-title" style="margin-top:0; font-size:18px;">Добавить семью</h2>
+        <form id="family-form">
+            <input type="hidden" id="edit-index">
+            <div class="form-group">
+                <label>Название семьи *</label>
+                <input type="text" id="fam-name" required>
+            </div>
+            <div class="form-group">
+                <label>ID Семьи *</label>
+                <input type="text" id="fam-id" required>
+            </div>
+            <div class="form-group">
+                <label>Лидер (Ник)</label>
+                <input type="text" id="fam-leader">
+            </div>
+            <div class="form-group">
+                <label>Discord ID</label>
+                <input type="text" id="fam-discord">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeModal()">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="leader-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 id="leader-modal-title" style="margin-top:0; font-size:18px;">Редактировать лидера</h2>
+        <form id="leader-form">
+            <input type="hidden" id="leader-edit-index">
+            <div class="form-group">
+                <label>Фракция</label>
+                <input type="text" id="leader-faction" disabled>
+            </div>
+            <div class="form-group">
+                <label>Лидер</label>
+                <input type="text" id="leader-name">
+            </div>
+            <div class="form-group">
+                <label>Static ID</label>
+                <input type="text" id="leader-static">
+            </div>
+            <div class="form-group">
+                <label>Срок</label>
+                <input type="text" id="leader-term">
+            </div>
+            <div class="form-group">
+                <label>Дата (ГГГГ-ММ-ДД)</label>
+                <input type="date" id="leader-time">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeLeaderModal()">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="user-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-top:0; font-size:18px;">Добавить пользователя</h2>
+        <form id="user-form">
+            <div class="form-group">
+                <label>Логин *</label>
+                <input type="text" id="user-username" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль *</label>
+                <input type="password" id="user-password" required>
+            </div>
+            <div class="form-group">
+                <label>Роль</label>
+                <div class="select-wrapper">
+                    <select id="user-role" class="select-field">
+                        <option value="Curator">Curator</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Chief">Chief</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <span class="select-chevron">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                    </span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeUserModal()">Отмена</button>
+                <button type="submit" class="btn-primary">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="user-edit-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-top:0; font-size:18px;">Редактировать пользователя</h2>
+        <form id="user-edit-form">
+            <input type="hidden" id="user-edit-id">
+            <div class="form-group">
+                <label>Логин</label>
+                <input type="text" id="user-edit-username" disabled>
+            </div>
+            <div class="form-group">
+                <label>Новая роль</label>
+                <div class="select-wrapper">
+                    <select id="user-edit-role" class="select-field">
+                        <option value="">(не менять)</option>
+                        <option value="Curator">Curator</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Chief">Chief</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <span class="select-chevron">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Новый пароль</label>
+                <input type="password" id="user-edit-password" placeholder="Оставь пустым, чтобы не менять">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeUserEditModal()">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="confirm-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-top:0; font-size:18px;" id="confirm-title">Подтверждение</h2>
+        <p id="confirm-message" style="margin: 8px 0 18px; font-size:13px; color:rgba(255,255,255,0.75);">
+            Вы уверены, что хотите удалить?
+        </p>
+        <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="confirm-cancel">Нет</button>
+            <button type="button" class="btn-primary" id="confirm-ok">Да</button>
+        </div>
+    </div>
+</div>
+
+<div id="materials-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-top:0; font-size:18px;">Добавить материал</h2>
+        <form id="materials-form">
+            <div class="form-group">
+                <label>Заголовок</label>
+                <input type="text" id="mat-title" maxlength="120" />
+            </div>
+            <div class="form-group">
+                <div class="form-row-2-labels">
+                    <span>Семья</span>
+                    <span>Ресурсы</span>
+                </div>
+                <datalist id="mat-family-list"></datalist>
+                <div id="mat-pairs"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeMaterialsModal()">Отмена</button>
+                <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn-icon btn-icon-delete" id="mat-delete-btn" title="Удалить">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                    </button>
+                    <button type="button" class="btn-icon" id="mat-issued-btn" title="Отметить как выдано">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="materials-view-overlay" class="modal-overlay">
+    <div class="modal-card materials-view-card">
+        <h2 style="margin-top:0; font-size:18px;" id="materials-view-title">Выдача</h2>
+        <div id="materials-view-body" style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.9); white-space:pre-line;"></div>
+    </div>
+</div>
+
+<div id="faction-materials-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 style="margin-top:0; font-size:18px;">Добавить выдачу</h2>
+        <form id="faction-materials-form">
+            <div class="form-group">
+                <label>Заголовок</label>
+                <input type="text" id="fmat-title" maxlength="120" />
+            </div>
+            <div class="form-group">
+                <div class="form-row-2-labels">
+                    <span>Фракция</span>
+                    <span>Ресурсы</span>
+                </div>
+                <datalist id="fmat-faction-list"></datalist>
+                <div id="fmat-pairs"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closeFactionMaterialsModal()">Отмена</button>
+                <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn-icon btn-icon-delete" id="fmat-delete-btn" title="Удалить">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                    </button>
+                    <button type="button" class="btn-icon" id="fmat-issued-btn" title="Отметить как выдано">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="faction-materials-view-overlay" class="modal-overlay">
+    <div class="modal-card materials-view-card">
+        <h2 style="margin-top:0; font-size:18px;" id="faction-materials-view-title">Выдача</h2>
+        <div id="faction-materials-view-body" style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.9); white-space:pre-line;"></div>
+    </div>
+</div>
+

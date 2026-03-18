@@ -1,3 +1,6 @@
+// Client-side logic extracted from views/index.ejs (no behavior changes).
+// Bootstrap data is provided via window.__BOOTSTRAP__ in index.ejs.
+
 let families = [];
 let familyMaterials = [];
 let factionMaterials = [];
@@ -51,6 +54,7 @@ const pageTitle = document.getElementById('current-title');
 const headerActions = document.getElementById('header-actions');
 const leaderModal = document.getElementById('leader-modal-overlay');
 const leaderForm = document.getElementById('leader-form');
+const currentUser = window.__BOOTSTRAP__?.currentUser ?? null;
 
 async function loadFamilies() {
     try {
@@ -108,7 +112,7 @@ async function loadUsers() {
 
 function renderUsers() {
     const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
-    const trashSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"></path><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"></line><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"></line></svg>';
+    const trashSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>';
     const rows = usersList.map(u => `
         <tr>
             <td>${escapeHtml(u.username)}</td>
@@ -675,7 +679,7 @@ function editLeader(i) {
     openLeaderModal(i);
 }
 
-const initialPage = window.__INITIAL_PAGE__ || 'Панель управления';
+const initialPage = window.__BOOTSTRAP__?.initialPage || 'Панель управления';
 
 document.querySelectorAll('.nav-item').forEach(btn => {
     btn.addEventListener('click', async (e) => {
@@ -690,10 +694,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
         pageTitle.textContent = title;
         if (title === 'Семьи') {
             headerActions.style.display = 'flex';
-            const addBtn = document.getElementById('btn-add-family');
-            if (addBtn) {
-                addBtn.onclick = openModal;
-                addBtn.querySelector('span:last-child').textContent = 'Добавить семью';
+            const btn = document.getElementById('btn-add-family');
+            if (btn) {
+                btn.onclick = openModal;
+                btn.querySelector('span:last-child').textContent = 'Добавить семью';
             }
             await loadFamilies();
             renderFamilies();
@@ -706,20 +710,20 @@ document.querySelectorAll('.nav-item').forEach(btn => {
             renderEventsCalendar();
         } else if (title === 'Материалы семей') {
             headerActions.style.display = 'flex';
-            const addBtn = document.getElementById('btn-add-family');
-            if (addBtn) {
-                addBtn.onclick = openMaterialsModal;
-                addBtn.querySelector('span:last-child').textContent = 'Добавить';
+            const btn = document.getElementById('btn-add-family');
+            if (btn) {
+                btn.onclick = openMaterialsModal;
+                btn.querySelector('span:last-child').textContent = 'Добавить';
             }
             await loadFamilies();
             await loadFamilyMaterials();
             renderFamilyMaterials();
         } else if (title === 'Материалы фракций') {
             headerActions.style.display = 'flex';
-            const addBtn = document.getElementById('btn-add-family');
-            if (addBtn) {
-                addBtn.onclick = openFactionMaterialsModal;
-                addBtn.querySelector('span:last-child').textContent = 'Добавить';
+            const btn = document.getElementById('btn-add-family');
+            if (btn) {
+                btn.onclick = openFactionMaterialsModal;
+                btn.querySelector('span:last-child').textContent = 'Добавить';
             }
             await loadLeaders();
             await loadFactionMaterials();
@@ -752,10 +756,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     if (initialPage === 'Семьи') {
         pageTitle.textContent = 'Семьи';
         headerActions.style.display = 'flex';
-        const addBtn = document.getElementById('btn-add-family');
-        if (addBtn) {
-            addBtn.onclick = openModal;
-            addBtn.querySelector('span:last-child').textContent = 'Добавить семью';
+        const btn = document.getElementById('btn-add-family');
+        if (btn) {
+            btn.onclick = openModal;
+            btn.querySelector('span:last-child').textContent = 'Добавить семью';
         }
         await loadFamilies();
         renderFamilies();
@@ -771,10 +775,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     } else if (initialPage === 'Материалы семей') {
         pageTitle.textContent = 'Материалы семей';
         headerActions.style.display = 'flex';
-        const addBtn = document.getElementById('btn-add-family');
-        if (addBtn) {
-            addBtn.onclick = openMaterialsModal;
-            addBtn.querySelector('span:last-child').textContent = 'Добавить';
+        const btn = document.getElementById('btn-add-family');
+        if (btn) {
+            btn.onclick = openMaterialsModal;
+            btn.querySelector('span:last-child').textContent = 'Добавить';
         }
         await loadFamilies();
         await loadFamilyMaterials();
@@ -782,10 +786,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     } else if (initialPage === 'Материалы фракций') {
         pageTitle.textContent = 'Материалы фракций';
         headerActions.style.display = 'flex';
-        const addBtn = document.getElementById('btn-add-family');
-        if (addBtn) {
-            addBtn.onclick = openFactionMaterialsModal;
-            addBtn.querySelector('span:last-child').textContent = 'Добавить';
+        const btn = document.getElementById('btn-add-family');
+        if (btn) {
+            btn.onclick = openFactionMaterialsModal;
+            btn.querySelector('span:last-child').textContent = 'Добавить';
         }
         await loadLeaders();
         await loadFactionMaterials();
@@ -904,5 +908,868 @@ const factionMaterialsViewModal = document.getElementById('faction-materials-vie
 const factionMaterialsViewTitle = document.getElementById('faction-materials-view-title');
 const factionMaterialsViewBody = document.getElementById('faction-materials-view-body');
 
-// мат. выдачи семей (остальной код уже выше) завершён
+function renderMatPairs(pairs) {
+    if (!matPairsRoot) return;
+
+    const safe = Array.isArray(pairs) ? pairs : [];
+    const initialRows = safe.length ? safe : [{ family: '', resources: '' }];
+
+    matPairsRoot.innerHTML = '';
+
+    const createRow = (familyValue = '', resourcesValue = '') => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'form-row-2-inputs mat-pair-row';
+        rowEl.innerHTML = `
+            <div class="form-row-item">
+                <input list="mat-family-list" class="row-input mat-family-input" placeholder="Выберите семью или введите свою" />
+            </div>
+            <div class="form-row-item">
+                <input type="text" class="row-input mat-resources-input" placeholder="Например: 3 аптечки, броня" />
+            </div>
+        `;
+        const famEl = rowEl.querySelector('.mat-family-input');
+        const resEl = rowEl.querySelector('.mat-resources-input');
+        if (famEl) famEl.value = familyValue || '';
+        if (resEl) resEl.value = resourcesValue || '';
+
+        const ensureEmptyRow = () => {
+            const rows = Array.from(matPairsRoot.querySelectorAll('.mat-pair-row'));
+            const last = rows[rows.length - 1];
+            if (!last) return;
+            const lf = last.querySelector('.mat-family-input')?.value.trim() || '';
+            const lr = last.querySelector('.mat-resources-input')?.value.trim() || '';
+            if (lf || lr) {
+                matPairsRoot.appendChild(createRow('', ''));
+            }
+        };
+
+        const onInput = () => ensureEmptyRow();
+        famEl?.addEventListener('input', onInput);
+        resEl?.addEventListener('input', onInput);
+
+        return rowEl;
+    };
+
+    initialRows.forEach(r => {
+        matPairsRoot.appendChild(createRow(r?.family || '', r?.resources || ''));
+    });
+    // пустая строка внизу
+    matPairsRoot.appendChild(createRow('', ''));
+}
+
+function renderFmatPairs(pairs) {
+    if (!fmatPairsRoot) return;
+
+    const safe = Array.isArray(pairs) ? pairs : [];
+    const initialRows = safe.length ? safe : [{ faction: '', resources: '' }];
+
+    fmatPairsRoot.innerHTML = '';
+
+    const createRow = (factionValue = '', resourcesValue = '') => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'form-row-2-inputs mat-pair-row';
+        rowEl.innerHTML = `
+            <div class="form-row-item">
+                <input list="fmat-faction-list" class="row-input fmat-faction-input" placeholder="Выберите фракцию или введите свою" />
+            </div>
+            <div class="form-row-item">
+                <input type="text" class="row-input fmat-resources-input" placeholder="Например: 10000 технических материалов" />
+            </div>
+        `;
+        const facEl = rowEl.querySelector('.fmat-faction-input');
+        const resEl = rowEl.querySelector('.fmat-resources-input');
+        if (facEl) facEl.value = factionValue || '';
+        if (resEl) resEl.value = resourcesValue || '';
+
+        const ensureEmptyRow = () => {
+            const rows = Array.from(fmatPairsRoot.querySelectorAll('.mat-pair-row'));
+            const last = rows[rows.length - 1];
+            if (!last) return;
+            const lf = last.querySelector('.fmat-faction-input')?.value.trim() || '';
+            const lr = last.querySelector('.fmat-resources-input')?.value.trim() || '';
+            if (lf || lr) {
+                fmatPairsRoot.appendChild(createRow('', ''));
+            }
+        };
+
+        const onInput = () => ensureEmptyRow();
+        facEl?.addEventListener('input', onInput);
+        resEl?.addEventListener('input', onInput);
+
+        return rowEl;
+    };
+
+    initialRows.forEach(r => {
+        fmatPairsRoot.appendChild(createRow(r?.faction || '', r?.resources || ''));
+    });
+    fmatPairsRoot.appendChild(createRow('', ''));
+}
+
+function openMaterialsModal(index = -1) {
+    editingMaterialIndex = typeof index === 'number' ? index : -1;
+    const titleEl = document.getElementById('mat-title');
+    const familyList = document.getElementById('mat-family-list');
+    const heading = materialsModal.querySelector('h2');
+
+    // заполнение списка семей для выбора
+    if (familyList) {
+        familyList.innerHTML = families.map(f => {
+            return `<option value="${escapeHtml(f.name)}"></option>`;
+        }).join('');
+    }
+
+    if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
+        const item = familyMaterials[editingMaterialIndex];
+        titleEl.value = item.title || '';
+        let pairs = item.pairs;
+        if (!pairs) {
+            try {
+                const parsed = JSON.parse(item.resources || '[]');
+                pairs = Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                pairs = [];
+            }
+        }
+        renderMatPairs(pairs);
+        heading.textContent = 'Редактировать выдачу';
+        if (matDeleteBtn) matDeleteBtn.style.display = 'inline-flex';
+        if (matIssuedBtn) matIssuedBtn.style.display = 'inline-flex';
+    } else {
+        titleEl.value = '';
+        renderMatPairs([]);
+        heading.textContent = 'Добавить выдачу';
+        if (matDeleteBtn) matDeleteBtn.style.display = 'none';
+        if (matIssuedBtn) matIssuedBtn.style.display = 'none';
+    }
+    materialsModal.classList.add('is-open');
+}
+
+function openFactionMaterialsModal(index = -1) {
+    editingFactionMaterialIndex = typeof index === 'number' ? index : -1;
+    const titleEl = document.getElementById('fmat-title');
+    const heading = factionMaterialsModal.querySelector('h2');
+
+    // список фракций из лидеров
+    if (fmatFactionList) {
+        fmatFactionList.innerHTML = leaders.map(L => `<option value="${escapeHtml(L.faction)}"></option>`).join('');
+    }
+
+    if (editingFactionMaterialIndex >= 0 && factionMaterials[editingFactionMaterialIndex]) {
+        const item = factionMaterials[editingFactionMaterialIndex];
+        titleEl.value = item.title || '';
+        let pairs = item.pairs;
+        if (!pairs) {
+            try {
+                const parsed = JSON.parse(item.resources || '[]');
+                pairs = Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                pairs = [];
+            }
+        }
+        // нормализуем к { faction, resources }
+        const norm = (pairs || []).map(p => ({
+            faction: p.faction || p.family || '',
+            resources: p.resources || ''
+        }));
+        renderFmatPairs(norm);
+        heading.textContent = 'Редактировать выдачу';
+        if (fmatDeleteBtn) fmatDeleteBtn.style.display = 'inline-flex';
+        if (fmatIssuedBtn) fmatIssuedBtn.style.display = 'inline-flex';
+    } else {
+        titleEl.value = '';
+        renderFmatPairs([]);
+        heading.textContent = 'Добавить выдачу';
+        if (fmatDeleteBtn) fmatDeleteBtn.style.display = 'none';
+        if (fmatIssuedBtn) fmatIssuedBtn.style.display = 'none';
+    }
+    factionMaterialsModal.classList.add('is-open');
+}
+
+function closeFactionMaterialsModal() {
+    factionMaterialsModal.classList.remove('is-open');
+    editingFactionMaterialIndex = -1;
+}
+
+window.openFactionMaterialsModal = openFactionMaterialsModal;
+window.closeFactionMaterialsModal = closeFactionMaterialsModal;
+function closeMaterialsModal() {
+    materialsModal.classList.remove('is-open');
+    editingMaterialIndex = -1;
+}
+materialsModal.addEventListener('click', (e) => {
+    if (e.target === materialsModal) closeMaterialsModal();
+});
+materialsViewModal.addEventListener('click', (e) => {
+    if (e.target === materialsViewModal) {
+        materialsViewModal.classList.remove('is-open');
+    }
+});
+factionMaterialsModal.addEventListener('click', (e) => {
+    if (e.target === factionMaterialsModal) closeFactionMaterialsModal();
+});
+factionMaterialsViewModal.addEventListener('click', (e) => {
+    if (e.target === factionMaterialsViewModal) {
+        factionMaterialsViewModal.classList.remove('is-open');
+    }
+});
+materialsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = document.getElementById('mat-title').value.trim();
+    if (!title) {
+        showToast('Заполните заголовок или данные по семье/ресурсам.', 'error');
+        return;
+    }
+    const pairs = [];
+    document.querySelectorAll('.mat-pair-row').forEach(row => {
+        const fam = row.querySelector('.mat-family-input')?.value.trim() || '';
+        const res = row.querySelector('.mat-resources-input')?.value.trim() || '';
+        if (fam || res) {
+            pairs.push({ family: fam, resources: res });
+        }
+    });
+    if (!pairs.length) {
+        showToast('Заполните хотя бы одну строку "Семья / Ресурсы".', 'error');
+        return;
+    }
+    (async () => {
+        try {
+            if (editingMaterialIndex >= 0 && familyMaterials[editingMaterialIndex]) {
+                const item = familyMaterials[editingMaterialIndex];
+                if (item.dbId != null) {
+                    const res = await fetch(`/api/family-materials/${item.dbId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title,
+                            content: '',
+                            issued: !!item.issued,
+                            familyName: pairs[0]?.family || '',
+                            resources: JSON.stringify(pairs)
+                        })
+                    });
+                    if (!res.ok) throw new Error((await res.json()).error || 'error');
+                    const updated = await res.json();
+                    familyMaterials[editingMaterialIndex] = {
+                        ...updated,
+                        pairs
+                    };
+                } else {
+                    familyMaterials[editingMaterialIndex] = {
+                        ...item,
+                        title,
+                        content: '',
+                        familyName: pairs[0]?.family || '',
+                        resources: JSON.stringify(pairs),
+                        pairs
+                    };
+                }
+            } else {
+                const res = await fetch('/api/family-materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        content: '',
+                        familyName: pairs[0]?.family || '',
+                        resources: JSON.stringify(pairs)
+                    })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'error');
+                const created = await res.json();
+                familyMaterials.push({ ...created, pairs });
+            }
+            closeMaterialsModal();
+            renderFamilyMaterials();
+        } catch (err) {
+            console.error(err);
+            showToast('Не удалось сохранить материал.', 'error');
+        }
+    })();
+});
+
+factionMaterialsForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = document.getElementById('fmat-title').value.trim();
+    if (!title) {
+        showToast('Заполните заголовок.', 'error');
+        return;
+    }
+    const pairs = [];
+    document.querySelectorAll('#fmat-pairs .mat-pair-row').forEach(row => {
+        const fac = row.querySelector('.fmat-faction-input')?.value.trim() || '';
+        const res = row.querySelector('.fmat-resources-input')?.value.trim() || '';
+        if (fac || res) pairs.push({ faction: fac, resources: res });
+    });
+    if (!pairs.length) {
+        showToast('Заполните хотя бы одну строку "Фракция / Ресурсы".', 'error');
+        return;
+    }
+    (async () => {
+        try {
+            if (editingFactionMaterialIndex >= 0 && factionMaterials[editingFactionMaterialIndex]) {
+                const item = factionMaterials[editingFactionMaterialIndex];
+                if (item.dbId != null) {
+                    const res = await fetch(`/api/faction-materials/${item.dbId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title,
+                            content: '',
+                            issued: !!item.issued,
+                            factionName: pairs[0]?.faction || '',
+                            resources: JSON.stringify(pairs)
+                        })
+                    });
+                    if (!res.ok) throw new Error((await res.json()).error || 'error');
+                    const updated = await res.json();
+                    factionMaterials[editingFactionMaterialIndex] = { ...updated, pairs };
+                } else {
+                    factionMaterials[editingFactionMaterialIndex] = {
+                        ...item,
+                        title,
+                        content: '',
+                        factionName: pairs[0]?.faction || '',
+                        resources: JSON.stringify(pairs),
+                        pairs
+                    };
+                }
+            } else {
+                const res = await fetch('/api/faction-materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        content: '',
+                        factionName: pairs[0]?.faction || '',
+                        resources: JSON.stringify(pairs)
+                    })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'error');
+                const created = await res.json();
+                factionMaterials.push({ ...created, pairs });
+            }
+            closeFactionMaterialsModal();
+            renderFactionMaterials();
+        } catch (err) {
+            console.error(err);
+            showToast('Не удалось сохранить выдачу.', 'error');
+        }
+    })();
+});
+
+function renderFamilyMaterials() {
+    const sorted = familyMaterials
+        .map((item, idx) => ({ ...item, _idx: idx }))
+        .sort((a, b) => {
+            // невыполненные (pending) всегда выше выданных (issued)
+            if (a.issued === b.issued) return a._idx - b._idx;
+            return a.issued ? 1 : -1;
+        });
+
+    const cards = sorted.map((item) => {
+        if (!item.createdAt) {
+            item.createdAt = new Date().toISOString();
+        }
+        const created = new Date(item.createdAt);
+        const timeLabel = isNaN(created.getTime())
+            ? ''
+            : created.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        const safeTitle = escapeHtml(item.title || 'Без названия');
+        let pairs = item.pairs;
+        if (!pairs) {
+            try {
+                const parsed = JSON.parse(item.resources || '[]');
+                if (Array.isArray(parsed)) {
+                    pairs = parsed;
+                }
+            } catch (_) {
+                pairs = [];
+            }
+        }
+        if (!Array.isArray(pairs)) pairs = [];
+        const pairsHtml = pairs.map(p => {
+            const fam = escapeHtml(p.family || '');
+            const res = escapeHtml(p.resources || '');
+            if (fam && res) return `<div class="materials-card-meta-line">${fam} - ${res}</div>`;
+            if (fam) return `<div class="materials-card-meta-line">${fam}</div>`;
+            if (res) return `<div class="materials-card-meta-line">${res}</div>`;
+            return '';
+        }).join('');
+        return `
+        <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openMaterialsView(${item._idx})">
+            <div class="materials-card-header">
+                <div class="materials-card-header-main">
+                    <div class="materials-card-title">${safeTitle}</div>
+                </div>
+                <div class="materials-card-time">${timeLabel}</div>
+            </div>
+            ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.8);">${pairsHtml}</div>` : ''}
+            <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+                <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openMaterialsModal(${item._idx});" title="Редактировать выдачу">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+    setPageContent(`
+        <div class="materials-page">
+            <div class="materials-grid">
+                ${cards || '<div style="color:rgba(255,255,255,0.5);font-size:13px;">Пока нет материалов.</div>'}
+            </div>
+        </div>
+    `);
+    updateFamilyMaterialsBadge();
+}
+
+function renderFactionMaterials() {
+    const sorted = factionMaterials
+        .map((item, idx) => ({ ...item, _idx: idx }))
+        .sort((a, b) => {
+            if (a.issued === b.issued) return a._idx - b._idx;
+            return a.issued ? 1 : -1;
+        });
+
+    const cards = sorted.map((item) => {
+        if (!item.createdAt) item.createdAt = new Date().toISOString();
+        const created = new Date(item.createdAt);
+        const timeLabel = isNaN(created.getTime())
+            ? ''
+            : created.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        const safeTitle = escapeHtml(item.title || 'Без названия');
+
+        let pairs = item.pairs;
+        if (!pairs) {
+            try {
+                const parsed = JSON.parse(item.resources || '[]');
+                pairs = Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                pairs = [];
+            }
+        }
+        if (!Array.isArray(pairs)) pairs = [];
+        const pairsHtml = pairs.map(p => {
+            const fac = escapeHtml((p.faction || p.family || '').trim());
+            const res = escapeHtml((p.resources || '').trim());
+            if (fac && res) return `<div class="materials-card-meta-line">${fac} - ${res}</div>`;
+            if (fac) return `<div class="materials-card-meta-line">${fac}</div>`;
+            if (res) return `<div class="materials-card-meta-line">${res}</div>`;
+            return '';
+        }).join('');
+
+        return `
+        <div class="materials-card ${item.issued ? 'issued' : 'pending'}" onclick="openFactionMaterialsView(${item._idx})">
+            <div class="materials-card-header">
+                <div class="materials-card-header-main">
+                    <div class="materials-card-title">${safeTitle}</div>
+                </div>
+                <div class="materials-card-time">${timeLabel}</div>
+            </div>
+            ${pairsHtml ? `<div class="materials-card-meta" style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.8);">${pairsHtml}</div>` : ''}
+            <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+                <button type="button" class="materials-edit-btn" onclick="event.stopPropagation(); openFactionMaterialsModal(${item._idx});" title="Редактировать выдачу">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+
+    setPageContent(`
+        <div class="materials-page">
+            <div class="materials-grid">
+                ${cards || '<div style="color:rgba(255,255,255,0.5);font-size:13px;">Пока нет материалов.</div>'}
+            </div>
+        </div>
+    `);
+    updateFactionMaterialsBadge();
+}
+
+window.openMaterialsModal = openMaterialsModal;
+
+window.openMaterialsView = function (index) {
+    const item = familyMaterials[index];
+    if (!item || !materialsViewModal) return;
+    const title = item.title || 'Выдача';
+    let pairs = item.pairs;
+    if (!pairs) {
+        try {
+            const parsed = JSON.parse(item.resources || '[]');
+            pairs = Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            pairs = [];
+        }
+    }
+    if (!Array.isArray(pairs)) pairs = [];
+    materialsViewTitle.textContent = title;
+    const rowsHtml = pairs
+        .map(p => {
+            const fam = (p.family || '').trim();
+            const res = (p.resources || '').trim();
+            if (!fam && !res) return '';
+
+            // ищем id семьи по названию
+            let famId = '?';
+            const lowerFam = fam.toLowerCase();
+            const found = families.find(f => (f.name || '').toLowerCase() === lowerFam);
+            if (found && found.id) famId = found.id;
+
+            // определяем цвет по типу ресурса
+            const lowerRes = res.toLowerCase();
+            let color = 'green';
+            if (lowerRes.includes('тех')) color = 'blue';
+            else if (lowerRes.includes('мед')) color = 'red';
+            else if (lowerRes.includes('оруж')) color = 'green';
+
+            // число из строки ресурсов
+            const m = lowerRes.match(/\d+/);
+            const amount = m ? m[0] : '0';
+
+            const textPart = fam && res ? `${fam} - ${res}` : (fam || res);
+
+            let cmdHtml = '';
+            if (lowerRes.includes('материал')) {
+                const cmd = `/setfammaterials ${famId} ${color} ${amount}`;
+                cmdHtml = `<div class="materials-view-cmd">${escapeHtml(cmd)}</div>`;
+            }
+
+            return `<div class="materials-view-row">
+                <div class="materials-view-text">${escapeHtml(textPart)}</div>
+                ${cmdHtml}
+            </div>`;
+        })
+        .filter(Boolean)
+        .join('');
+
+    materialsViewBody.innerHTML = rowsHtml || '<div class="materials-view-text" style="opacity:0.7;">Нет данных для отображения.</div>';
+    materialsViewModal.classList.add('is-open');
+};
+
+window.openFactionMaterialsView = async function (index) {
+    const item = factionMaterials[index];
+    if (!item || !factionMaterialsViewModal) return;
+    if (!leaders || !leaders.length) {
+        try { await loadLeaders(); } catch (_) {}
+    }
+    const title = item.title || 'Выдача';
+    let pairs = item.pairs;
+    if (!pairs) {
+        try {
+            const parsed = JSON.parse(item.resources || '[]');
+            pairs = Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            pairs = [];
+        }
+    }
+    if (!Array.isArray(pairs)) pairs = [];
+    factionMaterialsViewTitle.textContent = title;
+
+    const rowsHtml = pairs
+        .map(p => {
+            const fac = (p.faction || p.family || '').trim();
+            const res = (p.resources || '').trim();
+            if (!fac && !res) return '';
+
+            // idfrac берём из лидеров по названию фракции (display id)
+            let fracId = '?';
+            const lowerFac = fac.toLowerCase();
+            const found = leaders.find(L => (L.faction || '').toLowerCase() === lowerFac);
+            if (found && found.id != null) fracId = String(found.id);
+
+            const lowerRes = res.toLowerCase();
+            let color = 'green';
+            if (lowerRes.includes('тех')) color = 'blue';
+            else if (lowerRes.includes('мед')) color = 'red';
+            else if (lowerRes.includes('оруж')) color = 'green';
+
+            const m = lowerRes.match(/\d+/);
+            const amount = m ? m[0] : '0';
+
+            const textPart = fac && res ? `${fac} - ${res}` : (fac || res);
+
+            let cmdHtml = '';
+            if (lowerRes.includes('материал')) {
+                const cmd = `/setmaterials ${fracId} ${color} ${amount}`;
+                cmdHtml = `<div class="materials-view-cmd">${escapeHtml(cmd)}</div>`;
+            }
+
+            return `<div class="materials-view-row">
+                <div class="materials-view-text">${escapeHtml(textPart)}</div>
+                ${cmdHtml}
+            </div>`;
+        })
+        .filter(Boolean)
+        .join('');
+
+    factionMaterialsViewBody.innerHTML = rowsHtml || '<div class="materials-view-text" style="opacity:0.7;">Нет данных для отображения.</div>';
+    factionMaterialsViewModal.classList.add('is-open');
+};
+
+window.deleteCurrentMaterial = function () {
+    if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
+    const idx = editingMaterialIndex;
+    (async () => {
+        const item = familyMaterials[idx];
+        try {
+            if (item && item.dbId != null) {
+                const res = await fetch(`/api/family-materials/${item.dbId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+            }
+            closeMaterialsModal();
+            familyMaterials.splice(idx, 1);
+            renderFamilyMaterials();
+        } catch (e) {
+            console.error(e);
+            showToast('Не удалось удалить материал.', 'error');
+        }
+    })();
+};
+
+window.deleteCurrentFactionMaterial = function () {
+    if (editingFactionMaterialIndex < 0 || !factionMaterials[editingFactionMaterialIndex]) return;
+    const idx = editingFactionMaterialIndex;
+    (async () => {
+        const item = factionMaterials[idx];
+        try {
+            if (item && item.dbId != null) {
+                const res = await fetch(`/api/faction-materials/${item.dbId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+            }
+            closeFactionMaterialsModal();
+            factionMaterials.splice(idx, 1);
+            renderFactionMaterials();
+        } catch (e) {
+            console.error(e);
+            showToast('Не удалось удалить материал.', 'error');
+        }
+    })();
+};
+
+window.markFactionMaterialIssued = function () {
+    if (editingFactionMaterialIndex < 0 || !factionMaterials[editingFactionMaterialIndex]) return;
+    (async () => {
+        const item = factionMaterials[editingFactionMaterialIndex];
+        const newIssued = !item.issued;
+        try {
+            if (item.dbId != null) {
+                const res = await fetch(`/api/faction-materials/${item.dbId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: item.title,
+                        content: '',
+                        issued: newIssued,
+                        factionName: item.factionName || '',
+                        resources: item.resources || ''
+                    })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'error');
+                const updated = await res.json();
+                factionMaterials[editingFactionMaterialIndex] = updated;
+            } else {
+                factionMaterials[editingFactionMaterialIndex].issued = newIssued;
+            }
+            closeFactionMaterialsModal();
+            renderFactionMaterials();
+        } catch (e) {
+            console.error(e);
+            showToast('Не удалось изменить статус выдачи.', 'error');
+        }
+    })();
+};
+
+window.markMaterialIssued = function () {
+    if (editingMaterialIndex < 0 || !familyMaterials[editingMaterialIndex]) return;
+    (async () => {
+        const item = familyMaterials[editingMaterialIndex];
+        const newIssued = !item.issued;
+        try {
+            if (item.dbId != null) {
+                const res = await fetch(`/api/family-materials/${item.dbId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: item.title,
+                        content: '',
+                        issued: newIssued,
+                        familyName: item.familyName,
+                        resources: item.resources
+                    })
+                });
+                if (!res.ok) throw new Error((await res.json()).error || 'error');
+                const updated = await res.json();
+                familyMaterials[editingMaterialIndex] = updated;
+            } else {
+                familyMaterials[editingMaterialIndex].issued = newIssued;
+            }
+            closeMaterialsModal();
+            renderFamilyMaterials();
+        } catch (e) {
+            console.error(e);
+            showToast('Не удалось изменить статус выдачи.', 'error');
+        }
+    })();
+};
+
+if (matDeleteBtn) {
+    matDeleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.deleteCurrentMaterial();
+    });
+}
+if (matIssuedBtn) {
+    matIssuedBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.markMaterialIssued();
+    });
+}
+
+if (fmatDeleteBtn) {
+    fmatDeleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.deleteCurrentFactionMaterial();
+    });
+}
+if (fmatIssuedBtn) {
+    fmatIssuedBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.markFactionMaterialIssued();
+    });
+}
+
+async function deleteFamily(i) {
+    const doDelete = async () => {
+        const f = families[i];
+        if (!f) return;
+        if (f.dbId != null) {
+            try {
+                const res = await fetch(`/api/families/${f.dbId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+            } catch (e) {
+                console.error(e);
+                alert('Не удалось удалить запись.');
+                return;
+            }
+        }
+        families.splice(i, 1);
+        renderFamilies();
+    };
+    openConfirm({
+        title: 'Удалить семью',
+        message: 'Вы уверены, что хотите удалить эту семью?',
+        onConfirm: doDelete
+    });
+}
+
+document.getElementById('family-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const editIndex = document.getElementById('edit-index').value;
+    const data = {
+        name: document.getElementById('fam-name').value.trim(),
+        id: document.getElementById('fam-id').value.trim(),
+        leader: document.getElementById('fam-leader').value.trim(),
+        discord: document.getElementById('fam-discord').value.trim()
+    };
+    if (data.name === '' || data.id === '') {
+        showToast('Заполните название и ID семьи.', 'error');
+        return;
+    }
+    const lowerName = data.name.toLowerCase();
+    const lowerId = data.id.toLowerCase();
+    const editIdxNum = editIndex === '' ? -1 : parseInt(editIndex, 10);
+    let nameExists = false;
+    let idExists = false;
+    families.forEach((f, idx) => {
+        if (idx === editIdxNum) return false;
+        if (f.name && f.name.toLowerCase() === lowerName) nameExists = true;
+        if (f.id && String(f.id).toLowerCase() === lowerId) idExists = true;
+    });
+    if (nameExists || idExists) {
+        if (nameExists) showToast('Семья с таким названием уже существует.', 'error');
+        if (idExists) showToast('Семья с таким ID уже существует.', 'error');
+        return;
+    }
+    if (editIndex === '') {
+        try {
+            const res = await fetch('/api/families', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+            const created = await res.json();
+            families.push(created);
+        } catch (err) {
+            console.error(err);
+            alert('Не удалось добавить семью: ' + err.message);
+            return;
+        }
+    } else {
+        const idx = parseInt(editIndex, 10);
+        const f = families[idx];
+        if (f.dbId == null) {
+            families[idx] = { ...f, ...data };
+        } else {
+            try {
+                const res = await fetch(`/api/families/${f.dbId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+                const updated = await res.json();
+                families[idx] = updated;
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось сохранить изменения: ' + err.message);
+                return;
+            }
+        }
+    }
+    closeModal();
+    renderFamilies();
+};
+
+leaderForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const idx = parseInt(document.getElementById('leader-edit-index').value, 10);
+    if (isNaN(idx)) { closeLeaderModal(); return; }
+    const current = leaders[idx];
+    const updated = {
+        ...current,
+        leader: document.getElementById('leader-name').value.trim(),
+        staticId: document.getElementById('leader-static').value.trim(),
+        term: document.getElementById('leader-term').value.trim(),
+        time: document.getElementById('leader-time').value
+    };
+    leaders[idx] = updated;
+    if (updated.dbId != null) {
+        try {
+            const res = await fetch(`/api/leaders/${updated.dbId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updated)
+            });
+            if (!res.ok) throw new Error('Failed to save leader');
+            leaders[idx] = await res.json();
+        } catch (err) {
+            console.error(err);
+            alert('Не удалось сохранить лидера.');
+        }
+    }
+    closeLeaderModal();
+    renderLeaders();
+};
+
+setPageContent(`<p style="color:#444">Выберите раздел в меню слева.</p>`);
 
