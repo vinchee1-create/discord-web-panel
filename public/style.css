@@ -467,7 +467,7 @@ body, button, input, select {
     gap: 12px;
     padding: 16px;
     height: auto;
-    min-height: 248px;
+    min-height: 0;
     margin-top: 0;
     overflow: visible;
     background-color: oklch(0.205 0 0);
