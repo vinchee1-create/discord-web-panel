@@ -245,7 +245,7 @@ function renderEventsRightPanel() {
     return `
       <div class="events-right-card">
         <div class="events-right-card-title">${title}</div>
-        <div class="events-right-card-date">${window.escapeHtml(dateRu)} — ${window.escapeHtml(dateRu)}</div>
+        <div class="events-right-card-date">${window.escapeHtml(dateRu)}</div>
       </div>
     `;
   }).join('');
