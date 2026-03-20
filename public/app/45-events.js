@@ -377,6 +377,58 @@ const eventsDayNewBtn = document.getElementById('events-day-new-btn');
 const eventsDayCancelBtn = document.getElementById('events-day-cancel-btn');
 const eventsDaySubmitBtn = document.getElementById('events-day-submit-btn');
 
+/** Безопасная подстановка в HTML-атрибуты (data-*) */
+function escapeAttr(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;');
+}
+
+/* Inline onclick с JSON.stringify ломал атрибут (вложенные "). Делегирование по data-ev-act. */
+if (eventsDayList && !window.__eventsDayListDelegationBound) {
+  window.__eventsDayListDelegationBound = true;
+  eventsDayList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-ev-act]');
+    if (!btn || !eventsDayList.contains(btn)) return;
+    const act = btn.getAttribute('data-ev-act');
+    const iso = btn.getAttribute('data-ev-iso') || '';
+    if (act === 'expand') {
+      const dbidStr = btn.getAttribute('data-ev-dbid');
+      const dbId = dbidStr === '' || dbidStr == null ? null : Number(dbidStr);
+      const title = btn.getAttribute('data-ev-title') || '';
+      const desc = btn.getAttribute('data-ev-desc') || '';
+      window.expandEventToPage(
+        iso,
+        title,
+        dbId != null && !Number.isNaN(dbId) ? dbId : null,
+        desc
+      );
+      return;
+    }
+    if (act === 'edit-sys') {
+      const sk = btn.getAttribute('data-ev-sk');
+      window.startEditSystemEvent(iso, sk);
+      return;
+    }
+    if (act === 'del-sys') {
+      const sk = btn.getAttribute('data-ev-sk');
+      window.deleteSystemEvent(iso, sk);
+      return;
+    }
+    if (act === 'edit-db') {
+      const id = Number(btn.getAttribute('data-ev-dbid'));
+      if (!Number.isNaN(id)) window.startEditEvent(id);
+      return;
+    }
+    if (act === 'del-db') {
+      const id = Number(btn.getAttribute('data-ev-dbid'));
+      if (!Number.isNaN(id)) window.deleteEvent(id);
+    }
+  });
+}
+
 function renderEventsDayList(isoDate) {
   const items = getEventsForDate(isoDate);
   if (!items.length) {
@@ -388,17 +440,24 @@ function renderEventsDayList(isoDate) {
     const isSystem = ev.kind === 'system';
     const title = window.escapeHtml(ev.title || '');
     const desc = window.escapeHtml(ev.description || '');
+    const rawTitle = ev.title || '';
+    const rawDesc = ev.description != null ? ev.description : '';
     const expandBtn = `
-      <button type="button" class="btn-icon btn-icon-expand" title="Развернуть на отдельной странице" aria-label="Развернуть" onclick="window.expandEventToPage(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.title || '')}, ${isSystem ? 'null' : ev.dbId}, ${JSON.stringify(ev.description != null ? ev.description : '')})">${expandIconSvg()}</button>
+      <button type="button" class="btn-icon btn-icon-expand" title="Развернуть на отдельной странице" aria-label="Развернуть"
+        data-ev-act="expand"
+        data-ev-iso="${escapeAttr(isoDate)}"
+        data-ev-title="${escapeAttr(rawTitle)}"
+        data-ev-dbid="${isSystem ? '' : String(ev.dbId)}"
+        data-ev-desc="${escapeAttr(rawDesc)}">${expandIconSvg()}</button>
     `;
     const editDelete = isSystem
       ? `
-        <button type="button" class="btn-icon" title="Редактировать" onclick="window.startEditSystemEvent(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.systemKey)})">${editIconSvg()}</button>
-        <button type="button" class="btn-icon btn-icon-delete" title="Удалить" onclick="window.deleteSystemEvent(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.systemKey)})">${trashIconSvg()}</button>
+        <button type="button" class="btn-icon" title="Редактировать" data-ev-act="edit-sys" data-ev-iso="${escapeAttr(isoDate)}" data-ev-sk="${escapeAttr(ev.systemKey)}">${editIconSvg()}</button>
+        <button type="button" class="btn-icon btn-icon-delete" title="Удалить" data-ev-act="del-sys" data-ev-iso="${escapeAttr(isoDate)}" data-ev-sk="${escapeAttr(ev.systemKey)}">${trashIconSvg()}</button>
       `
       : `
-        <button type="button" class="btn-icon" title="Редактировать" onclick="startEditEvent(${ev.dbId})">${editIconSvg()}</button>
-        <button type="button" class="btn-icon btn-icon-delete" title="Удалить" onclick="deleteEvent(${ev.dbId})">${trashIconSvg()}</button>
+        <button type="button" class="btn-icon" title="Редактировать" data-ev-act="edit-db" data-ev-dbid="${escapeAttr(String(ev.dbId))}">${editIconSvg()}</button>
+        <button type="button" class="btn-icon btn-icon-delete" title="Удалить" data-ev-act="del-db" data-ev-dbid="${escapeAttr(String(ev.dbId))}">${trashIconSvg()}</button>
       `;
     const actions = `
       <div class="events-day-item-actions">
@@ -555,7 +614,6 @@ window.startEditSystemEvent = function startEditSystemEvent(isoDate, systemKey) 
 
 window.deleteSystemEvent = async function deleteSystemEvent(isoDate, systemKey) {
   if (systemKey !== 'vzz' && systemKey !== 'vzm') return;
-  if (!confirm('Удалить это мероприятие на выбранную дату?')) return;
   try {
     const res = await fetch('/api/events/system-suppress', {
       method: 'POST',
@@ -577,7 +635,6 @@ window.deleteSystemEvent = async function deleteSystemEvent(isoDate, systemKey) 
 };
 
 window.deleteEvent = async function deleteEvent(dbId) {
-  if (!confirm('Удалить мероприятие?')) return;
   try {
     const res = await fetch(`/api/events/${dbId}`, { method: 'DELETE' });
     if (!res.ok && res.status !== 204) throw new Error((await res.json()).error || 'error');
