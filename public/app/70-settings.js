@@ -29,12 +29,6 @@ window.renderSettings = async function renderSettings() {
           <span class="settings-status-text">Проверка...</span>
         </div>
       </div>
-      <div class="settings-form">
-        <label>ID Кураторской роли</label>
-        <div class="settings-form-row">
-          <div class="settings-form-static">Настраивается через кнопку редактирования</div>
-        </div>
-      </div>
     </div>
   `).join('');
 
