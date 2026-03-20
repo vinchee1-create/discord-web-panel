@@ -1044,6 +1044,155 @@ body, button, input, select {
     white-space: pre-wrap;
 }
 
+/* Таблица «Семьи и команды» на странице развёрнутого мероприятия */
+.event-detail-fe-section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #1f1f1f;
+}
+.event-detail-fe-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.event-detail-fe-heading {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.02em;
+}
+.event-detail-fe-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.event-detail-fe-table {
+    min-width: 1100px;
+}
+.event-detail-fe-table th.event-fe-th-n,
+.event-detail-fe-table td.event-fe-col-n {
+    width: 72px;
+    white-space: nowrap;
+}
+.event-fe-n-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.event-fe-num {
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    min-width: 1.25em;
+}
+.event-detail-fe-table select.event-fe-family {
+    min-width: 140px;
+    max-width: 220px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+    background: #141414;
+    color: #fff;
+    font-size: 12px;
+}
+.event-detail-fe-table select.event-fe-colour {
+    min-width: 96px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+    background: #141414;
+    color: #fff;
+    font-size: 12px;
+    text-transform: lowercase;
+}
+.event-detail-fe-table .event-fe-id-cell code {
+    font-size: 12px;
+    color: rgba(255,255,255,0.88);
+}
+.event-detail-fe-table .event-fe-cmd {
+    max-width: 240px;
+    vertical-align: top;
+}
+.event-detail-fe-table .event-fe-cmd code {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+    word-break: break-all;
+    white-space: pre-wrap;
+    color: rgba(255,255,255,0.82);
+}
+.event-detail-fe-table .event-fe-curator {
+    width: 100%;
+    min-width: 120px;
+    max-width: 200px;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #2a2a2a;
+    background: #141414;
+    color: #fff;
+    font-size: 12px;
+}
+.event-detail-fe-table .event-fe-check-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+.event-fe-check-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    margin: 0;
+}
+.event-fe-check-label input.event-fe-flag {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+.event-fe-check-ui {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255,255,255,0.28);
+    border-radius: 6px;
+    background: rgba(0,0,0,0.2);
+    pointer-events: none;
+    transition: background 0.12s, border-color 0.12s;
+}
+.event-fe-flag:checked + .event-fe-check-ui {
+    background: rgba(46, 160, 90, 0.35);
+    border-color: rgba(100, 220, 140, 0.75);
+}
+.event-fe-flag:focus + .event-fe-check-ui {
+    outline: 2px solid rgba(255,255,255,0.2);
+    outline-offset: 2px;
+}
+.event-fe-empty {
+    text-align: center;
+    padding: 20px 16px !important;
+    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+}
+.event-detail-fe-table .event-fe-del {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.event-detail-fe-table .event-fe-del svg {
+    width: 14px;
+    height: 14px;
+}
+
 .events-expanded {
     margin-top: 6px;
     display: flex;

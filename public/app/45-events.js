@@ -234,6 +234,184 @@ function parseEventDescriptionForDetail(desc) {
   return { typeValue: '—', extra: raw };
 }
 
+window.EVENT_FE_COLOURS = [
+  'red', 'white', 'blue', 'purple', 'green', 'brown', 'cyan', 'orange',
+  'beige', 'gray', 'yellow', 'pink', 'black', 'rgb'
+];
+
+function feEscapeAttr(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;');
+}
+
+function eventFeCommands(gameId, colour) {
+  const gid = String(gameId || '').trim();
+  if (!gid) return { temp: '—', on: '—', off: '—' };
+  const c = String(colour || 'white').toLowerCase();
+  return {
+    temp: `/tempfamily ${gid}`,
+    on: `/feventon ${gid} 20 ${c} 0 0`,
+    off: `/feventoff ${gid}`
+  };
+}
+
+window.buildEventDetailFeRowsHtml = function buildEventDetailFeRowsHtml(rows) {
+  const fams = window.families || [];
+  if (!rows.length) {
+    return `<tr><td colspan="11" class="event-fe-empty">Нет строк. Нажмите «Добавить строку».</td></tr>`;
+  }
+  return rows.map((row, i) => {
+    const n = i + 1;
+    const famOpts = [
+      '<option value="">— не выбрано —</option>',
+      ...fams.map(f => {
+        const sel = Number(row.familyRefId) === Number(f.dbId) ? ' selected' : '';
+        return `<option value="${String(f.dbId)}"${sel}>${window.escapeHtml(f.name)}</option>`;
+      })
+    ].join('');
+    const colOpts = window.EVENT_FE_COLOURS.map(c => {
+      const sel = String(row.colour || 'white').toLowerCase() === c ? ' selected' : '';
+      return `<option value="${c}"${sel}>${c}</option>`;
+    }).join('');
+    const gameId = row.familyGameId || '';
+    const cmds = eventFeCommands(gameId, row.colour);
+    return `
+      <tr data-fe-row-id="${row.rowId}">
+        <td class="event-fe-col-n">
+          <div class="event-fe-n-cell">
+            <span class="event-fe-num">${n}</span>
+            <button type="button" class="btn-icon btn-icon-delete event-fe-del" data-row-id="${row.rowId}" title="Удалить строку">${trashIconSvg()}</button>
+          </div>
+        </td>
+        <td>
+          <select class="event-fe-family" data-row-id="${row.rowId}" aria-label="Семья">${famOpts}</select>
+        </td>
+        <td>
+          <select class="event-fe-colour" data-row-id="${row.rowId}" aria-label="Цвет">${colOpts}</select>
+        </td>
+        <td class="event-fe-id-cell"><code>${window.escapeHtml(gameId) || '—'}</code></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><code>${window.escapeHtml(cmds.temp)}</code></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.on)}"><code>${window.escapeHtml(cmds.on)}</code></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.off)}"><code>${window.escapeHtml(cmds.off)}</code></td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="died" ${row.died ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+        <td><input type="text" class="event-fe-curator" data-row-id="${row.rowId}" value="${feEscapeAttr(row.curatorName)}" placeholder="Имя" autocomplete="off" /></td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="lFlag" ${row.lFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="wFlag" ${row.wFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+      </tr>`;
+  }).join('');
+};
+
+window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(pageKey) {
+  const tbody = document.getElementById('event-detail-fe-tbody');
+  if (!tbody || !pageKey) return;
+  try {
+    const res = await fetch(`/api/event-detail-rows?pageKey=${encodeURIComponent(pageKey)}`);
+    const rows = res.ok ? await res.json() : [];
+    if (typeof window.loadFamilies === 'function') await window.loadFamilies();
+    tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="11" class="event-fe-empty">Не удалось загрузить строки.</td></tr>`;
+  }
+};
+
+window.eventFeAddRow = async function eventFeAddRow(pageKey) {
+  try {
+    const res = await fetch('/api/event-detail-rows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageKey })
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'error');
+    await window.refreshEventDetailFeTable(pageKey);
+  } catch (e) {
+    console.error(e);
+    window.showToast('Не удалось добавить строку.', 'error');
+  }
+};
+
+window.eventFeDeleteRow = async function eventFeDeleteRow(rowId, pageKey) {
+  try {
+    const res = await fetch(`/api/event-detail-rows/${rowId}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 204) throw new Error((await res.json()).error || 'error');
+    await window.refreshEventDetailFeTable(pageKey);
+  } catch (e) {
+    console.error(e);
+    window.showToast('Не удалось удалить строку.', 'error');
+  }
+};
+
+async function eventFePutRow(rowId, body) {
+  const res = await fetch(`/api/event-detail-rows/${rowId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'error');
+  return res.json();
+}
+
+function attachEventDetailFeListeners(pageKey) {
+  const wrap = document.getElementById('event-detail-fe-wrap');
+  const addBtn = document.getElementById('event-detail-fe-add');
+  if (addBtn) addBtn.onclick = () => window.eventFeAddRow(pageKey);
+  if (!wrap) return;
+  if (wrap.dataset.feListeners === '1') return;
+  wrap.dataset.feListeners = '1';
+  wrap.addEventListener('change', async (e) => {
+    const t = e.target;
+    const rowId = t.getAttribute('data-row-id');
+    if (!rowId) return;
+    try {
+      if (t.classList.contains('event-fe-family')) {
+        const v = t.value;
+        await eventFePutRow(rowId, { familyRefId: v === '' ? null : Number(v) });
+      } else if (t.classList.contains('event-fe-colour')) {
+        await eventFePutRow(rowId, { colour: t.value });
+      } else if (t.classList.contains('event-fe-flag')) {
+        const field = t.getAttribute('data-field');
+        if (field === 'died') await eventFePutRow(rowId, { died: t.checked });
+        else if (field === 'lFlag') await eventFePutRow(rowId, { lFlag: t.checked });
+        else if (field === 'wFlag') await eventFePutRow(rowId, { wFlag: t.checked });
+      }
+      await window.refreshEventDetailFeTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      window.showToast('Не удалось сохранить.', 'error');
+      await window.refreshEventDetailFeTable(pageKey);
+    }
+  });
+  wrap.addEventListener('focusout', async (e) => {
+    const t = e.target;
+    if (!t.classList.contains('event-fe-curator')) return;
+    const rowId = t.getAttribute('data-row-id');
+    if (!rowId) return;
+    try {
+      await eventFePutRow(rowId, { curatorName: t.value.trim() });
+      await window.refreshEventDetailFeTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      window.showToast('Не удалось сохранить следящего.', 'error');
+      await window.refreshEventDetailFeTable(pageKey);
+    }
+  });
+  wrap.addEventListener('click', (e) => {
+    const del = e.target.closest('.event-fe-del');
+    if (!del) return;
+    const rid = del.getAttribute('data-row-id');
+    if (rid) window.eventFeDeleteRow(rid, pageKey);
+  });
+}
+
 function resolveEventForSegment(segment) {
   const parsed = parseEventDetailSegment(segment);
   if (!parsed) return null;
@@ -306,6 +484,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
   const extraBlock = extra
     ? `<div class="event-detail-extra">${window.escapeHtml(extra)}</div>`
     : '';
+  const pageKey = `${info.iso}|${parsed.full}`;
 
   window.setPageContent(`
     <div class="event-detail-page">
@@ -327,12 +506,55 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
             </div>
           </div>
           ${extraBlock}
+          <div class="event-detail-fe-section">
+            <div class="event-detail-fe-toolbar">
+              <h2 class="event-detail-fe-heading">Семьи и команды</h2>
+              <button type="button" class="btn-month" id="event-detail-fe-add">
+                <span class="btn-month-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg></span>
+                <span>Добавить строку</span>
+              </button>
+            </div>
+            <div class="table-container event-detail-fe-wrap" id="event-detail-fe-wrap">
+              <table class="data-table event-detail-fe-table">
+                <thead>
+                  <tr>
+                    <th class="event-fe-th-n">N</th>
+                    <th>Семья</th>
+                    <th>Цвет</th>
+                    <th>ID</th>
+                    <th>/tempfamily</th>
+                    <th>/feventon</th>
+                    <th>/feventoff</th>
+                    <th>Погибли</th>
+                    <th>Следящий</th>
+                    <th>L</th>
+                    <th>W</th>
+                  </tr>
+                </thead>
+                <tbody id="event-detail-fe-tbody">
+                  <tr><td colspan="11" class="event-fe-empty">Загрузка…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `);
   const back = document.getElementById('event-detail-back');
   if (back) back.onclick = () => window.goBackToEventsCalendar();
+
+  Promise.all([
+    typeof window.loadFamilies === 'function' ? window.loadFamilies() : Promise.resolve(),
+    fetch(`/api/event-detail-rows?pageKey=${encodeURIComponent(pageKey)}`)
+      .then(r => (r.ok ? r.json() : []))
+      .catch(() => [])
+  ]).then(([, rows]) => {
+    const tbody = document.getElementById('event-detail-fe-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
+    attachEventDetailFeListeners(pageKey);
+  });
 };
 
 window.expandEventToPage = function expandEventToPage(iso, title, dbId, prefilledDescription) {

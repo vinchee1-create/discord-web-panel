@@ -241,6 +241,35 @@ async function initEventsTable() {
     }
 }
 
+const EVENT_FE_COLOURS = new Set([
+    'red', 'white', 'blue', 'purple', 'green', 'brown', 'cyan', 'orange',
+    'beige', 'gray', 'yellow', 'pink', 'black', 'rgb'
+]);
+
+async function initEventDetailFamilyRowsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS event_detail_family_rows (
+                id SERIAL PRIMARY KEY,
+                page_key VARCHAR(512) NOT NULL,
+                sort_index INTEGER NOT NULL DEFAULT 0,
+                family_ref_id INTEGER REFERENCES families(id) ON DELETE SET NULL,
+                colour VARCHAR(32) NOT NULL DEFAULT 'white',
+                died BOOLEAN NOT NULL DEFAULT FALSE,
+                curator_name VARCHAR(255) NOT NULL DEFAULT '',
+                l_flag BOOLEAN NOT NULL DEFAULT FALSE,
+                w_flag BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_edfr_page_sort ON event_detail_family_rows (page_key, sort_index)`);
+        console.log('✅ Таблица event_detail_family_rows готова');
+    } catch (e) {
+        console.error('❌ Ошибка event_detail_family_rows:', e.message);
+    }
+}
+
 async function initAccountsTable() {
     if (!pool) return;
     try {
@@ -940,6 +969,150 @@ app.delete('/api/events/:id', async (req, res) => {
     }
 });
 
+function mapEventFeRow(r) {
+    return {
+        rowId: r.id,
+        sortIndex: r.sort_index,
+        familyRefId: r.family_ref_id,
+        familyName: r.family_name || '',
+        familyGameId: r.family_game_id || '',
+        colour: r.colour || 'white',
+        died: Boolean(r.died),
+        curatorName: r.curator_name || '',
+        lFlag: Boolean(r.l_flag),
+        wFlag: Boolean(r.w_flag)
+    };
+}
+
+app.get('/api/event-detail-rows', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.json([]);
+    const pageKey = typeof req.query.pageKey === 'string' ? req.query.pageKey.trim() : '';
+    if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
+    try {
+        const { rows } = await pool.query(
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+                    f.name AS family_name, f.family_id AS family_game_id
+             FROM event_detail_family_rows r
+             LEFT JOIN families f ON f.id = r.family_ref_id
+             WHERE r.page_key = $1
+             ORDER BY r.sort_index ASC, r.id ASC`,
+            [pageKey]
+        );
+        res.json(rows.map(mapEventFeRow));
+    } catch (e) {
+        console.error('GET /api/event-detail-rows:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/event-detail-rows', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const pageKey = typeof req.body?.pageKey === 'string' ? req.body.pageKey.trim() : '';
+    if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
+    try {
+        const { rows: mx } = await pool.query(
+            'SELECT COALESCE(MAX(sort_index), -1) + 1 AS n FROM event_detail_family_rows WHERE page_key = $1',
+            [pageKey]
+        );
+        const sortIndex = mx[0]?.n ?? 0;
+        const { rows } = await pool.query(
+            `INSERT INTO event_detail_family_rows (page_key, sort_index, colour)
+             VALUES ($1, $2, 'white')
+             RETURNING id, page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag`,
+            [pageKey, sortIndex]
+        );
+        const ins = rows[0];
+        const { rows: full } = await pool.query(
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+                    f.name AS family_name, f.family_id AS family_game_id
+             FROM event_detail_family_rows r
+             LEFT JOIN families f ON f.id = r.family_ref_id
+             WHERE r.id = $1`,
+            [ins.id]
+        );
+        res.status(201).json(mapEventFeRow(full[0]));
+    } catch (e) {
+        console.error('POST /api/event-detail-rows:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/event-detail-rows/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const rowId = parseInt(req.params.id, 10);
+    if (isNaN(rowId)) return res.status(400).json({ error: 'Invalid id' });
+    const b = req.body || {};
+    try {
+        const { rows: curRows } = await pool.query(
+            'SELECT family_ref_id, colour, died, curator_name, l_flag, w_flag FROM event_detail_family_rows WHERE id = $1',
+            [rowId]
+        );
+        if (!curRows[0]) return res.status(404).json({ error: 'Not found' });
+        const cur = curRows[0];
+        let familyRefId = cur.family_ref_id;
+        if (Object.prototype.hasOwnProperty.call(b, 'familyRefId')) {
+            if (b.familyRefId === null || b.familyRefId === '') familyRefId = null;
+            else {
+                const n = parseInt(b.familyRefId, 10);
+                if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
+                const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
+                if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
+                familyRefId = n;
+            }
+        }
+        let colour = cur.colour;
+        if (typeof b.colour === 'string') {
+            const c = b.colour.trim().toLowerCase();
+            if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
+            colour = c;
+        }
+        let died = cur.died;
+        if (typeof b.died === 'boolean') died = b.died;
+        let curatorName = cur.curator_name;
+        if (typeof b.curatorName === 'string') curatorName = b.curatorName.slice(0, 255);
+        let lFlag = cur.l_flag;
+        if (typeof b.lFlag === 'boolean') lFlag = b.lFlag;
+        let wFlag = cur.w_flag;
+        if (typeof b.wFlag === 'boolean') wFlag = b.wFlag;
+        await pool.query(
+            `UPDATE event_detail_family_rows
+             SET family_ref_id=$1, colour=$2, died=$3, curator_name=$4, l_flag=$5, w_flag=$6
+             WHERE id=$7`,
+            [familyRefId, colour, died, curatorName, lFlag, wFlag, rowId]
+        );
+        const { rows: full } = await pool.query(
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+                    f.name AS family_name, f.family_id AS family_game_id
+             FROM event_detail_family_rows r
+             LEFT JOIN families f ON f.id = r.family_ref_id
+             WHERE r.id = $1`,
+            [rowId]
+        );
+        res.json(mapEventFeRow(full[0]));
+    } catch (e) {
+        console.error('PUT /api/event-detail-rows/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/event-detail-rows/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const rowId = parseInt(req.params.id, 10);
+    if (isNaN(rowId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        const r = await pool.query('DELETE FROM event_detail_family_rows WHERE id=$1', [rowId]);
+        if (r.rowCount === 0) return res.status(404).json({ error: 'Not found' });
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/event-detail-rows/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
 function renderMain(req, res, activePage, opts = {}) {
     const data = {
@@ -997,6 +1170,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initFamilyMaterialsTable();
     await initFactionMaterialsTable();
     await initEventsTable();
+    await initEventDetailFamilyRowsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
