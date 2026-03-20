@@ -1258,6 +1258,11 @@ body, button, input, select {
     color: rgba(255,255,255,0.82);
     max-width: 100%;
 }
+.event-detail-fe-table td:nth-child(2),
+.event-detail-fe-table td:nth-child(3),
+.event-detail-ff-table td:nth-child(2) {
+    text-align: center;
+}
 .event-detail-fe-table th.event-fe-th-curator,
 .event-detail-fe-table td.event-fe-curator-cell {
     text-align: center;

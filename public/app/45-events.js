@@ -899,7 +899,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                 <thead>
                   <tr>
                     <th class="event-fe-th-n">N</th>
-                    <th>Семья</th>
+                    <th>Family</th>
                     <th>Colour</th>
                     <th class="event-fe-th-id">ID</th>
                     <th class="event-fe-th-cmd">/tempfamily</th>
