@@ -1076,7 +1076,7 @@ body, button, input, select {
 .event-detail-fe-wrap.table-container {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-right: 0;
+    padding-right: 34px;
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
@@ -1132,15 +1132,15 @@ body, button, input, select {
     background: transparent;
     color: rgba(255, 255, 255, 0.55);
     cursor: pointer;
-    opacity: 0;
+    opacity: 0.18;
     pointer-events: auto;
     transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
 }
 .event-detail-fe-table .event-fe-del.event-fe-del-outside {
-    position: sticky;
-    right: -18px;
-    top: 0;
-    transform: none;
+    position: absolute;
+    right: -28px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 22px;
     height: 22px;
     z-index: 3;
