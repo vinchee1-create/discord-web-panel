@@ -1069,9 +1069,48 @@ body, button, input, select {
 }
 .event-detail-fe-table th.event-fe-th-n,
 .event-detail-fe-table td.event-fe-col-n {
-    width: 44px;
+    width: 56px;
+    min-width: 52px;
     text-align: center;
     white-space: nowrap;
+    vertical-align: middle;
+}
+.event-fe-n-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+/* Незаметное удаление: почти скрыто, чуть заметнее при наведении на строку */
+.event-detail-fe-table .event-fe-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.22);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+.event-detail-fe-table .event-fe-del svg {
+    width: 13px;
+    height: 13px;
+    display: block;
+}
+.event-detail-fe-table tr:not(.event-fe-draft-row):hover .event-fe-del {
+    color: rgba(255, 255, 255, 0.42);
+}
+.event-detail-fe-table .event-fe-del:hover,
+.event-detail-fe-table .event-fe-del:focus-visible {
+    color: rgba(248, 113, 113, 0.95);
+    background: rgba(248, 113, 113, 0.08);
+    outline: none;
 }
 .event-detail-fe-table th.event-fe-th-id,
 .event-detail-fe-table th.event-fe-th-cmd,
@@ -1081,6 +1120,41 @@ body, button, input, select {
 .event-fe-num {
     font-weight: 600;
     color: rgba(255,255,255,0.75);
+}
+/* Строка «Пустая»: визуальный разрыв, без номера; селект едва заметен до наведения */
+.event-detail-fe-table tr.event-fe-spacer-row td.event-fe-spacer-cell {
+    padding: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.25);
+    vertical-align: middle;
+}
+.event-fe-spacer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 14px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+}
+.event-detail-fe-table tr.event-fe-spacer-row .event-fe-spacer-family {
+    min-width: 160px;
+    max-width: 240px;
+    opacity: 0.22;
+    transition: opacity 0.2s ease;
+}
+.event-detail-fe-table tr.event-fe-spacer-row:hover .event-fe-spacer-family {
+    opacity: 0.92;
+}
+.event-detail-fe-table tr.event-fe-spacer-row .event-fe-spacer-family:focus {
+    opacity: 1;
+}
+.event-detail-fe-table tr.event-fe-spacer-row .event-fe-del {
+    opacity: 0.18;
+}
+.event-detail-fe-table tr.event-fe-spacer-row:hover .event-fe-del {
+    opacity: 0.5;
 }
 /* Селекты: своя стрелка, отступ справа как слева у текста (симметрия с полем «Имя») */
 .event-detail-fe-table select.event-fe-family,
@@ -1105,6 +1179,7 @@ body, button, input, select {
     min-width: 96px;
     max-width: 140px;
     text-transform: lowercase;
+    transition: background-color 0.2s ease;
 }
 .event-detail-fe-table .event-fe-td-center,
 .event-detail-fe-table .event-fe-id-cell {

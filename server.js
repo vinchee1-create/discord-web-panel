@@ -260,9 +260,13 @@ async function initEventDetailFamilyRowsTable() {
                 curator_name VARCHAR(255) NOT NULL DEFAULT '',
                 l_flag BOOLEAN NOT NULL DEFAULT FALSE,
                 w_flag BOOLEAN NOT NULL DEFAULT FALSE,
+                is_spacer BOOLEAN NOT NULL DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
         `);
+        await pool.query(
+            `ALTER TABLE event_detail_family_rows ADD COLUMN IF NOT EXISTS is_spacer BOOLEAN NOT NULL DEFAULT FALSE`
+        );
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_edfr_page_sort ON event_detail_family_rows (page_key, sort_index)`);
         console.log('✅ Таблица event_detail_family_rows готова');
     } catch (e) {
@@ -980,7 +984,8 @@ function mapEventFeRow(r) {
         died: Boolean(r.died),
         curatorName: r.curator_name || '',
         lFlag: Boolean(r.l_flag),
-        wFlag: Boolean(r.w_flag)
+        wFlag: Boolean(r.w_flag),
+        isSpacer: Boolean(r.is_spacer)
     };
 }
 
@@ -991,7 +996,7 @@ app.get('/api/event-detail-rows', async (req, res) => {
     if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
     try {
         const { rows } = await pool.query(
-            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag, r.is_spacer,
                     f.name AS family_name, f.family_id AS family_game_id
              FROM event_detail_family_rows r
              LEFT JOIN families f ON f.id = r.family_ref_id
@@ -1013,38 +1018,47 @@ app.post('/api/event-detail-rows', async (req, res) => {
     const pageKey = typeof b.pageKey === 'string' ? b.pageKey.trim() : '';
     if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
     try {
+        const isSpacer = Boolean(b.isSpacer);
         let familyRefId = null;
-        if (b.familyRefId !== undefined && b.familyRefId !== null && b.familyRefId !== '') {
-            const n = parseInt(b.familyRefId, 10);
-            if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
-            const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
-            if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
-            familyRefId = n;
-        }
         let colour = 'white';
-        if (typeof b.colour === 'string') {
-            const c = b.colour.trim().toLowerCase();
-            if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
-            colour = c;
+        let died = false;
+        let curatorName = '';
+        let lFlag = false;
+        let wFlag = false;
+        if (isSpacer) {
+            familyRefId = null;
+        } else {
+            if (b.familyRefId !== undefined && b.familyRefId !== null && b.familyRefId !== '') {
+                const n = parseInt(b.familyRefId, 10);
+                if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
+                const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
+                if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
+                familyRefId = n;
+            }
+            if (typeof b.colour === 'string') {
+                const c = b.colour.trim().toLowerCase();
+                if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
+                colour = c;
+            }
+            died = Boolean(b.died);
+            curatorName = typeof b.curatorName === 'string' ? b.curatorName.slice(0, 255) : '';
+            lFlag = Boolean(b.lFlag);
+            wFlag = Boolean(b.wFlag);
         }
-        const died = Boolean(b.died);
-        const curatorName = typeof b.curatorName === 'string' ? b.curatorName.slice(0, 255) : '';
-        const lFlag = Boolean(b.lFlag);
-        const wFlag = Boolean(b.wFlag);
         const { rows: mx } = await pool.query(
             'SELECT COALESCE(MAX(sort_index), -1) + 1 AS n FROM event_detail_family_rows WHERE page_key = $1',
             [pageKey]
         );
         const sortIndex = mx[0]?.n ?? 0;
         const { rows } = await pool.query(
-            `INSERT INTO event_detail_family_rows (page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             RETURNING id, page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag`,
-            [pageKey, sortIndex, familyRefId, colour, died, curatorName, lFlag, wFlag]
+            `INSERT INTO event_detail_family_rows (page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag, is_spacer)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             RETURNING id, page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag, is_spacer`,
+            [pageKey, sortIndex, familyRefId, colour, died, curatorName, lFlag, wFlag, isSpacer]
         );
         const ins = rows[0];
         const { rows: full } = await pool.query(
-            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag, r.is_spacer,
                     f.name AS family_name, f.family_id AS family_game_id
              FROM event_detail_family_rows r
              LEFT JOIN families f ON f.id = r.family_ref_id
@@ -1066,44 +1080,58 @@ app.put('/api/event-detail-rows/:id', async (req, res) => {
     const b = req.body || {};
     try {
         const { rows: curRows } = await pool.query(
-            'SELECT family_ref_id, colour, died, curator_name, l_flag, w_flag FROM event_detail_family_rows WHERE id = $1',
+            'SELECT family_ref_id, colour, died, curator_name, l_flag, w_flag, is_spacer FROM event_detail_family_rows WHERE id = $1',
             [rowId]
         );
         if (!curRows[0]) return res.status(404).json({ error: 'Not found' });
         const cur = curRows[0];
+        let isSpacer = Boolean(cur.is_spacer);
+        if (Object.prototype.hasOwnProperty.call(b, 'isSpacer')) isSpacer = Boolean(b.isSpacer);
+
         let familyRefId = cur.family_ref_id;
-        if (Object.prototype.hasOwnProperty.call(b, 'familyRefId')) {
-            if (b.familyRefId === null || b.familyRefId === '') familyRefId = null;
-            else {
-                const n = parseInt(b.familyRefId, 10);
-                if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
-                const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
-                if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
-                familyRefId = n;
-            }
-        }
         let colour = cur.colour;
-        if (typeof b.colour === 'string') {
-            const c = b.colour.trim().toLowerCase();
-            if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
-            colour = c;
-        }
         let died = cur.died;
-        if (typeof b.died === 'boolean') died = b.died;
         let curatorName = cur.curator_name;
-        if (typeof b.curatorName === 'string') curatorName = b.curatorName.slice(0, 255);
         let lFlag = cur.l_flag;
-        if (typeof b.lFlag === 'boolean') lFlag = b.lFlag;
         let wFlag = cur.w_flag;
-        if (typeof b.wFlag === 'boolean') wFlag = b.wFlag;
+
+        if (isSpacer) {
+            familyRefId = null;
+            colour = 'white';
+            died = false;
+            curatorName = '';
+            lFlag = false;
+            wFlag = false;
+        } else {
+            if (Object.prototype.hasOwnProperty.call(b, 'familyRefId')) {
+                if (b.familyRefId === null || b.familyRefId === '') familyRefId = null;
+                else {
+                    const n = parseInt(b.familyRefId, 10);
+                    if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
+                    const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
+                    if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
+                    familyRefId = n;
+                }
+            }
+            if (typeof b.colour === 'string') {
+                const c = b.colour.trim().toLowerCase();
+                if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
+                colour = c;
+            }
+            if (typeof b.died === 'boolean') died = b.died;
+            if (typeof b.curatorName === 'string') curatorName = b.curatorName.slice(0, 255);
+            if (typeof b.lFlag === 'boolean') lFlag = b.lFlag;
+            if (typeof b.wFlag === 'boolean') wFlag = b.wFlag;
+        }
+
         await pool.query(
             `UPDATE event_detail_family_rows
-             SET family_ref_id=$1, colour=$2, died=$3, curator_name=$4, l_flag=$5, w_flag=$6
-             WHERE id=$7`,
-            [familyRefId, colour, died, curatorName, lFlag, wFlag, rowId]
+             SET family_ref_id=$1, colour=$2, died=$3, curator_name=$4, l_flag=$5, w_flag=$6, is_spacer=$7
+             WHERE id=$8`,
+            [familyRefId, colour, died, curatorName, lFlag, wFlag, isSpacer, rowId]
         );
         const { rows: full } = await pool.query(
-            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag,
+            `SELECT r.id, r.page_key, r.sort_index, r.family_ref_id, r.colour, r.died, r.curator_name, r.l_flag, r.w_flag, r.is_spacer,
                     f.name AS family_name, f.family_id AS family_game_id
              FROM event_detail_family_rows r
              LEFT JOIN families f ON f.id = r.family_ref_id

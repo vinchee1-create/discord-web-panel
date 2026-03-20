@@ -239,6 +239,31 @@ window.EVENT_FE_COLOURS = [
   'beige', 'gray', 'yellow', 'pink', 'black', 'rgb'
 ];
 
+/** Лёгкая подложка под селект «Цвет» (неяркая, на тёмном фоне) */
+window.EVENT_FE_COLOUR_TINT = {
+  red: 'rgba(200, 72, 72, 0.18)',
+  white: 'rgba(220, 220, 228, 0.12)',
+  blue: 'rgba(72, 118, 220, 0.2)',
+  purple: 'rgba(150, 96, 210, 0.2)',
+  green: 'rgba(72, 168, 96, 0.18)',
+  brown: 'rgba(168, 118, 72, 0.2)',
+  cyan: 'rgba(64, 188, 206, 0.18)',
+  orange: 'rgba(210, 132, 64, 0.2)',
+  beige: 'rgba(200, 182, 148, 0.16)',
+  gray: 'rgba(150, 150, 158, 0.18)',
+  yellow: 'rgba(210, 190, 72, 0.18)',
+  pink: 'rgba(210, 96, 148, 0.18)',
+  black: 'rgba(90, 90, 98, 0.28)',
+  rgb: 'rgba(110, 96, 200, 0.18)'
+};
+
+window.eventFeApplyColourSelectBg = function eventFeApplyColourSelectBg(selectEl) {
+  if (!selectEl || selectEl.tagName !== 'SELECT') return;
+  const key = String(selectEl.value || 'white').toLowerCase();
+  const tint = window.EVENT_FE_COLOUR_TINT[key] || window.EVENT_FE_COLOUR_TINT.white;
+  selectEl.style.backgroundColor = tint;
+};
+
 function feEscapeAttr(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -258,16 +283,21 @@ function eventFeCommands(gameId, colour) {
   };
 }
 
-function eventFeFamilyOptionsHtml(selectedDbId) {
+/** opts.isSpacer — строка-разделитель «Пустая» (без номера и данных) */
+function eventFeFamilyOptionsHtml(selectedDbId, opts = {}) {
+  const isSpacer = Boolean(opts.isSpacer);
   const fams = window.families || [];
-  const opts = [
-    '<option value="">— не выбрано —</option>',
+  const selEmpty = !isSpacer && (selectedDbId == null || selectedDbId === '');
+  const selSpacer = isSpacer;
+  const parts = [
+    `<option value=""${selEmpty ? ' selected' : ''}>— не выбрано —</option>`,
+    `<option value="__spacer__"${selSpacer ? ' selected' : ''}>Пустая</option>`,
     ...fams.map(f => {
-      const sel = Number(selectedDbId) === Number(f.dbId) ? ' selected' : '';
+      const sel = !isSpacer && Number(selectedDbId) === Number(f.dbId) ? ' selected' : '';
       return `<option value="${String(f.dbId)}"${sel}>${window.escapeHtml(f.name)}</option>`;
     })
   ];
-  return opts.join('');
+  return parts.join('');
 }
 
 function eventFeColourOptionsHtml(selectedColour) {
@@ -278,16 +308,32 @@ function eventFeColourOptionsHtml(selectedColour) {
   }).join('');
 }
 
-function buildEventDetailFePersistedRowHtml(row, i) {
-  const n = i + 1;
-  const famOpts = eventFeFamilyOptionsHtml(row.familyRefId);
+function buildEventDetailFeSpacerRowHtml(row) {
+  const rid = row.rowId;
+  const famOpts = eventFeFamilyOptionsHtml(null, { isSpacer: true });
+  const delBtn = `<button type="button" class="event-fe-del" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>`;
+  return `
+      <tr class="event-fe-spacer-row" data-fe-row-id="${rid}" data-fe-spacer="1">
+        <td colspan="11" class="event-fe-spacer-cell">
+          <div class="event-fe-spacer-inner">
+            ${delBtn}
+            <select class="event-fe-family event-fe-spacer-family" data-row-id="${rid}" aria-label="Тип строки">${famOpts}</select>
+          </div>
+        </td>
+      </tr>`;
+}
+
+function buildEventDetailFePersistedRowHtml(row, displayNum) {
+  const n = displayNum;
+  const famOpts = eventFeFamilyOptionsHtml(row.familyRefId, { isSpacer: false });
   const colOpts = eventFeColourOptionsHtml(row.colour);
   const gameId = row.familyGameId || '';
   const cmds = eventFeCommands(gameId, row.colour);
   const rid = row.rowId;
+  const delBtn = `<button type="button" class="event-fe-del" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>`;
   return `
       <tr data-fe-row-id="${rid}">
-        <td class="event-fe-col-n"><span class="event-fe-num">${n}</span></td>
+        <td class="event-fe-col-n"><div class="event-fe-n-wrap"><span class="event-fe-num">${n}</span>${delBtn}</div></td>
         <td>
           <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
         </td>
@@ -313,13 +359,12 @@ function buildEventDetailFePersistedRowHtml(row, i) {
 
 /** Черновая строка: при заполнении уходит в БД, ниже появляется новая */
 function buildEventDetailFeDraftRowHtml(draftNum) {
-  const fams = window.families || [];
-  const famOpts = eventFeFamilyOptionsHtml(null);
+  const famOpts = eventFeFamilyOptionsHtml(null, { isSpacer: false });
   const colOpts = eventFeColourOptionsHtml('white');
   const cmds = eventFeCommands('', 'white');
   return `
       <tr data-fe-draft="1" class="event-fe-draft-row">
-        <td class="event-fe-col-n"><span class="event-fe-num">${draftNum}</span></td>
+        <td class="event-fe-col-n"><div class="event-fe-n-wrap"><span class="event-fe-num">${draftNum}</span></div></td>
         <td>
           <select class="event-fe-family event-fe-draft-control" aria-label="Семья">${famOpts}</select>
         </td>
@@ -351,16 +396,28 @@ function eventFeDraftRowIsMeaningful(tr) {
   const died = tr.querySelector('.event-fe-flag[data-field="died"]')?.checked;
   const l = tr.querySelector('.event-fe-flag[data-field="lFlag"]')?.checked;
   const w = tr.querySelector('.event-fe-flag[data-field="wFlag"]')?.checked;
-  return (fam && fam !== '') || col !== 'white' || cur.length > 0 || died || l || w;
+  return fam === '__spacer__' || (fam && fam !== '') || col !== 'white' || cur.length > 0 || died || l || w;
 }
 
 async function eventFePostDraftRow(tr, pageKey) {
   const fam = tr.querySelector('.event-fe-family');
   const col = tr.querySelector('.event-fe-colour');
   const cur = tr.querySelector('.event-fe-curator');
+  const famVal = fam.value;
+  if (famVal === '__spacer__') {
+    const body = { pageKey, isSpacer: true };
+    const res = await fetch('/api/event-detail-rows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'error');
+    return;
+  }
   const body = {
     pageKey,
-    familyRefId: fam.value === '' ? null : Number(fam.value),
+    isSpacer: false,
+    familyRefId: famVal === '' ? null : Number(famVal),
     colour: col.value,
     curatorName: cur.value.trim(),
     died: Boolean(tr.querySelector('.event-fe-flag[data-field="died"]')?.checked),
@@ -377,7 +434,14 @@ async function eventFePostDraftRow(tr, pageKey) {
 
 window.buildEventDetailFeRowsHtml = function buildEventDetailFeRowsHtml(rows) {
   const list = Array.isArray(rows) ? rows : [];
-  const persisted = list.map((row, i) => buildEventDetailFePersistedRowHtml(row, i)).join('');
+  let displayNum = 0;
+  const persisted = list
+    .map(row => {
+      if (row.isSpacer) return buildEventDetailFeSpacerRowHtml(row);
+      displayNum += 1;
+      return buildEventDetailFePersistedRowHtml(row, displayNum);
+    })
+    .join('');
   const draftNum = list.length + 1;
   return persisted + buildEventDetailFeDraftRowHtml(draftNum);
 };
@@ -390,10 +454,12 @@ window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(page
     const rows = res.ok ? await res.json() : [];
     if (typeof window.loadFamilies === 'function') await window.loadFamilies();
     tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
+    tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
   } catch (e) {
     console.error(e);
     if (typeof window.loadFamilies === 'function') await window.loadFamilies();
     tbody.innerHTML = window.buildEventDetailFeRowsHtml([]);
+    tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
   }
 };
 
@@ -407,6 +473,17 @@ async function eventFePutRow(rowId, body) {
   return res.json();
 }
 
+async function eventFeDeleteRow(rowId) {
+  const res = await fetch(`/api/event-detail-rows/${rowId}`, { method: 'DELETE' });
+  if (res.ok || res.status === 204) return;
+  let msg = 'error';
+  try {
+    const j = await res.json();
+    if (j?.error) msg = j.error;
+  } catch (_) { /* ignore */ }
+  throw new Error(msg);
+}
+
 function attachEventDetailFeListeners(pageKey) {
   const wrap = document.getElementById('event-detail-fe-wrap');
   if (!wrap) return;
@@ -414,6 +491,9 @@ function attachEventDetailFeListeners(pageKey) {
   wrap.dataset.feListeners = '1';
   wrap.addEventListener('change', async (e) => {
     const t = e.target;
+    if (t.classList?.contains('event-fe-colour')) {
+      window.eventFeApplyColourSelectBg(t);
+    }
     const draftTr = t.closest('tr[data-fe-draft="1"]');
     if (draftTr) {
       if (!eventFeDraftRowIsMeaningful(draftTr)) return;
@@ -432,7 +512,14 @@ function attachEventDetailFeListeners(pageKey) {
     try {
       if (t.classList.contains('event-fe-family')) {
         const v = t.value;
-        await eventFePutRow(rowId, { familyRefId: v === '' ? null : Number(v) });
+        if (v === '__spacer__') {
+          await eventFePutRow(rowId, { isSpacer: true });
+        } else {
+          await eventFePutRow(rowId, {
+            isSpacer: false,
+            familyRefId: v === '' ? null : Number(v)
+          });
+        }
       } else if (t.classList.contains('event-fe-colour')) {
         await eventFePutRow(rowId, { colour: t.value });
       } else if (t.classList.contains('event-fe-flag')) {
@@ -446,6 +533,23 @@ function attachEventDetailFeListeners(pageKey) {
       console.error(err);
       window.showToast('Не удалось сохранить.', 'error');
       await window.refreshEventDetailFeTable(pageKey);
+    }
+  });
+  wrap.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.event-fe-del');
+    if (!btn || !wrap.contains(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rowId = btn.getAttribute('data-row-id');
+    if (!rowId) return;
+    if (!window.confirm('Удалить эту строку?')) return;
+    try {
+      await eventFeDeleteRow(rowId);
+      if (typeof window.showToast === 'function') window.showToast('Строка удалена', 'success');
+      await window.refreshEventDetailFeTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      if (typeof window.showToast === 'function') window.showToast('Не удалось удалить строку.', 'error');
     }
   });
   wrap.addEventListener('focusout', async (e) => {
@@ -515,6 +619,16 @@ function resolveEventForSegment(segment) {
   };
 }
 
+/** Заголовок на развёрнутой странице: ВЗЗ/ВЗМ → полные названия */
+function eventDetailDisplayTitle(info, parsed) {
+  const slug = parsed?.slug || '';
+  const t = String(info?.title || '').trim().toUpperCase();
+  if (slug === 'vzm' || t === 'ВЗМ') return 'Война за материалы';
+  if (slug === 'vzz' || t === 'ВЗЗ') return 'Война за зону';
+  const raw = String(info?.title || '').trim();
+  return raw || 'Мероприятие';
+}
+
 /** Подгрузка месяца для детальной страницы (по дате из ссылки или sessionStorage) */
 window.prepareEventDetailPage = async function prepareEventDetailPage(segment) {
   const parsed = parseEventDetailSegment(segment);
@@ -540,7 +654,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     return;
   }
   const info = resolveEventForSegment(segment);
-  const title = window.escapeHtml(info.title || '');
+  const title = window.escapeHtml(eventDetailDisplayTitle(info, parsed));
   const descRaw = info.description || '';
   const { typeValue, extra } = parseEventDescriptionForDetail(descRaw);
   const typeHtml = window.escapeHtml(typeValue);
@@ -586,7 +700,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                     <th class="event-fe-th-cmd">/tempfamily</th>
                     <th class="event-fe-th-cmd">/feventon</th>
                     <th class="event-fe-th-cmd">/feventoff</th>
-                    <th class="event-fe-th-check">Погибли</th>
+                    <th class="event-fe-th-check">Присутствовали</th>
                     <th>Следящий</th>
                     <th class="event-fe-th-check">L</th>
                     <th class="event-fe-th-check">W</th>
@@ -614,6 +728,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     const tbody = document.getElementById('event-detail-fe-tbody');
     if (!tbody) return;
     tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
+    tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
     attachEventDetailFeListeners(pageKey);
   });
 };
