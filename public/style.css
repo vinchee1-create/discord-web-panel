@@ -1074,7 +1074,9 @@ body, button, input, select {
 }
 /* Не обрезаем содержимое по горизонтали — зона удаления визуально в «поле» контейнера */
 .event-detail-fe-wrap.table-container {
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-right: 88px;
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
@@ -1136,9 +1138,12 @@ body, button, input, select {
 }
 .event-detail-fe-table .event-fe-del.event-fe-del-outside {
     position: absolute;
-    right: -56px;
+    right: -72px;
     top: 50%;
     transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    z-index: 3;
 }
 .event-detail-fe-table .event-fe-del svg {
     width: 13px;
@@ -1299,8 +1304,8 @@ body, button, input, select {
 }
 .event-detail-fe-table th:nth-child(11),
 .event-detail-fe-table td:nth-child(11) {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 8px;
+    padding-right: 16px;
     width: 42px;
     min-width: 38px;
     max-width: 48px;
