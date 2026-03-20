@@ -34,8 +34,9 @@ function eventFeUpdateDraftToggleButton() {
   const btn = document.getElementById('event-fe-toggle-draft');
   if (!btn) return;
   const hidden = eventFeDraftRowHiddenRead();
-  const label = btn.querySelector('.event-fe-toggle-draft-label');
-  if (label) label.textContent = hidden ? 'Показать ввод' : 'Скрыть ввод';
+  btn.innerHTML = hidden ? eyeIconSvg() : eyeOffIconSvg();
+  btn.setAttribute('title', hidden ? 'Показать строку ввода' : 'Скрыть строку ввода');
+  btn.setAttribute('aria-label', hidden ? 'Показать строку ввода' : 'Скрыть строку ввода');
   btn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
 }
 
@@ -48,6 +49,41 @@ function eventFeBindDraftToggle() {
     eventFeUpdateDraftToggleButton();
   };
   eventFeUpdateDraftToggleButton();
+}
+
+function eventFeBindDeleteLastRowButton(pageKey) {
+  const btn = document.getElementById('event-fe-delete-last-row');
+  if (!btn || !pageKey) return;
+  btn.onclick = async () => {
+    try {
+      const listRes = await fetch(`/api/event-detail-rows?pageKey=${encodeURIComponent(pageKey)}`);
+      const rows = listRes.ok ? await listRes.json() : [];
+      const list = Array.isArray(rows) ? rows : [];
+      if (list.length === 0) {
+        if (typeof window.showToast === 'function') window.showToast('Нет сохранённых строк для удаления.', 'error');
+        return;
+      }
+      const last = list[list.length - 1];
+      const rowId = last?.rowId ?? last?.id;
+      if (rowId == null) {
+        if (typeof window.showToast === 'function') window.showToast('Не удалось определить строку.', 'error');
+        return;
+      }
+      const delRes = await fetch(`/api/event-detail-rows/${encodeURIComponent(rowId)}`, { method: 'DELETE' });
+      if (!delRes.ok && delRes.status !== 204) {
+        let msg = 'Не удалось удалить';
+        try {
+          const j = await delRes.json();
+          if (j?.error) msg = j.error;
+        } catch (_) { /* ignore */ }
+        throw new Error(msg);
+      }
+      await window.refreshEventDetailFeTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      if (typeof window.showToast === 'function') window.showToast(err.message || 'Не удалось удалить строку.', 'error');
+    }
+  };
 }
 
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -198,6 +234,16 @@ function editIconSvg() {
 
 function trashIconSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>`;
+}
+
+/** Показать строку ввода (когда сейчас скрыта) */
+function eyeIconSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+}
+
+/** Скрыть строку ввода (когда сейчас видна) */
+function eyeOffIconSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>`;
 }
 
 /** Иконка «развернуть» (отдельная страница по URL /<slug><DDMM>) */
@@ -700,9 +746,10 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
           <div class="event-detail-fe-section">
             <div class="event-detail-fe-toolbar">
               <h2 class="event-detail-fe-heading">Семьи и команды</h2>
-              <button type="button" class="btn-ghost event-fe-toggle-draft" id="event-fe-toggle-draft" aria-pressed="false" title="Скрыть или показать нижнюю строку для ввода">
-                <span class="event-fe-toggle-draft-label">Скрыть ввод</span>
-              </button>
+              <div class="event-detail-fe-toolbar-actions" role="group" aria-label="Действия с таблицей">
+                <button type="button" class="btn-icon btn-icon-delete event-fe-toolbar-icon" id="event-fe-delete-last-row" title="Удалить последнюю строку" aria-label="Удалить последнюю добавленную строку">${trashIconSvg()}</button>
+                <button type="button" class="btn-icon event-fe-toolbar-icon" id="event-fe-toggle-draft" aria-pressed="false" title="Скрыть строку ввода" aria-label="Скрыть строку ввода"></button>
+              </div>
             </div>
             <div class="table-container event-detail-fe-wrap" id="event-detail-fe-wrap">
               <table class="data-table event-detail-fe-table">
@@ -747,6 +794,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     attachEventDetailFeListeners(pageKey);
     eventFeApplyDraftRowVisibility();
     eventFeBindDraftToggle();
+    eventFeBindDeleteLastRowButton(pageKey);
   });
 };
 

@@ -1066,11 +1066,15 @@ body, button, input, select {
     flex: 1;
     min-width: 0;
 }
-.event-fe-toggle-draft {
+.event-detail-fe-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
-    font-size: 12px;
-    padding: 6px 12px;
-    white-space: nowrap;
+}
+.event-fe-toolbar-icon.btn-icon svg {
+    width: 18px;
+    height: 18px;
 }
 .event-detail-fe-wrap.table-container {
     overflow-x: auto;
