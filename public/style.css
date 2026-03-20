@@ -1074,9 +1074,7 @@ body, button, input, select {
 }
 /* Не обрезаем содержимое по горизонтали — зона удаления визуально в «поле» контейнера */
 .event-detail-fe-wrap.table-container {
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-right: 30px;
+    overflow: visible;
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
@@ -1133,12 +1131,12 @@ body, button, input, select {
     color: rgba(255, 255, 255, 0.55);
     cursor: pointer;
     opacity: 0;
-    pointer-events: none;
+    pointer-events: auto;
     transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
 }
 .event-detail-fe-table .event-fe-del.event-fe-del-outside {
     position: absolute;
-    right: -30px;
+    right: -56px;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -1147,11 +1145,10 @@ body, button, input, select {
     height: 13px;
     display: block;
 }
-/* Видимость только в правой зоне строки (как на скрине) */
-.event-detail-fe-table tbody tr:hover .event-fe-del.event-fe-del-outside,
+/* Показывать только при наведении на саму кнопку */
+.event-detail-fe-table tbody tr .event-fe-del.event-fe-del-outside:hover,
 .event-detail-fe-table .event-fe-del.event-fe-del-outside:focus-visible {
     opacity: 1;
-    pointer-events: auto;
 }
 .event-detail-fe-table .event-fe-del:hover,
 .event-detail-fe-table .event-fe-del:focus-visible {
