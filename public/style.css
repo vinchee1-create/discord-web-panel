@@ -1264,7 +1264,8 @@ body, button, input, select {
     vertical-align: middle;
 }
 /* Поверх .data-table th { text-align: left } ниже по файлу */
-.data-table.event-detail-fe-table th.event-fe-th-curator {
+.data-table.event-detail-fe-table thead th,
+.data-table.event-detail-ff-table thead th {
     text-align: center;
 }
 .event-detail-fe-table .event-fe-curator {
