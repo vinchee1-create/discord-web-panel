@@ -1082,12 +1082,14 @@ body, button, input, select {
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-reward-wrap {
-    margin-top: 20px;
-    width: min(50%, 560px);
+    margin-top: 28px;
+    width: 50%;
     margin-left: 0;
 }
 .event-detail-fe-reward-table {
+    width: 100%;
     min-width: 0;
+    table-layout: fixed;
 }
 .data-table.event-detail-fe-reward-table tbody tr {
     background: #111111;
