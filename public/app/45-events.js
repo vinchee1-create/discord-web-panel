@@ -584,18 +584,18 @@ function renderEventDetailFeRewards(rows) {
   const tbody = document.getElementById('event-detail-fe-reward-tbody');
   if (!tbody) return;
   const list = Array.isArray(rows) ? rows : [];
-  let displayNum = 0;
+  let rewardNum = 0;
   const rewardRows = [];
   for (const row of list) {
     if (row?.isSpacer) continue;
-    displayNum += 1;
     if (!row?.died) continue; // Только с Visit
+    rewardNum += 1;
     let rewardText = '—';
     if (row?.wFlag) rewardText = '13000 материалов';
     else if (row?.lFlag) rewardText = '4000 материалов';
     rewardRows.push(
       `<tr>
-        <td class="event-fe-td-center">${displayNum}</td>
+        <td class="event-fe-td-center">${rewardNum}</td>
         <td>${window.escapeHtml(row.familyName || '—')}</td>
         <td>${rewardText}</td>
       </tr>`
