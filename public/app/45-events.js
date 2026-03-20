@@ -323,6 +323,20 @@ function parseEventDescriptionForDetail(desc) {
   return { typeValue: '—', extra: raw };
 }
 
+/** Таблица семей — только для ВЗЗ/ВЗМ и для мероприятий с типом «Семейный» */
+function eventDetailShouldShowFamiliesTable(parsed, info, typeValue) {
+  const slug = String(parsed?.slug || '').toLowerCase();
+  if (slug === 'vzz' || slug === 'vzm') return true;
+  const titleUp = String(info?.title || '').trim().toUpperCase();
+  if (titleUp === 'ВЗЗ' || titleUp === 'ВЗМ') return true;
+  const t = String(typeValue || '')
+    .trim()
+    .toLowerCase()
+    .replace(/ё/g, 'е');
+  if (t === 'семейный' || t === 'семеный') return true;
+  return false;
+}
+
 window.EVENT_FE_COLOURS = [
   'red', 'white', 'blue', 'purple', 'green', 'brown', 'cyan', 'orange',
   'beige', 'gray', 'yellow', 'pink', 'black', 'rgb'
@@ -722,27 +736,9 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     ? `<div class="event-detail-extra">${window.escapeHtml(extra)}</div>`
     : '';
   const pageKey = `${info.iso}|${parsed.full}`;
-
-  window.setPageContent(`
-    <div class="event-detail-page">
-      <div class="event-detail-toolbar">
-        <button type="button" class="btn-ghost" id="event-detail-back">← К календарю</button>
-        <span class="event-detail-path-inline">${pathLabel}</span>
-      </div>
-      <div class="event-detail-panel">
-        <div class="event-detail-panel-inner">
-          <h1 class="event-detail-hero-title">${title}</h1>
-          <div class="event-detail-meta-row">
-            <div class="event-detail-meta-col event-detail-meta-left">
-              <span class="event-detail-meta-label">Тип</span>
-              <span class="event-detail-meta-value">${typeHtml}</span>
-            </div>
-            <div class="event-detail-meta-col event-detail-meta-right">
-              <span class="event-detail-meta-label">Дата</span>
-              <span class="event-detail-meta-value">${dateLine}</span>
-            </div>
-          </div>
-          ${extraBlock}
+  const showFamiliesTable = eventDetailShouldShowFamiliesTable(parsed, info, typeValue);
+  const feSectionHtml = showFamiliesTable
+    ? `
           <div class="event-detail-fe-section">
             <div class="event-detail-fe-toolbar">
               <h2 class="event-detail-fe-heading">Семьи и команды</h2>
@@ -773,13 +769,38 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                 </tbody>
               </table>
             </div>
+          </div>`
+    : '';
+
+  window.setPageContent(`
+    <div class="event-detail-page">
+      <div class="event-detail-toolbar">
+        <button type="button" class="btn-ghost" id="event-detail-back">← К календарю</button>
+        <span class="event-detail-path-inline">${pathLabel}</span>
+      </div>
+      <div class="event-detail-panel">
+        <div class="event-detail-panel-inner">
+          <h1 class="event-detail-hero-title">${title}</h1>
+          <div class="event-detail-meta-row">
+            <div class="event-detail-meta-col event-detail-meta-left">
+              <span class="event-detail-meta-label">Тип</span>
+              <span class="event-detail-meta-value">${typeHtml}</span>
+            </div>
+            <div class="event-detail-meta-col event-detail-meta-right">
+              <span class="event-detail-meta-label">Дата</span>
+              <span class="event-detail-meta-value">${dateLine}</span>
+            </div>
           </div>
+          ${extraBlock}
+          ${feSectionHtml}
         </div>
       </div>
     </div>
   `);
   const back = document.getElementById('event-detail-back');
   if (back) back.onclick = () => window.goBackToEventsCalendar();
+
+  if (!showFamiliesTable) return;
 
   Promise.all([
     typeof window.loadFamilies === 'function' ? window.loadFamilies() : Promise.resolve(),
