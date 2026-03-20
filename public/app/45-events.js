@@ -308,18 +308,25 @@ function eventFeColourOptionsHtml(selectedColour) {
   }).join('');
 }
 
+/** Правый край таблицы: удаление видно только при наведении на эту зону */
+function eventFeDeleteActionCellHtml(rowId) {
+  return `<td class="event-fe-actions-cell">
+    <div class="event-fe-actions-hover" role="presentation">
+      <button type="button" class="event-fe-del" data-row-id="${rowId}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
+    </div>
+  </td>`;
+}
+
+function eventFeDraftActionsCellHtml() {
+  return '<td class="event-fe-actions-cell event-fe-actions-cell--draft"></td>';
+}
+
 function buildEventDetailFeSpacerRowHtml(row) {
   const rid = row.rowId;
-  const famOpts = eventFeFamilyOptionsHtml(null, { isSpacer: true });
-  const delBtn = `<button type="button" class="event-fe-del" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>`;
   return `
       <tr class="event-fe-spacer-row" data-fe-row-id="${rid}" data-fe-spacer="1">
-        <td colspan="11" class="event-fe-spacer-cell">
-          <div class="event-fe-spacer-inner">
-            ${delBtn}
-            <select class="event-fe-family event-fe-spacer-family" data-row-id="${rid}" aria-label="Тип строки">${famOpts}</select>
-          </div>
-        </td>
+        <td colspan="11" class="event-fe-spacer-cell" aria-hidden="true"></td>
+        ${eventFeDeleteActionCellHtml(rid)}
       </tr>`;
 }
 
@@ -330,10 +337,9 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
   const gameId = row.familyGameId || '';
   const cmds = eventFeCommands(gameId, row.colour);
   const rid = row.rowId;
-  const delBtn = `<button type="button" class="event-fe-del" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>`;
   return `
       <tr data-fe-row-id="${rid}">
-        <td class="event-fe-col-n"><div class="event-fe-n-wrap"><span class="event-fe-num">${n}</span>${delBtn}</div></td>
+        <td class="event-fe-col-n"><span class="event-fe-num">${n}</span></td>
         <td>
           <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
         </td>
@@ -354,6 +360,7 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="wFlag" ${row.wFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
+        ${eventFeDeleteActionCellHtml(rid)}
       </tr>`;
 }
 
@@ -364,7 +371,7 @@ function buildEventDetailFeDraftRowHtml(draftNum) {
   const cmds = eventFeCommands('', 'white');
   return `
       <tr data-fe-draft="1" class="event-fe-draft-row">
-        <td class="event-fe-col-n"><div class="event-fe-n-wrap"><span class="event-fe-num">${draftNum}</span></div></td>
+        <td class="event-fe-col-n"><span class="event-fe-num">${draftNum}</span></td>
         <td>
           <select class="event-fe-family event-fe-draft-control" aria-label="Семья">${famOpts}</select>
         </td>
@@ -385,6 +392,7 @@ function buildEventDetailFeDraftRowHtml(draftNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="wFlag" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
+        ${eventFeDraftActionsCellHtml()}
       </tr>`;
 }
 
@@ -542,14 +550,11 @@ function attachEventDetailFeListeners(pageKey) {
     e.stopPropagation();
     const rowId = btn.getAttribute('data-row-id');
     if (!rowId) return;
-    if (!window.confirm('Удалить эту строку?')) return;
     try {
       await eventFeDeleteRow(rowId);
-      if (typeof window.showToast === 'function') window.showToast('Строка удалена', 'success');
       await window.refreshEventDetailFeTable(pageKey);
     } catch (err) {
       console.error(err);
-      if (typeof window.showToast === 'function') window.showToast('Не удалось удалить строку.', 'error');
     }
   });
   wrap.addEventListener('focusout', async (e) => {
@@ -704,10 +709,11 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                     <th>Следящий</th>
                     <th class="event-fe-th-check">L</th>
                     <th class="event-fe-th-check">W</th>
+                    <th class="event-fe-th-actions" aria-label="Действия"></th>
                   </tr>
                 </thead>
                 <tbody id="event-detail-fe-tbody">
-                  <tr><td colspan="11" class="event-fe-empty">Загрузка…</td></tr>
+                  <tr><td colspan="12" class="event-fe-empty">Загрузка…</td></tr>
                 </tbody>
               </table>
             </div>
