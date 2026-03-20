@@ -900,13 +900,13 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                   <tr>
                     <th class="event-fe-th-n">N</th>
                     <th>Семья</th>
-                    <th>Цвет</th>
+                    <th>Colour</th>
                     <th class="event-fe-th-id">ID</th>
                     <th class="event-fe-th-cmd">/tempfamily</th>
                     <th class="event-fe-th-cmd">/feventon</th>
                     <th class="event-fe-th-cmd">/feventoff</th>
-                    <th class="event-fe-th-check">Наличие</th>
-                    <th class="event-fe-th-curator">Следящий</th>
+                    <th class="event-fe-th-check">Visit</th>
+                    <th class="event-fe-th-curator">Spectator</th>
                     <th class="event-fe-th-check">L</th>
                     <th class="event-fe-th-check">W</th>
                   </tr>
@@ -930,8 +930,8 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                   <tr>
                     <th class="event-fe-th-id">ID</th>
                     <th>Fraction</th>
-                    <th class="event-fe-th-check">Наличие</th>
-                    <th class="event-fe-th-curator">Следящий</th>
+                    <th class="event-fe-th-check">Visit</th>
+                    <th class="event-fe-th-curator">Spectator</th>
                     <th class="event-fe-th-check">W</th>
                     <th class="event-fe-th-check">L</th>
                   </tr>
