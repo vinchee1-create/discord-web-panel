@@ -1082,7 +1082,8 @@ body, button, input, select {
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-reward-wrap {
-    width: 50%;
+    width: 42%;
+    min-width: 420px;
     margin-left: 0;
 }
 .event-detail-fe-reward-wrap.table-container {
