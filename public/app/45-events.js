@@ -219,6 +219,21 @@ function syncEventsNavActive() {
   if (evNav) evNav.classList.add('active');
 }
 
+/** Для страницы развёрнутого мероприятия: выделить «Тип - …» из описания */
+function parseEventDescriptionForDetail(desc) {
+  const raw = String(desc || '').trim();
+  if (!raw) return { typeValue: '—', extra: '' };
+  const lines = raw.split(/\r?\n/);
+  const first = lines[0].trim();
+  const m = first.match(/^Тип\s*-\s*(.+)$/i);
+  if (m) {
+    const typeValue = m[1].trim() || '—';
+    const extra = lines.slice(1).join('\n').trim();
+    return { typeValue, extra };
+  }
+  return { typeValue: '—', extra: raw };
+}
+
 function resolveEventForSegment(segment) {
   const parsed = parseEventDetailSegment(segment);
   if (!parsed) return null;
@@ -284,22 +299,35 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
   const info = resolveEventForSegment(segment);
   const title = window.escapeHtml(info.title || '');
   const descRaw = info.description || '';
-  const desc = descRaw
-    ? `<div class="event-detail-desc">${window.escapeHtml(descRaw)}</div>`
-    : '<div class="event-detail-desc muted">Без описания</div>';
+  const { typeValue, extra } = parseEventDescriptionForDetail(descRaw);
+  const typeHtml = window.escapeHtml(typeValue);
   const dateLine = window.escapeHtml(formatDateWithWeekday(info.iso));
   const pathLabel = window.escapeHtml(`/${parsed.full}`);
+  const extraBlock = extra
+    ? `<div class="event-detail-extra">${window.escapeHtml(extra)}</div>`
+    : '';
 
   window.setPageContent(`
     <div class="event-detail-page">
       <div class="event-detail-toolbar">
         <button type="button" class="btn-ghost" id="event-detail-back">← К календарю</button>
+        <span class="event-detail-path-inline">${pathLabel}</span>
       </div>
-      <div class="event-detail-card">
-        <div class="event-detail-path">${pathLabel}</div>
-        <h1 class="event-detail-title">${title}</h1>
-        <div class="event-detail-date">${dateLine}</div>
-        ${desc}
+      <div class="event-detail-panel">
+        <div class="event-detail-panel-inner">
+          <h1 class="event-detail-hero-title">${title}</h1>
+          <div class="event-detail-meta-row">
+            <div class="event-detail-meta-col event-detail-meta-left">
+              <span class="event-detail-meta-label">Тип</span>
+              <span class="event-detail-meta-value">${typeHtml}</span>
+            </div>
+            <div class="event-detail-meta-col event-detail-meta-right">
+              <span class="event-detail-meta-label">Дата</span>
+              <span class="event-detail-meta-value">${dateLine}</span>
+            </div>
+          </div>
+          ${extraBlock}
+        </div>
       </div>
     </div>
   `);

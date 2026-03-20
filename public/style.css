@@ -955,47 +955,93 @@ body, button, input, select {
     pointer-events: auto;
 }
 
-/* Страница мероприятия по URL /<slug><DDMM> */
+/* Страница мероприятия по URL /<slug><DDMM> — панель как у вкладки «Лидеры» */
 .event-detail-page {
-    max-width: 720px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 .event-detail-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
     margin-bottom: 16px;
 }
-.event-detail-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 20px 22px;
-}
-.event-detail-path {
+.event-detail-path-inline {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 12px;
-    color: rgba(255,255,255,0.45);
-    margin-bottom: 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.38);
 }
-.event-detail-title {
-    margin: 0 0 8px;
-    font-size: 22px;
+.event-detail-panel {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    min-height: min(520px, 70vh);
+    box-sizing: border-box;
+}
+.event-detail-panel-inner {
+    padding: 32px 36px 40px;
+    box-sizing: border-box;
+}
+.event-detail-hero-title {
+    margin: 0 0 32px;
+    text-align: center;
+    font-size: 26px;
     font-weight: 700;
-    color: rgba(255,255,255,0.95);
-    line-height: 1.25;
+    color: rgba(255,255,255,0.96);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
 }
-.event-detail-date {
-    font-size: 14px;
-    color: rgba(255,255,255,0.65);
-    margin-bottom: 16px;
+.event-detail-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 0 12px 8px;
+    max-width: 920px;
+    margin: 0 auto 28px;
 }
-.event-detail-desc {
+.event-detail-meta-col {
+    flex: 1;
+    min-width: 0;
+}
+.event-detail-meta-left {
+    text-align: left;
+}
+.event-detail-meta-right {
+    text-align: right;
+}
+.event-detail-meta-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.42);
+    margin-bottom: 8px;
+}
+.event-detail-meta-value {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.92);
+    line-height: 1.35;
+}
+.event-detail-extra {
+    margin-top: 8px;
+    padding: 20px 16px 0;
+    border-top: 1px solid #1f1f1f;
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
     font-size: 14px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.85);
+    line-height: 1.55;
+    color: rgba(255,255,255,0.78);
     white-space: pre-wrap;
-}
-.event-detail-desc.muted {
-    color: rgba(255,255,255,0.45);
-    font-style: italic;
 }
 
 .events-expanded {
