@@ -1082,7 +1082,7 @@ body, button, input, select {
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-reward-wrap {
-    width: 42%;
+    width: 33%;
     min-width: 420px;
     margin-left: 0;
 }
