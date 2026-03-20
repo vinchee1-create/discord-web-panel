@@ -1082,9 +1082,11 @@ body, button, input, select {
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-reward-wrap {
-    margin-top: 28px;
     width: 50%;
     margin-left: 0;
+}
+.event-detail-fe-reward-wrap.table-container {
+    margin-top: 28px;
 }
 .event-detail-fe-reward-table {
     width: 100%;
