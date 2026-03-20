@@ -865,14 +865,15 @@ app.delete('/api/events/:id', async (req, res) => {
 });
 
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
-function renderMain(req, res, activePage) {
+function renderMain(req, res, activePage, opts = {}) {
     const data = {
         botStatus: client.user ? "В сети" : "Подключение...",
         serverName: "Boston RP",
         memberCount: client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0) || "1 719",
         botName: client.user ? client.user.username : "Загрузка..."
     };
-    res.render('index', { data, user: req.session.user, activePage });
+    const eventDetailPath = opts.eventDetailPath != null ? opts.eventDetailPath : null;
+    res.render('index', { data, user: req.session.user, activePage, eventDetailPath });
 }
 
 app.get('/', requireAuthStrict, (req, res) => {
@@ -894,6 +895,14 @@ app.get('/faction-materials', requireAuthStrict, (req, res) => renderMain(req, r
 app.get('/capture-map', requireAuthStrict, (req, res) => renderMain(req, res, 'Карта каптов'));
 app.get('/online', requireAuthStrict, (req, res) => renderMain(req, res, 'Онлайн Л/Ф'));
 app.get('/settings', requireAuthStrict, (req, res) => renderMain(req, res, 'Настройки'));
+
+// Страница конкретного мероприятия: /<slug><DDMM>, напр. /vzm1503 (15 марта, ВЗМ)
+// Должен быть после всех фиксированных путей. Не матчится на /families и т.п.
+app.get('/:segment', requireAuthStrict, (req, res, next) => {
+    const { segment } = req.params;
+    if (!/^[a-z][a-z0-9]*\d{4}$/.test(segment)) return next();
+    return renderMain(req, res, 'Мероприятия', { eventDetailPath: segment });
+});
 
 // --- 4. СОБЫТИЯ БОТА ---
 client.once('ready', () => {

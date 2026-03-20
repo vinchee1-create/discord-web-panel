@@ -949,6 +949,66 @@ body, button, input, select {
     pointer-events: auto;
 }
 
+/* В модалке дня кнопки (в т.ч. «развернуть») должны быть доступны без :hover */
+.events-day-card .events-day-item-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Модалка мероприятий: компактная кнопка «развернуть» */
+.events-day-item-actions .btn-icon.btn-icon-expand {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+}
+.events-day-item-actions .btn-icon.btn-icon-expand svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Страница мероприятия по URL /<slug><DDMM> */
+.event-detail-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+.event-detail-toolbar {
+    margin-bottom: 16px;
+}
+.event-detail-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px 22px;
+}
+.event-detail-path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 10px;
+}
+.event-detail-title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.25;
+}
+.event-detail-date {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 16px;
+}
+.event-detail-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    white-space: pre-wrap;
+}
+.event-detail-desc.muted {
+    color: rgba(255,255,255,0.45);
+    font-style: italic;
+}
+
 .events-expanded {
     margin-top: 6px;
     display: flex;

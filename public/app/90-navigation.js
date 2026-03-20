@@ -105,7 +105,17 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   } else if (window.initialPage === 'Мероприятия') {
     window.pageTitle.textContent = 'Мероприятия';
     window.headerActions.style.display = 'none';
-    window.renderEventsCalendar();
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    const evNav = document.querySelector('.nav-item[href="/events"]');
+    if (evNav) evNav.classList.add('active');
+    if (window.eventDetailPath && typeof window.prepareEventDetailPage === 'function') {
+      await window.prepareEventDetailPage(window.eventDetailPath);
+    }
+    if (window.eventDetailPath && typeof window.renderEventDetailPage === 'function') {
+      window.renderEventDetailPage(window.eventDetailPath);
+    } else {
+      window.renderEventsCalendar();
+    }
   } else if (window.initialPage === 'Материалы семей') {
     window.pageTitle.textContent = 'Материалы семей';
     window.headerActions.style.display = 'flex';

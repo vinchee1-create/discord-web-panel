@@ -111,6 +111,215 @@ function trashIconSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>`;
 }
 
+/** Иконка «развернуть» (отдельная страница по URL /<slug><DDMM>) */
+function expandIconSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>`;
+}
+
+const CYR_TO_LAT = {
+  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y',
+  к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
+  х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya'
+};
+
+/** Короткий латинский slug для URL: ВЗЗ→vzz, ВЗМ→vzm; остальное — транслит + [a-z0-9] */
+function slugifyEventName(title) {
+  const t = String(title || '').trim();
+  const up = t.toUpperCase();
+  if (up === 'ВЗЗ') return 'vzz';
+  if (up === 'ВЗМ') return 'vzm';
+  let out = '';
+  for (const ch of t.toLowerCase()) {
+    if (CYR_TO_LAT[ch]) out += CYR_TO_LAT[ch];
+    else if (/[a-z0-9]/.test(ch)) out += ch;
+  }
+  out = out.replace(/[^a-z0-9]+/g, '').slice(0, 48);
+  return out || 'event';
+}
+
+/** Дата в URL: день+месяц без разделителей, DDMM (15 марта → 1503) */
+function isoToDdmm(isoDate) {
+  const [, m, d] = isoDate.split('-');
+  return `${d}${m}`;
+}
+
+function parseEventDetailSegment(segment) {
+  const s = String(segment || '').replace(/^\//, '');
+  const m = s.match(/^([a-z][a-z0-9]*)(\d{2})(\d{2})$/);
+  if (!m) return null;
+  return { slug: m[1], dd: m[2], mm: m[3], full: s };
+}
+
+function eventDetailStorageKey(segment) {
+  const s = String(segment || '').replace(/^\//, '');
+  return `eventDetail:${s}`;
+}
+
+function readEventDetailMeta(segment) {
+  try {
+    const raw = sessionStorage.getItem(eventDetailStorageKey(segment));
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (!o || typeof o !== 'object') return null;
+    return o;
+  } catch (_) {
+    return null;
+  }
+}
+
+function syncEventsNavActive() {
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  const evNav = document.querySelector('.nav-item[href="/events"]');
+  if (evNav) evNav.classList.add('active');
+}
+
+function resolveEventForSegment(segment) {
+  const parsed = parseEventDetailSegment(segment);
+  if (!parsed) return null;
+  const meta = readEventDetailMeta(segment);
+  let year = window.eventsMonth?.year ?? new Date().getFullYear();
+  if (meta?.iso) {
+    year = Number(meta.iso.slice(0, 4));
+  }
+  const iso = meta?.iso || `${year}-${parsed.mm}-${parsed.dd}`;
+  const items = getEventsForDate(iso);
+  const match = items.find(ev => slugifyEventName(ev.title) === parsed.slug);
+  if (match) {
+    return {
+      iso,
+      title: match.title || '',
+      description: match.description || '',
+      kind: match.kind,
+      dbId: match.dbId ?? null
+    };
+  }
+  if (meta && meta.title) {
+    return {
+      iso: meta.iso || iso,
+      title: meta.title,
+      description: meta.description || '',
+      kind: meta.kind || 'db',
+      dbId: meta.dbId ?? null
+    };
+  }
+  return {
+    iso,
+    title: 'Мероприятие',
+    description: 'Не удалось найти мероприятие по ссылке. Год в адресе не указан — откройте из календаря или выберите нужный год в календаре.',
+    kind: 'unknown',
+    dbId: null
+  };
+}
+
+/** Подгрузка месяца для детальной страницы (по дате из ссылки или sessionStorage) */
+window.prepareEventDetailPage = async function prepareEventDetailPage(segment) {
+  const parsed = parseEventDetailSegment(segment);
+  if (!parsed) return;
+  const meta = readEventDetailMeta(segment);
+  let year = new Date().getFullYear();
+  let monthIndex = parseInt(parsed.mm, 10) - 1;
+  if (meta?.iso) {
+    const [y, m] = meta.iso.split('-');
+    year = Number(y);
+    monthIndex = Number(m) - 1;
+  }
+  window.eventsMonth = { year, month: monthIndex };
+  if (typeof window.loadEventsForMonth === 'function') {
+    await window.loadEventsForMonth(year, monthIndex);
+  }
+};
+
+window.renderEventDetailPage = function renderEventDetailPage(segment) {
+  const parsed = parseEventDetailSegment(segment);
+  if (!parsed) {
+    window.setPageContent(`<p style="color:rgba(255,255,255,0.55)">Некорректная ссылка на мероприятие.</p>`);
+    return;
+  }
+  const info = resolveEventForSegment(segment);
+  const title = window.escapeHtml(info.title || '');
+  const descRaw = info.description || '';
+  const desc = descRaw
+    ? `<div class="event-detail-desc">${window.escapeHtml(descRaw)}</div>`
+    : '<div class="event-detail-desc muted">Без описания</div>';
+  const dateLine = window.escapeHtml(formatDateWithWeekday(info.iso));
+  const pathLabel = window.escapeHtml(`/${parsed.full}`);
+
+  window.setPageContent(`
+    <div class="event-detail-page">
+      <div class="event-detail-toolbar">
+        <button type="button" class="btn-ghost" id="event-detail-back">← К календарю</button>
+      </div>
+      <div class="event-detail-card">
+        <div class="event-detail-path">${pathLabel}</div>
+        <h1 class="event-detail-title">${title}</h1>
+        <div class="event-detail-date">${dateLine}</div>
+        ${desc}
+      </div>
+    </div>
+  `);
+  const back = document.getElementById('event-detail-back');
+  if (back) back.onclick = () => window.goBackToEventsCalendar();
+};
+
+window.expandEventToPage = function expandEventToPage(iso, title, dbId) {
+  const slug = slugifyEventName(title);
+  const segment = `${slug}${isoToDdmm(iso)}`;
+  let description = '';
+  let kind = 'system';
+  if (dbId != null && dbId !== '') {
+    const ev = (window.events || []).find(x => x.dbId === dbId);
+    if (ev) {
+      description = ev.description || '';
+      kind = 'db';
+    }
+  }
+  try {
+    sessionStorage.setItem(eventDetailStorageKey(segment), JSON.stringify({
+      iso,
+      title: title || '',
+      description,
+      kind,
+      dbId: dbId != null ? dbId : null
+    }));
+  } catch (_) { /* ignore */ }
+  window.history.pushState({ page: 'event-detail', segment }, '', `/${segment}`);
+  window.closeEventsDayModal();
+  window.pageTitle.textContent = 'Мероприятия';
+  window.headerActions.style.display = 'none';
+  syncEventsNavActive();
+  window.renderEventDetailPage(segment);
+};
+
+window.goBackToEventsCalendar = function goBackToEventsCalendar() {
+  window.history.pushState({ page: 'events' }, '', '/events');
+  window.pageTitle.textContent = 'Мероприятия';
+  window.headerActions.style.display = 'none';
+  syncEventsNavActive();
+  window.renderEventsCalendar();
+};
+
+window.addEventListener('popstate', () => {
+  const path = window.location.pathname || '/';
+  if (path === '/events') {
+    window.pageTitle.textContent = 'Мероприятия';
+    window.headerActions.style.display = 'none';
+    syncEventsNavActive();
+    window.renderEventsCalendar();
+    return;
+  }
+  const seg = path.startsWith('/') ? path.slice(1) : path;
+  if (/^[a-z][a-z0-9]*\d{4}$/.test(seg)) {
+    window.pageTitle.textContent = 'Мероприятия';
+    window.headerActions.style.display = 'none';
+    syncEventsNavActive();
+    if (typeof window.prepareEventDetailPage === 'function') {
+      window.prepareEventDetailPage(seg).then(() => window.renderEventDetailPage(seg));
+    } else {
+      window.renderEventDetailPage(seg);
+    }
+  }
+});
+
 const eventsDayModal = document.getElementById('events-day-modal-overlay');
 const eventsDayTitle = document.getElementById('events-day-title');
 const eventsDayList = document.getElementById('events-day-list');
@@ -131,9 +340,16 @@ function renderEventsDayList(isoDate) {
     const isSystem = ev.kind === 'system';
     const title = window.escapeHtml(ev.title || '');
     const desc = window.escapeHtml(ev.description || '');
-    const dateRu = fmtDateCenter(isoDate);
-    const actions = isSystem ? '' : `
+    const expandBtn = `
+      <button type="button" class="btn-icon btn-icon-expand" title="Развернуть на отдельной странице" aria-label="Развернуть" onclick="window.expandEventToPage(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.title || '')}, ${isSystem ? 'null' : ev.dbId})">${expandIconSvg()}</button>
+    `;
+    const actions = isSystem ? `
       <div class="events-day-item-actions">
+        ${expandBtn}
+      </div>
+    ` : `
+      <div class="events-day-item-actions">
+        ${expandBtn}
         <button type="button" class="btn-icon" title="Редактировать" onclick="startEditEvent(${ev.dbId})">${editIconSvg()}</button>
         <button type="button" class="btn-icon btn-icon-delete" title="Удалить" onclick="deleteEvent(${ev.dbId})">${trashIconSvg()}</button>
       </div>

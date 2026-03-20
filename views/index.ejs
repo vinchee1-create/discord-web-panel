@@ -43,7 +43,8 @@
     <script>
         window.__BOOTSTRAP__ = {
             currentUser: <%- JSON.stringify(user || null) %>,
-            initialPage: <%- JSON.stringify(typeof activePage === 'string' ? activePage : 'Панель управления') %>
+            initialPage: <%- JSON.stringify(typeof activePage === 'string' ? activePage : 'Панель управления') %>,
+            eventDetailPath: <%- JSON.stringify(typeof eventDetailPath === 'string' ? eventDetailPath : null) %>
         };
     </script>
     <script src="/app/00-core.js"></script>

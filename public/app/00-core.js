@@ -13,6 +13,7 @@ window.leaders = [];
 // Bootstrap
 window.currentUser = window.__BOOTSTRAP__?.currentUser ?? null;
 window.initialPage = window.__BOOTSTRAP__?.initialPage || 'Панель управления';
+window.eventDetailPath = window.__BOOTSTRAP__?.eventDetailPath ?? null;
 
 // DOM refs
 window.toastRoot = document.getElementById('toast-root');
