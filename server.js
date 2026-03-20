@@ -1317,7 +1317,9 @@ app.get('/api/settings/discord', async (req, res) => {
             `${s}_curator_leader_role_id`,
             `${s}_player_requests_channel_id`,
             `${s}_curators_questions_channel_id`,
-            `${s}_treasury_channel_id`
+            `${s}_treasury_channel_id`,
+            `${s}_tags_id`,
+            `${s}_period_minutes`
         );
     });
     // legacy keys (compat)
@@ -1352,7 +1354,9 @@ app.get('/api/settings/discord', async (req, res) => {
             curatorLeaderId: kv[`${scope}_curator_leader_role_id`] || '',
             playerRequestsId: kv[`${scope}_player_requests_channel_id`] || '',
             curatorsQuestionsId: kv[`${scope}_curators_questions_channel_id`] || '',
-            treasuryId: kv[`${scope}_treasury_channel_id`] || ''
+            treasuryId: kv[`${scope}_treasury_channel_id`] || '',
+            tagsId: kv[`${scope}_tags_id`] || '',
+            periodMinutes: kv[`${scope}_period_minutes`] || ''
         };
     });
     const guilds = Array.from(client.guilds.cache.values())
@@ -1386,12 +1390,16 @@ app.put('/api/settings/discord', async (req, res) => {
         curatorLeaderId: req.body?.curatorLeaderId == null ? '' : String(req.body.curatorLeaderId).trim(),
         playerRequestsId: req.body?.playerRequestsId == null ? '' : String(req.body.playerRequestsId).trim(),
         curatorsQuestionsId: req.body?.curatorsQuestionsId == null ? '' : String(req.body.curatorsQuestionsId).trim(),
-        treasuryId: req.body?.treasuryId == null ? '' : String(req.body.treasuryId).trim()
+        treasuryId: req.body?.treasuryId == null ? '' : String(req.body.treasuryId).trim(),
+        tagsId: req.body?.tagsId == null ? '' : String(req.body.tagsId).trim(),
+        periodMinutes: req.body?.periodMinutes == null ? '' : String(req.body.periodMinutes).trim()
     };
     const idFields = ['fractionCuratorId', 'fractionRoleId', 'curatorsNewsId', 'curatorLeaderId', 'playerRequestsId', 'curatorsQuestionsId', 'treasuryId'];
     for (const f of idFields) {
         if (body[f] && !/^\d{3,30}$/.test(body[f])) return res.status(400).json({ error: `Некорректное значение ${f}` });
     }
+    if (body.tagsId && !/^\d{3,30}$/.test(body.tagsId)) return res.status(400).json({ error: 'Некорректное значение tagsId' });
+    if (body.periodMinutes && !/^\d{1,6}$/.test(body.periodMinutes)) return res.status(400).json({ error: 'Некорректное значение periodMinutes' });
     if (body.guildId && !client.guilds.cache.has(body.guildId)) {
         return res.status(400).json({ error: 'Бот не состоит в выбранном сервере' });
     }
@@ -1406,6 +1414,12 @@ app.put('/api/settings/discord', async (req, res) => {
             [`${scope}_curators_questions_channel_id`, body.curatorsQuestionsId],
             [`${scope}_treasury_channel_id`, body.treasuryId]
         ];
+        if (scope === 'main') {
+            entries.push(
+                [`${scope}_tags_id`, body.tagsId],
+                [`${scope}_period_minutes`, body.periodMinutes]
+            );
+        }
         for (const [k, v] of entries) {
             await pool.query(
                 `INSERT INTO app_settings (key, value, updated_at)

@@ -36,6 +36,21 @@ window.renderSettings = async function renderSettings() {
     <div class="settings-page">
       <div class="settings-grid">${cardsHtml}</div>
     </div>
+    <div class="modal-overlay settings-main-modal" id="settings-main-modal">
+      <div class="modal-card settings-guild-modal-card">
+        <h3 class="settings-guild-modal-title">Настройка основного сервера</h3>
+        <div class="settings-modal-fields">
+          <label>ID Теги</label>
+          <input type="text" id="settings-main-tags-id" inputmode="numeric" autocomplete="off" />
+          <label>Период</label>
+          <input type="text" id="settings-main-period-minutes" inputmode="numeric" autocomplete="off" placeholder="Значение в минутах" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="settings-main-modal-cancel">Отмена</button>
+          <button type="button" class="btn-pill" id="settings-main-modal-save">Сохранить</button>
+        </div>
+      </div>
+    </div>
     <div class="modal-overlay settings-guild-modal" id="settings-guild-modal">
       <div class="modal-card settings-guild-modal-card">
         <h3 class="settings-guild-modal-title">Настройка сервера</h3>
@@ -68,6 +83,11 @@ window.renderSettings = async function renderSettings() {
   `);
 
   const cards = Array.from(document.querySelectorAll('.settings-card'));
+  const mainModal = document.getElementById('settings-main-modal');
+  const mainTagsInput = document.getElementById('settings-main-tags-id');
+  const mainPeriodInput = document.getElementById('settings-main-period-minutes');
+  const mainModalSaveBtn = document.getElementById('settings-main-modal-save');
+  const mainModalCancelBtn = document.getElementById('settings-main-modal-cancel');
   const modal = document.getElementById('settings-guild-modal');
   const modalSelect = document.getElementById('settings-guild-modal-select');
   const modalFractionCurator = document.getElementById('settings-modal-fraction-curator');
@@ -118,6 +138,12 @@ window.renderSettings = async function renderSettings() {
     editBtn?.addEventListener('click', () => {
       currentScope = scope;
       const cur = scopeSettings[currentScope] || {};
+      if (scope === 'main') {
+        if (mainTagsInput) mainTagsInput.value = cur.tagsId || '';
+        if (mainPeriodInput) mainPeriodInput.value = cur.periodMinutes || '';
+        mainModal?.classList.add('is-open');
+        return;
+      }
       if (modalSelect) {
         modalSelect.innerHTML = guilds.length
           ? guilds.map(g => `<option value="${window.escapeHtml(String(g.id))}">${window.escapeHtml(g.name)} (${Number(g.memberCount || 0).toLocaleString('ru-RU')})</option>`).join('')
@@ -136,6 +162,9 @@ window.renderSettings = async function renderSettings() {
   });
 
   const closeModal = () => modal?.classList.remove('is-open');
+  const closeMainModal = () => mainModal?.classList.remove('is-open');
+  mainModalCancelBtn?.addEventListener('click', closeMainModal);
+  mainModal?.addEventListener('click', (e) => { if (e.target === mainModal) closeMainModal(); });
   modalCancelBtn?.addEventListener('click', closeModal);
   modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
@@ -168,6 +197,33 @@ window.renderSettings = async function renderSettings() {
       closeModal();
       await window.renderSettings();
       if (typeof window.showToast === 'function') window.showToast('Настройки сервера сохранены.', 'success');
+    } catch (err) {
+      if (typeof window.showToast === 'function') window.showToast(err.message || 'Не удалось сохранить настройки.', 'error');
+    }
+  });
+
+  mainModalSaveBtn?.addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/settings/discord', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scope: 'main',
+          tagsId: String(mainTagsInput?.value || '').trim(),
+          periodMinutes: String(mainPeriodInput?.value || '').trim()
+        })
+      });
+      if (!res.ok) {
+        let msg = 'Не удалось сохранить настройки';
+        try {
+          const j = await res.json();
+          if (j?.error) msg = j.error;
+        } catch (_) { /* ignore */ }
+        throw new Error(msg);
+      }
+      closeMainModal();
+      await window.renderSettings();
+      if (typeof window.showToast === 'function') window.showToast('Настройки основного сервера сохранены.', 'success');
     } catch (err) {
       if (typeof window.showToast === 'function') window.showToast(err.message || 'Не удалось сохранить настройки.', 'error');
     }
