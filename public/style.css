@@ -1090,8 +1090,29 @@ body, button, input, select {
 }
 .event-detail-fe-reward-table {
     width: 100%;
+    min-width: 0 !important;
+    table-layout: auto;
+}
+.event-detail-fe-table.event-detail-fe-reward-table {
     min-width: 0;
-    table-layout: fixed;
+}
+.data-table.event-detail-fe-reward-table thead th,
+.data-table.event-detail-fe-reward-table td {
+    padding: 10px 12px;
+}
+.data-table.event-detail-fe-reward-table thead th {
+    text-align: left;
+}
+.data-table.event-detail-fe-reward-table thead th:first-child,
+.data-table.event-detail-fe-reward-table td:first-child {
+    width: 56px;
+    text-align: center;
+}
+.data-table.event-detail-fe-reward-table thead th:nth-child(2),
+.data-table.event-detail-fe-reward-table td:nth-child(2),
+.data-table.event-detail-fe-reward-table thead th:nth-child(3),
+.data-table.event-detail-fe-reward-table td:nth-child(3) {
+    text-align: left;
 }
 .data-table.event-detail-fe-reward-table tbody tr {
     background: #111111;
