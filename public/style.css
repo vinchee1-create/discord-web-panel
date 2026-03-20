@@ -1316,6 +1316,13 @@ body, button, input, select {
 .data-table.event-detail-ff-table thead th {
     text-align: center;
 }
+.data-table.event-detail-fe-table thead th,
+.data-table.event-detail-ff-table thead th,
+.data-table.event-detail-fe-reward-table thead th {
+    text-transform: none;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.86);
+}
 .event-detail-fe-table .event-fe-curator {
     display: block;
     width: 100%;
@@ -1960,7 +1967,7 @@ body, button, input, select {
     border: 1px solid #1b1b1b;
     border-radius: 12px;
     padding: 18px 20px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.24);
 }
 .settings-card-head {
     display: flex;
@@ -1975,12 +1982,38 @@ body, button, input, select {
     font-weight: 700;
     color: rgba(255,255,255,0.95);
 }
-.settings-title-latin {
-    font-weight: 650;
-    letter-spacing: 0;
+.settings-edit-btn {
+    width: 30px;
+    height: 30px;
 }
-.settings-add-bot-btn {
-    text-decoration: none;
+.settings-edit-btn svg {
+    width: 15px;
+    height: 15px;
+}
+.settings-guild-picker {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+}
+.settings-guild-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.settings-guild-select {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
 }
 .settings-server-row {
     display: flex;

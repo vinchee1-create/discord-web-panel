@@ -1306,30 +1306,42 @@ app.put('/api/event-detail-faction-rows/:displayId', async (req, res) => {
 
 app.get('/api/settings/discord', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
-    const mainGuild = client.guilds.cache.first() || null;
     const roleKey = 'main_role_id';
+    const guildKey = 'main_guild_id';
     let mainRoleId = '';
+    let savedMainGuildId = '';
     if (pool) {
         try {
-            const { rows } = await pool.query('SELECT value FROM app_settings WHERE key=$1', [roleKey]);
-            mainRoleId = rows[0]?.value || '';
+            const { rows } = await pool.query(
+                'SELECT key, value FROM app_settings WHERE key = ANY($1::text[])',
+                [[roleKey, guildKey]]
+            );
+            const map = new Map(rows.map(r => [r.key, r.value]));
+            mainRoleId = map.get(roleKey) || '';
+            savedMainGuildId = map.get(guildKey) || '';
         } catch (e) {
-            console.error('GET /api/settings/discord role read:', e.message);
+            console.error('GET /api/settings/discord settings read:', e.message);
         }
     }
-    const serverName = mainGuild?.name || 'Основной Discord сервер';
+    const guilds = Array.from(client.guilds.cache.values())
+        .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ru'))
+        .map(g => ({
+            id: g.id,
+            name: g.name || 'Без названия',
+            memberCount: Number(g.memberCount || 0)
+        }));
+    const mainGuild = guilds.find(g => g.id === savedMainGuildId) || guilds[0] || null;
+    const mainGuildId = mainGuild?.id || '';
+    const serverName = mainGuild?.name || 'Основной Дискорд сервер';
     const memberCount = Number(mainGuild?.memberCount || 0);
     const botOnline = Boolean(client.user);
-    const botId = client.user?.id || process.env.DISCORD_BOT_ID || '';
-    const addBotUrl = botId
-        ? `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(botId)}&permissions=8&scope=bot%20applications.commands`
-        : '';
     return res.json({
+        mainGuildId,
+        guilds,
         serverName,
         botOnline,
         memberCount,
-        mainRoleId,
-        addBotUrl
+        mainRoleId
     });
 });
 
@@ -1337,8 +1349,12 @@ app.put('/api/settings/discord', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const roleRaw = req.body?.mainRoleId == null ? '' : String(req.body.mainRoleId).trim();
+    const guildRaw = req.body?.mainGuildId == null ? '' : String(req.body.mainGuildId).trim();
     if (roleRaw && !/^\d{3,30}$/.test(roleRaw)) {
         return res.status(400).json({ error: 'Некорректный ID роли' });
+    }
+    if (guildRaw && !client.guilds.cache.has(guildRaw)) {
+        return res.status(400).json({ error: 'Бот не состоит в выбранном сервере' });
     }
     try {
         await pool.query(
@@ -1347,7 +1363,15 @@ app.put('/api/settings/discord', async (req, res) => {
              ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
             [roleRaw]
         );
-        return res.json({ mainRoleId: roleRaw });
+        if (guildRaw) {
+            await pool.query(
+                `INSERT INTO app_settings (key, value, updated_at)
+                 VALUES ('main_guild_id', $1, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+                [guildRaw]
+            );
+        }
+        return res.json({ mainRoleId: roleRaw, mainGuildId: guildRaw });
     } catch (e) {
         console.error('PUT /api/settings/discord:', e.message);
         return res.status(500).json({ error: e.message });
