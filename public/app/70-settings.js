@@ -1,12 +1,12 @@
 // Settings section.
 
 const SETTINGS_SCOPES = [
-  { key: 'main_curator_role_id', title: 'Основной сервер' },
-  { key: 'ballas_curator_role_id', title: 'The Ballas Gang' },
-  { key: 'families_curator_role_id', title: 'The Families' },
-  { key: 'vagos_curator_role_id', title: 'Los Santos Vagos' },
-  { key: 'bloods_curator_role_id', title: 'The Bloods Gang' },
-  { key: 'marabunta_curator_role_id', title: 'Marabunta Grande' }
+  { key: 'main_curator_role_id', guildKey: 'main_guild_id', title: 'Основной сервер' },
+  { key: 'ballas_curator_role_id', guildKey: 'ballas_guild_id', title: 'The Ballas Gang' },
+  { key: 'families_curator_role_id', guildKey: 'families_guild_id', title: 'The Families' },
+  { key: 'vagos_curator_role_id', guildKey: 'vagos_guild_id', title: 'Los Santos Vagos' },
+  { key: 'bloods_curator_role_id', guildKey: 'bloods_guild_id', title: 'The Bloods Gang' },
+  { key: 'marabunta_curator_role_id', guildKey: 'marabunta_guild_id', title: 'Marabunta Grande' }
 ];
 
 window.renderSettings = async function renderSettings() {
@@ -51,29 +51,27 @@ window.renderSettings = async function renderSettings() {
     </div>
   `);
   const cards = Array.from(document.querySelectorAll('.settings-card'));
-  let currentMainGuildId = '';
   let guilds = [];
   let roleIds = {};
-  let serverName = 'Основной Дискорд сервер';
-  let memberCount = 0;
+  let guildIds = {};
   let botOnline = false;
 
   try {
     const res = await fetch('/api/settings/discord');
     const data = res.ok ? await res.json() : null;
     if (!data) throw new Error('load failed');
-    serverName = data.serverName || 'Основной Дискорд сервер';
-    memberCount = Number(data.memberCount || 0);
     botOnline = !!data.botOnline;
     roleIds = data.roleIds || {};
+    guildIds = data.guildIds || {};
     guilds = Array.isArray(data.guilds) ? data.guilds : [];
-    currentMainGuildId = String(data.mainGuildId || '');
   } catch (_) {
     // keep defaults
   }
 
   cards.forEach(card => {
     const scope = card.getAttribute('data-settings-scope') || '';
+    const scopeMeta = SETTINGS_SCOPES.find(x => x.key === scope);
+    const guildScope = scopeMeta?.guildKey || 'main_guild_id';
     const nameEl = card.querySelector('[data-part="server-name"]');
     const membersEl = card.querySelector('[data-part="server-members"]');
     const statusEl = card.querySelector('[data-part="status"]');
@@ -85,8 +83,10 @@ window.renderSettings = async function renderSettings() {
     const editGuildBtn = card.querySelector('[data-act="toggle-guild-picker"]');
     const saveGuildBtn = card.querySelector('[data-act="save-guild"]');
 
-    if (nameEl) nameEl.textContent = serverName;
-    if (membersEl) membersEl.textContent = `Участников: ${memberCount.toLocaleString('ru-RU')}`;
+    const selectedGuildId = String(guildIds[guildScope] || guilds[0]?.id || '');
+    const selectedGuild = guilds.find(g => String(g.id) === selectedGuildId) || guilds[0] || null;
+    if (nameEl) nameEl.textContent = selectedGuild?.name || 'Сервер не выбран';
+    if (membersEl) membersEl.textContent = `Участников: ${Number(selectedGuild?.memberCount || 0).toLocaleString('ru-RU')}`;
     if (statusEl && statusTextEl) {
       statusEl.classList.toggle('is-online', botOnline);
       statusEl.classList.toggle('is-offline', !botOnline);
@@ -97,7 +97,7 @@ window.renderSettings = async function renderSettings() {
       guildSelect.innerHTML = guilds.length
         ? guilds.map(g => `<option value="${window.escapeHtml(String(g.id))}">${window.escapeHtml(g.name)} (${Number(g.memberCount || 0).toLocaleString('ru-RU')})</option>`).join('')
         : '<option value="">Серверы не найдены</option>';
-      if (currentMainGuildId) guildSelect.value = currentMainGuildId;
+      if (selectedGuildId) guildSelect.value = selectedGuildId;
     }
 
     roleForm?.addEventListener('submit', async (e) => {
@@ -129,12 +129,12 @@ window.renderSettings = async function renderSettings() {
     });
 
     saveGuildBtn?.addEventListener('click', async () => {
-      const mainGuildId = String(guildSelect?.value || '').trim();
+      const guildId = String(guildSelect?.value || '').trim();
       try {
         const res = await fetch('/api/settings/discord', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mainGuildId })
+          body: JSON.stringify({ guildScope, guildId })
         });
         if (!res.ok) {
           let msg = 'Не удалось сохранить сервер';

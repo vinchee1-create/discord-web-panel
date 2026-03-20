@@ -1960,7 +1960,8 @@ body, button, input, select {
 
 /* Настройки */
 .settings-page {
-    max-width: 1100px;
+    width: 100%;
+    max-width: none;
 }
 .settings-grid {
     display: grid;

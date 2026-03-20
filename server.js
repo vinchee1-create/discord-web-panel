@@ -1314,18 +1314,25 @@ app.get('/api/settings/discord', async (req, res) => {
         'bloods_curator_role_id',
         'marabunta_curator_role_id'
     ];
-    const guildKey = 'main_guild_id';
+    const guildKeys = [
+        'main_guild_id',
+        'ballas_guild_id',
+        'families_guild_id',
+        'vagos_guild_id',
+        'bloods_guild_id',
+        'marabunta_guild_id'
+    ];
     const roleIds = {};
-    let savedMainGuildId = '';
+    const guildIds = {};
     if (pool) {
         try {
             const { rows } = await pool.query(
                 'SELECT key, value FROM app_settings WHERE key = ANY($1::text[])',
-                [[...roleKeys, guildKey]]
+                [[...roleKeys, ...guildKeys]]
             );
             const map = new Map(rows.map(r => [r.key, r.value]));
             roleKeys.forEach(k => { roleIds[k] = map.get(k) || ''; });
-            savedMainGuildId = map.get(guildKey) || '';
+            guildKeys.forEach(k => { guildIds[k] = map.get(k) || ''; });
         } catch (e) {
             console.error('GET /api/settings/discord settings read:', e.message);
         }
@@ -1337,18 +1344,12 @@ app.get('/api/settings/discord', async (req, res) => {
             name: g.name || 'Без названия',
             memberCount: Number(g.memberCount || 0)
         }));
-    const mainGuild = guilds.find(g => g.id === savedMainGuildId) || guilds[0] || null;
-    const mainGuildId = mainGuild?.id || '';
-    const serverName = mainGuild?.name || 'Основной Дискорд сервер';
-    const memberCount = Number(mainGuild?.memberCount || 0);
     const botOnline = Boolean(client.user);
     return res.json({
-        mainGuildId,
         guilds,
-        serverName,
         botOnline,
-        memberCount,
-        roleIds
+        roleIds,
+        guildIds
     });
 });
 
@@ -1357,7 +1358,8 @@ app.put('/api/settings/discord', async (req, res) => {
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
     const roleRaw = req.body?.roleId == null ? '' : String(req.body.roleId).trim();
     const roleScope = req.body?.roleScope == null ? '' : String(req.body.roleScope).trim();
-    const guildRaw = req.body?.mainGuildId == null ? '' : String(req.body.mainGuildId).trim();
+    const guildRaw = req.body?.guildId == null ? '' : String(req.body.guildId).trim();
+    const guildScope = req.body?.guildScope == null ? '' : String(req.body.guildScope).trim();
     const allowedRoleScopes = new Set([
         'main_curator_role_id',
         'ballas_curator_role_id',
@@ -1366,11 +1368,22 @@ app.put('/api/settings/discord', async (req, res) => {
         'bloods_curator_role_id',
         'marabunta_curator_role_id'
     ]);
+    const allowedGuildScopes = new Set([
+        'main_guild_id',
+        'ballas_guild_id',
+        'families_guild_id',
+        'vagos_guild_id',
+        'bloods_guild_id',
+        'marabunta_guild_id'
+    ]);
     if (roleRaw && !/^\d{3,30}$/.test(roleRaw)) {
         return res.status(400).json({ error: 'Некорректный ID роли' });
     }
     if (roleScope && !allowedRoleScopes.has(roleScope)) {
         return res.status(400).json({ error: 'Некорректный тип роли' });
+    }
+    if (guildScope && !allowedGuildScopes.has(guildScope)) {
+        return res.status(400).json({ error: 'Некорректный тип сервера' });
     }
     if (guildRaw && !client.guilds.cache.has(guildRaw)) {
         return res.status(400).json({ error: 'Бот не состоит в выбранном сервере' });
@@ -1384,15 +1397,15 @@ app.put('/api/settings/discord', async (req, res) => {
                 [roleScope, roleRaw]
             );
         }
-        if (guildRaw) {
+        if (guildScope && guildRaw) {
             await pool.query(
                 `INSERT INTO app_settings (key, value, updated_at)
-                 VALUES ('main_guild_id', $1, NOW())
+                 VALUES ($1, $2, NOW())
                  ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-                [guildRaw]
+                [guildScope, guildRaw]
             );
         }
-        return res.json({ roleId: roleRaw, roleScope, mainGuildId: guildRaw });
+        return res.json({ roleId: roleRaw, roleScope, guildId: guildRaw, guildScope });
     } catch (e) {
         console.error('PUT /api/settings/discord:', e.message);
         return res.status(500).json({ error: e.message });
