@@ -357,9 +357,7 @@ function buildEventDetailFeSpacerRowHtml(row) {
   const rid = row.rowId;
   return `
       <tr class="event-fe-spacer-row" data-fe-row-id="${rid}" data-fe-spacer="1">
-        <td colspan="11" class="event-fe-spacer-cell" aria-hidden="true">
-          <button type="button" class="event-fe-del event-fe-del-outside" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
-        </td>
+        <td colspan="11" class="event-fe-spacer-cell" aria-hidden="true"></td>
       </tr>`;
 }
 
@@ -374,7 +372,6 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
       <tr data-fe-row-id="${rid}">
         <td class="event-fe-col-n">
           <span class="event-fe-num">${n}</span>
-          <button type="button" class="event-fe-del event-fe-del-outside" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
         </td>
         <td>
           <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
@@ -516,17 +513,6 @@ async function eventFePutRow(rowId, body) {
   return res.json();
 }
 
-async function eventFeDeleteRow(rowId) {
-  const res = await fetch(`/api/event-detail-rows/${rowId}`, { method: 'DELETE' });
-  if (res.ok || res.status === 204) return;
-  let msg = 'error';
-  try {
-    const j = await res.json();
-    if (j?.error) msg = j.error;
-  } catch (_) { /* ignore */ }
-  throw new Error(msg);
-}
-
 function attachEventDetailFeListeners(pageKey) {
   const wrap = document.getElementById('event-detail-fe-wrap');
   if (!wrap) return;
@@ -576,20 +562,6 @@ function attachEventDetailFeListeners(pageKey) {
       console.error(err);
       window.showToast('Не удалось сохранить.', 'error');
       await window.refreshEventDetailFeTable(pageKey);
-    }
-  });
-  wrap.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.event-fe-del');
-    if (!btn || !wrap.contains(btn)) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const rowId = btn.getAttribute('data-row-id');
-    if (!rowId) return;
-    try {
-      await eventFeDeleteRow(rowId);
-      await window.refreshEventDetailFeTable(pageKey);
-    } catch (err) {
-      console.error(err);
     }
   });
   wrap.addEventListener('focusout', async (e) => {
