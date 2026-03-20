@@ -1072,11 +1072,10 @@ body, button, input, select {
     padding: 6px 12px;
     white-space: nowrap;
 }
-/* Не обрезаем содержимое по горизонтали — зона удаления визуально в «поле» контейнера */
+/* Горизонтальный скролл без лишней полосы справа (padding под кнопку давал тёмный «столбец») */
 .event-detail-fe-wrap.table-container {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-right: 34px;
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
@@ -1138,9 +1137,10 @@ body, button, input, select {
 }
 .event-detail-fe-table .event-fe-del.event-fe-del-outside {
     position: absolute;
+    /* Как до запроса «сместить на 10»: right -28px; сдвиг на 10px влево — через translateX, не меняя right */
     right: -28px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateX(-10px);
     width: 22px;
     height: 22px;
     z-index: 3;
