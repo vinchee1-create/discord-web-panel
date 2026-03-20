@@ -1009,19 +1009,38 @@ app.get('/api/event-detail-rows', async (req, res) => {
 app.post('/api/event-detail-rows', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
-    const pageKey = typeof req.body?.pageKey === 'string' ? req.body.pageKey.trim() : '';
+    const b = req.body || {};
+    const pageKey = typeof b.pageKey === 'string' ? b.pageKey.trim() : '';
     if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
     try {
+        let familyRefId = null;
+        if (b.familyRefId !== undefined && b.familyRefId !== null && b.familyRefId !== '') {
+            const n = parseInt(b.familyRefId, 10);
+            if (isNaN(n)) return res.status(400).json({ error: 'Invalid familyRefId' });
+            const { rows: fk } = await pool.query('SELECT id FROM families WHERE id=$1', [n]);
+            if (!fk[0]) return res.status(400).json({ error: 'Family not found' });
+            familyRefId = n;
+        }
+        let colour = 'white';
+        if (typeof b.colour === 'string') {
+            const c = b.colour.trim().toLowerCase();
+            if (!EVENT_FE_COLOURS.has(c)) return res.status(400).json({ error: 'Invalid colour' });
+            colour = c;
+        }
+        const died = Boolean(b.died);
+        const curatorName = typeof b.curatorName === 'string' ? b.curatorName.slice(0, 255) : '';
+        const lFlag = Boolean(b.lFlag);
+        const wFlag = Boolean(b.wFlag);
         const { rows: mx } = await pool.query(
             'SELECT COALESCE(MAX(sort_index), -1) + 1 AS n FROM event_detail_family_rows WHERE page_key = $1',
             [pageKey]
         );
         const sortIndex = mx[0]?.n ?? 0;
         const { rows } = await pool.query(
-            `INSERT INTO event_detail_family_rows (page_key, sort_index, colour)
-             VALUES ($1, $2, 'white')
+            `INSERT INTO event_detail_family_rows (page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id, page_key, sort_index, family_ref_id, colour, died, curator_name, l_flag, w_flag`,
-            [pageKey, sortIndex]
+            [pageKey, sortIndex, familyRefId, colour, died, curatorName, lFlag, wFlag]
         );
         const ins = rows[0];
         const { rows: full } = await pool.query(

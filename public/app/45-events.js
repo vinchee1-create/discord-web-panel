@@ -258,56 +258,128 @@ function eventFeCommands(gameId, colour) {
   };
 }
 
-window.buildEventDetailFeRowsHtml = function buildEventDetailFeRowsHtml(rows) {
+function eventFeFamilyOptionsHtml(selectedDbId) {
   const fams = window.families || [];
-  if (!rows.length) {
-    return `<tr><td colspan="11" class="event-fe-empty">Нет строк. Нажмите «Добавить строку».</td></tr>`;
-  }
-  return rows.map((row, i) => {
-    const n = i + 1;
-    const famOpts = [
-      '<option value="">— не выбрано —</option>',
-      ...fams.map(f => {
-        const sel = Number(row.familyRefId) === Number(f.dbId) ? ' selected' : '';
-        return `<option value="${String(f.dbId)}"${sel}>${window.escapeHtml(f.name)}</option>`;
-      })
-    ].join('');
-    const colOpts = window.EVENT_FE_COLOURS.map(c => {
-      const sel = String(row.colour || 'white').toLowerCase() === c ? ' selected' : '';
-      return `<option value="${c}"${sel}>${c}</option>`;
-    }).join('');
-    const gameId = row.familyGameId || '';
-    const cmds = eventFeCommands(gameId, row.colour);
-    return `
-      <tr data-fe-row-id="${row.rowId}">
-        <td class="event-fe-col-n">
-          <div class="event-fe-n-cell">
-            <span class="event-fe-num">${n}</span>
-            <button type="button" class="btn-icon btn-icon-delete event-fe-del" data-row-id="${row.rowId}" title="Удалить строку">${trashIconSvg()}</button>
-          </div>
+  const opts = [
+    '<option value="">— не выбрано —</option>',
+    ...fams.map(f => {
+      const sel = Number(selectedDbId) === Number(f.dbId) ? ' selected' : '';
+      return `<option value="${String(f.dbId)}"${sel}>${window.escapeHtml(f.name)}</option>`;
+    })
+  ];
+  return opts.join('');
+}
+
+function eventFeColourOptionsHtml(selectedColour) {
+  const cur = String(selectedColour || 'white').toLowerCase();
+  return window.EVENT_FE_COLOURS.map(c => {
+    const sel = cur === c ? ' selected' : '';
+    return `<option value="${c}"${sel}>${c}</option>`;
+  }).join('');
+}
+
+function buildEventDetailFePersistedRowHtml(row, i) {
+  const n = i + 1;
+  const famOpts = eventFeFamilyOptionsHtml(row.familyRefId);
+  const colOpts = eventFeColourOptionsHtml(row.colour);
+  const gameId = row.familyGameId || '';
+  const cmds = eventFeCommands(gameId, row.colour);
+  const rid = row.rowId;
+  return `
+      <tr data-fe-row-id="${rid}">
+        <td class="event-fe-col-n"><span class="event-fe-num">${n}</span></td>
+        <td>
+          <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
         </td>
         <td>
-          <select class="event-fe-family" data-row-id="${row.rowId}" aria-label="Семья">${famOpts}</select>
+          <select class="event-fe-colour" data-row-id="${rid}" aria-label="Цвет">${colOpts}</select>
         </td>
-        <td>
-          <select class="event-fe-colour" data-row-id="${row.rowId}" aria-label="Цвет">${colOpts}</select>
-        </td>
-        <td class="event-fe-id-cell"><code>${window.escapeHtml(gameId) || '—'}</code></td>
-        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><code>${window.escapeHtml(cmds.temp)}</code></td>
-        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.on)}"><code>${window.escapeHtml(cmds.on)}</code></td>
-        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.off)}"><code>${window.escapeHtml(cmds.off)}</code></td>
+        <td class="event-fe-id-cell event-fe-td-center"><code>${window.escapeHtml(gameId) || '—'}</code></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.temp)}</code></div></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.on)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.on)}</code></div></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.off)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.off)}</code></div></td>
         <td class="event-fe-check-cell">
-          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="died" ${row.died ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="died" ${row.died ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
-        <td><input type="text" class="event-fe-curator" data-row-id="${row.rowId}" value="${feEscapeAttr(row.curatorName)}" placeholder="Имя" autocomplete="off" /></td>
+        <td><input type="text" class="event-fe-curator" data-row-id="${rid}" value="${feEscapeAttr(row.curatorName)}" placeholder="Имя" autocomplete="off" /></td>
         <td class="event-fe-check-cell">
-          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="lFlag" ${row.lFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="lFlag" ${row.lFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
         <td class="event-fe-check-cell">
-          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${row.rowId}" data-field="wFlag" ${row.wFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="wFlag" ${row.wFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
       </tr>`;
-  }).join('');
+}
+
+/** Черновая строка: при заполнении уходит в БД, ниже появляется новая */
+function buildEventDetailFeDraftRowHtml(draftNum) {
+  const fams = window.families || [];
+  const famOpts = eventFeFamilyOptionsHtml(null);
+  const colOpts = eventFeColourOptionsHtml('white');
+  const cmds = eventFeCommands('', 'white');
+  return `
+      <tr data-fe-draft="1" class="event-fe-draft-row">
+        <td class="event-fe-col-n"><span class="event-fe-num">${draftNum}</span></td>
+        <td>
+          <select class="event-fe-family event-fe-draft-control" aria-label="Семья">${famOpts}</select>
+        </td>
+        <td>
+          <select class="event-fe-colour event-fe-draft-control" aria-label="Цвет">${colOpts}</select>
+        </td>
+        <td class="event-fe-id-cell event-fe-td-center"><code>—</code></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.temp)}</code></div></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.on)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.on)}</code></div></td>
+        <td class="event-fe-cmd" title="${feEscapeAttr(cmds.off)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.off)}</code></div></td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="died" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+        <td><input type="text" class="event-fe-curator event-fe-draft-control" value="" placeholder="Имя" autocomplete="off" /></td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="lFlag" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="wFlag" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
+        </td>
+      </tr>`;
+}
+
+function eventFeDraftRowIsMeaningful(tr) {
+  if (!tr || !tr.matches('tr[data-fe-draft="1"]')) return false;
+  const fam = tr.querySelector('.event-fe-family')?.value;
+  const col = tr.querySelector('.event-fe-colour')?.value || 'white';
+  const cur = tr.querySelector('.event-fe-curator')?.value.trim() || '';
+  const died = tr.querySelector('.event-fe-flag[data-field="died"]')?.checked;
+  const l = tr.querySelector('.event-fe-flag[data-field="lFlag"]')?.checked;
+  const w = tr.querySelector('.event-fe-flag[data-field="wFlag"]')?.checked;
+  return (fam && fam !== '') || col !== 'white' || cur.length > 0 || died || l || w;
+}
+
+async function eventFePostDraftRow(tr, pageKey) {
+  const fam = tr.querySelector('.event-fe-family');
+  const col = tr.querySelector('.event-fe-colour');
+  const cur = tr.querySelector('.event-fe-curator');
+  const body = {
+    pageKey,
+    familyRefId: fam.value === '' ? null : Number(fam.value),
+    colour: col.value,
+    curatorName: cur.value.trim(),
+    died: Boolean(tr.querySelector('.event-fe-flag[data-field="died"]')?.checked),
+    lFlag: Boolean(tr.querySelector('.event-fe-flag[data-field="lFlag"]')?.checked),
+    wFlag: Boolean(tr.querySelector('.event-fe-flag[data-field="wFlag"]')?.checked)
+  };
+  const res = await fetch('/api/event-detail-rows', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'error');
+}
+
+window.buildEventDetailFeRowsHtml = function buildEventDetailFeRowsHtml(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const persisted = list.map((row, i) => buildEventDetailFePersistedRowHtml(row, i)).join('');
+  const draftNum = list.length + 1;
+  return persisted + buildEventDetailFeDraftRowHtml(draftNum);
 };
 
 window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(pageKey) {
@@ -320,33 +392,8 @@ window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(page
     tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
   } catch (e) {
     console.error(e);
-    tbody.innerHTML = `<tr><td colspan="11" class="event-fe-empty">Не удалось загрузить строки.</td></tr>`;
-  }
-};
-
-window.eventFeAddRow = async function eventFeAddRow(pageKey) {
-  try {
-    const res = await fetch('/api/event-detail-rows', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pageKey })
-    });
-    if (!res.ok) throw new Error((await res.json()).error || 'error');
-    await window.refreshEventDetailFeTable(pageKey);
-  } catch (e) {
-    console.error(e);
-    window.showToast('Не удалось добавить строку.', 'error');
-  }
-};
-
-window.eventFeDeleteRow = async function eventFeDeleteRow(rowId, pageKey) {
-  try {
-    const res = await fetch(`/api/event-detail-rows/${rowId}`, { method: 'DELETE' });
-    if (!res.ok && res.status !== 204) throw new Error((await res.json()).error || 'error');
-    await window.refreshEventDetailFeTable(pageKey);
-  } catch (e) {
-    console.error(e);
-    window.showToast('Не удалось удалить строку.', 'error');
+    if (typeof window.loadFamilies === 'function') await window.loadFamilies();
+    tbody.innerHTML = window.buildEventDetailFeRowsHtml([]);
   }
 };
 
@@ -362,13 +409,24 @@ async function eventFePutRow(rowId, body) {
 
 function attachEventDetailFeListeners(pageKey) {
   const wrap = document.getElementById('event-detail-fe-wrap');
-  const addBtn = document.getElementById('event-detail-fe-add');
-  if (addBtn) addBtn.onclick = () => window.eventFeAddRow(pageKey);
   if (!wrap) return;
   if (wrap.dataset.feListeners === '1') return;
   wrap.dataset.feListeners = '1';
   wrap.addEventListener('change', async (e) => {
     const t = e.target;
+    const draftTr = t.closest('tr[data-fe-draft="1"]');
+    if (draftTr) {
+      if (!eventFeDraftRowIsMeaningful(draftTr)) return;
+      try {
+        await eventFePostDraftRow(draftTr, pageKey);
+        await window.refreshEventDetailFeTable(pageKey);
+      } catch (err) {
+        console.error(err);
+        window.showToast('Не удалось сохранить строку.', 'error');
+        await window.refreshEventDetailFeTable(pageKey);
+      }
+      return;
+    }
     const rowId = t.getAttribute('data-row-id');
     if (!rowId) return;
     try {
@@ -393,6 +451,19 @@ function attachEventDetailFeListeners(pageKey) {
   wrap.addEventListener('focusout', async (e) => {
     const t = e.target;
     if (!t.classList.contains('event-fe-curator')) return;
+    const draftTr = t.closest('tr[data-fe-draft="1"]');
+    if (draftTr) {
+      if (!eventFeDraftRowIsMeaningful(draftTr)) return;
+      try {
+        await eventFePostDraftRow(draftTr, pageKey);
+        await window.refreshEventDetailFeTable(pageKey);
+      } catch (err) {
+        console.error(err);
+        window.showToast('Не удалось сохранить строку.', 'error');
+        await window.refreshEventDetailFeTable(pageKey);
+      }
+      return;
+    }
     const rowId = t.getAttribute('data-row-id');
     if (!rowId) return;
     try {
@@ -403,12 +474,6 @@ function attachEventDetailFeListeners(pageKey) {
       window.showToast('Не удалось сохранить следящего.', 'error');
       await window.refreshEventDetailFeTable(pageKey);
     }
-  });
-  wrap.addEventListener('click', (e) => {
-    const del = e.target.closest('.event-fe-del');
-    if (!del) return;
-    const rid = del.getAttribute('data-row-id');
-    if (rid) window.eventFeDeleteRow(rid, pageKey);
   });
 }
 
@@ -509,10 +574,6 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
           <div class="event-detail-fe-section">
             <div class="event-detail-fe-toolbar">
               <h2 class="event-detail-fe-heading">Семьи и команды</h2>
-              <button type="button" class="btn-month" id="event-detail-fe-add">
-                <span class="btn-month-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg></span>
-                <span>Добавить строку</span>
-              </button>
             </div>
             <div class="table-container event-detail-fe-wrap" id="event-detail-fe-wrap">
               <table class="data-table event-detail-fe-table">
@@ -521,14 +582,14 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                     <th class="event-fe-th-n">N</th>
                     <th>Семья</th>
                     <th>Цвет</th>
-                    <th>ID</th>
-                    <th>/tempfamily</th>
-                    <th>/feventon</th>
-                    <th>/feventoff</th>
-                    <th>Погибли</th>
+                    <th class="event-fe-th-id">ID</th>
+                    <th class="event-fe-th-cmd">/tempfamily</th>
+                    <th class="event-fe-th-cmd">/feventon</th>
+                    <th class="event-fe-th-cmd">/feventoff</th>
+                    <th class="event-fe-th-check">Погибли</th>
                     <th>Следящий</th>
-                    <th>L</th>
-                    <th>W</th>
+                    <th class="event-fe-th-check">L</th>
+                    <th class="event-fe-th-check">W</th>
                   </tr>
                 </thead>
                 <tbody id="event-detail-fe-tbody">

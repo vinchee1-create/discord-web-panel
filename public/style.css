@@ -1051,11 +1051,6 @@ body, button, input, select {
     border-top: 1px solid #1f1f1f;
 }
 .event-detail-fe-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
     margin-bottom: 14px;
 }
 .event-detail-fe-heading {
@@ -1074,61 +1069,80 @@ body, button, input, select {
 }
 .event-detail-fe-table th.event-fe-th-n,
 .event-detail-fe-table td.event-fe-col-n {
-    width: 72px;
+    width: 44px;
+    text-align: center;
     white-space: nowrap;
 }
-.event-fe-n-cell {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.event-detail-fe-table th.event-fe-th-id,
+.event-detail-fe-table th.event-fe-th-cmd,
+.event-detail-fe-table th.event-fe-th-check {
+    text-align: center;
 }
 .event-fe-num {
     font-weight: 600;
     color: rgba(255,255,255,0.75);
-    min-width: 1.25em;
 }
-.event-detail-fe-table select.event-fe-family {
+/* Селекты: своя стрелка, отступ справа как слева у текста (симметрия с полем «Имя») */
+.event-detail-fe-table select.event-fe-family,
+.event-detail-fe-table select.event-fe-colour {
     min-width: 140px;
     max-width: 220px;
-    padding: 6px 8px;
+    box-sizing: border-box;
+    padding: 8px 34px 8px 12px;
     border-radius: 6px;
     border: 1px solid #2a2a2a;
-    background: #141414;
+    background-color: #141414;
     color: #fff;
     font-size: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.72)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
 }
 .event-detail-fe-table select.event-fe-colour {
     min-width: 96px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid #2a2a2a;
-    background: #141414;
-    color: #fff;
-    font-size: 12px;
+    max-width: 140px;
     text-transform: lowercase;
+}
+.event-detail-fe-table .event-fe-td-center,
+.event-detail-fe-table .event-fe-id-cell {
+    text-align: center;
+    vertical-align: middle;
 }
 .event-detail-fe-table .event-fe-id-cell code {
     font-size: 12px;
     color: rgba(255,255,255,0.88);
 }
 .event-detail-fe-table .event-fe-cmd {
-    max-width: 240px;
-    vertical-align: top;
+    max-width: 260px;
+    vertical-align: middle;
+    text-align: center;
+}
+.event-detail-fe-table .event-fe-cmd .event-fe-cmd-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 6px;
+    min-height: 2.75em;
 }
 .event-detail-fe-table .event-fe-cmd code {
-    display: block;
+    display: inline-block;
+    text-align: center;
     font-size: 11px;
     line-height: 1.35;
     word-break: break-all;
     white-space: pre-wrap;
     color: rgba(255,255,255,0.82);
+    max-width: 100%;
 }
 .event-detail-fe-table .event-fe-curator {
     width: 100%;
     min-width: 120px;
     max-width: 200px;
     box-sizing: border-box;
-    padding: 8px 10px;
+    padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid #2a2a2a;
     background: #141414;
@@ -1138,16 +1152,22 @@ body, button, input, select {
 .event-detail-fe-table .event-fe-check-cell {
     text-align: center;
     vertical-align: middle;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+.event-detail-fe-table .event-fe-check-cell .event-fe-check-label {
+    margin-left: auto;
+    margin-right: auto;
 }
 .event-fe-check-label {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 36px;
     height: 36px;
     cursor: pointer;
-    margin: 0;
+    margin: 0 auto;
 }
 .event-fe-check-label input.event-fe-flag {
     position: absolute;
@@ -1183,14 +1203,8 @@ body, button, input, select {
     color: rgba(255,255,255,0.45);
     font-size: 13px;
 }
-.event-detail-fe-table .event-fe-del {
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-}
-.event-detail-fe-table .event-fe-del svg {
-    width: 14px;
-    height: 14px;
+.event-fe-draft-row td {
+    background: rgba(255,255,255,0.02);
 }
 
 .events-expanded {
