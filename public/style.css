@@ -2003,6 +2003,15 @@ body, button, input, select {
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.03);
 }
+.settings-guild-modal-card {
+    width: 420px;
+}
+.settings-guild-modal-title {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+}
 .settings-guild-picker-row {
     display: flex;
     align-items: stretch;
@@ -2100,6 +2109,43 @@ body, button, input, select {
     align-items: stretch;
     gap: 10px;
     flex-direction: column;
+}
+.settings-form-static {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px dashed rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.02);
+}
+.settings-modal-fields {
+    margin-top: 12px;
+}
+.settings-modal-fields label {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin: 10px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+.settings-modal-fields input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-size: 13px;
+    font-family: inherit;
+}
+.settings-modal-separator {
+    border: 0;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    margin: 12px 0 6px;
 }
 .settings-form-row input {
     flex: 1;

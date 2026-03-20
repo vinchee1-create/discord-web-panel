@@ -1306,37 +1306,51 @@ app.put('/api/event-detail-faction-rows/:displayId', async (req, res) => {
 
 app.get('/api/settings/discord', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
-    const roleKeys = [
+    const scopes = ['main', 'ballas', 'vagos', 'families', 'bloods', 'marabunta'];
+    const keys = [];
+    scopes.forEach(s => {
+        keys.push(
+            `${s}_guild_id`,
+            `${s}_fraction_curator_role_id`,
+            `${s}_fraction_role_id`,
+            `${s}_curators_news_channel_id`,
+            `${s}_curator_leader_role_id`,
+            `${s}_player_requests_channel_id`
+        );
+    });
+    // legacy keys (compat)
+    keys.push(
         'main_curator_role_id',
         'ballas_curator_role_id',
         'families_curator_role_id',
         'vagos_curator_role_id',
         'bloods_curator_role_id',
         'marabunta_curator_role_id'
-    ];
-    const guildKeys = [
-        'main_guild_id',
-        'ballas_guild_id',
-        'families_guild_id',
-        'vagos_guild_id',
-        'bloods_guild_id',
-        'marabunta_guild_id'
-    ];
-    const roleIds = {};
-    const guildIds = {};
+    );
+    const scopeSettings = {};
+    const kv = {};
     if (pool) {
         try {
             const { rows } = await pool.query(
                 'SELECT key, value FROM app_settings WHERE key = ANY($1::text[])',
-                [[...roleKeys, ...guildKeys]]
+                [keys]
             );
-            const map = new Map(rows.map(r => [r.key, r.value]));
-            roleKeys.forEach(k => { roleIds[k] = map.get(k) || ''; });
-            guildKeys.forEach(k => { guildIds[k] = map.get(k) || ''; });
+            rows.forEach(r => { kv[r.key] = r.value || ''; });
         } catch (e) {
             console.error('GET /api/settings/discord settings read:', e.message);
         }
     }
+    scopes.forEach(scope => {
+        const legacyCurator = kv[`${scope}_curator_role_id`];
+        scopeSettings[scope] = {
+            guildId: kv[`${scope}_guild_id`] || '',
+            fractionCuratorId: kv[`${scope}_fraction_curator_role_id`] || legacyCurator || '',
+            fractionRoleId: kv[`${scope}_fraction_role_id`] || '',
+            curatorsNewsId: kv[`${scope}_curators_news_channel_id`] || '',
+            curatorLeaderId: kv[`${scope}_curator_leader_role_id`] || '',
+            playerRequestsId: kv[`${scope}_player_requests_channel_id`] || ''
+        };
+    });
     const guilds = Array.from(client.guilds.cache.values())
         .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ru'))
         .map(g => ({
@@ -1348,64 +1362,51 @@ app.get('/api/settings/discord', async (req, res) => {
     return res.json({
         guilds,
         botOnline,
-        roleIds,
-        guildIds
+        scopeSettings
     });
 });
 
 app.put('/api/settings/discord', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
-    const roleRaw = req.body?.roleId == null ? '' : String(req.body.roleId).trim();
-    const roleScope = req.body?.roleScope == null ? '' : String(req.body.roleScope).trim();
-    const guildRaw = req.body?.guildId == null ? '' : String(req.body.guildId).trim();
-    const guildScope = req.body?.guildScope == null ? '' : String(req.body.guildScope).trim();
-    const allowedRoleScopes = new Set([
-        'main_curator_role_id',
-        'ballas_curator_role_id',
-        'families_curator_role_id',
-        'vagos_curator_role_id',
-        'bloods_curator_role_id',
-        'marabunta_curator_role_id'
-    ]);
-    const allowedGuildScopes = new Set([
-        'main_guild_id',
-        'ballas_guild_id',
-        'families_guild_id',
-        'vagos_guild_id',
-        'bloods_guild_id',
-        'marabunta_guild_id'
-    ]);
-    if (roleRaw && !/^\d{3,30}$/.test(roleRaw)) {
-        return res.status(400).json({ error: 'Некорректный ID роли' });
+    const scope = req.body?.scope == null ? '' : String(req.body.scope).trim().toLowerCase();
+    const allowedScopes = new Set(['main', 'ballas', 'vagos', 'families', 'bloods', 'marabunta']);
+    if (!allowedScopes.has(scope)) {
+        return res.status(400).json({ error: 'Некорректный scope' });
     }
-    if (roleScope && !allowedRoleScopes.has(roleScope)) {
-        return res.status(400).json({ error: 'Некорректный тип роли' });
+    const body = {
+        guildId: req.body?.guildId == null ? '' : String(req.body.guildId).trim(),
+        fractionCuratorId: req.body?.fractionCuratorId == null ? '' : String(req.body.fractionCuratorId).trim(),
+        fractionRoleId: req.body?.fractionRoleId == null ? '' : String(req.body.fractionRoleId).trim(),
+        curatorsNewsId: req.body?.curatorsNewsId == null ? '' : String(req.body.curatorsNewsId).trim(),
+        curatorLeaderId: req.body?.curatorLeaderId == null ? '' : String(req.body.curatorLeaderId).trim(),
+        playerRequestsId: req.body?.playerRequestsId == null ? '' : String(req.body.playerRequestsId).trim()
+    };
+    const idFields = ['fractionCuratorId', 'fractionRoleId', 'curatorsNewsId', 'curatorLeaderId', 'playerRequestsId'];
+    for (const f of idFields) {
+        if (body[f] && !/^\d{3,30}$/.test(body[f])) return res.status(400).json({ error: `Некорректное значение ${f}` });
     }
-    if (guildScope && !allowedGuildScopes.has(guildScope)) {
-        return res.status(400).json({ error: 'Некорректный тип сервера' });
-    }
-    if (guildRaw && !client.guilds.cache.has(guildRaw)) {
+    if (body.guildId && !client.guilds.cache.has(body.guildId)) {
         return res.status(400).json({ error: 'Бот не состоит в выбранном сервере' });
     }
     try {
-        if (roleScope) {
+        const entries = [
+            [`${scope}_guild_id`, body.guildId],
+            [`${scope}_fraction_curator_role_id`, body.fractionCuratorId],
+            [`${scope}_fraction_role_id`, body.fractionRoleId],
+            [`${scope}_curators_news_channel_id`, body.curatorsNewsId],
+            [`${scope}_curator_leader_role_id`, body.curatorLeaderId],
+            [`${scope}_player_requests_channel_id`, body.playerRequestsId]
+        ];
+        for (const [k, v] of entries) {
             await pool.query(
                 `INSERT INTO app_settings (key, value, updated_at)
                  VALUES ($1, $2, NOW())
                  ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-                [roleScope, roleRaw]
+                [k, v]
             );
         }
-        if (guildScope && guildRaw) {
-            await pool.query(
-                `INSERT INTO app_settings (key, value, updated_at)
-                 VALUES ($1, $2, NOW())
-                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-                [guildScope, guildRaw]
-            );
-        }
-        return res.json({ roleId: roleRaw, roleScope, guildId: guildRaw, guildScope });
+        return res.json({ ok: true });
     } catch (e) {
         console.error('PUT /api/settings/discord:', e.message);
         return res.status(500).json({ error: e.message });
