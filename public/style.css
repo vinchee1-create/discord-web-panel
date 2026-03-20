@@ -2032,6 +2032,26 @@ body, button, input, select {
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.03);
 }
+.settings-server-row--ballas_guild_id {
+    border-color: rgba(160, 96, 220, 0.45);
+    background: rgba(160, 96, 220, 0.12);
+}
+.settings-server-row--vagos_guild_id {
+    border-color: rgba(210, 190, 72, 0.45);
+    background: rgba(210, 190, 72, 0.12);
+}
+.settings-server-row--families_guild_id {
+    border-color: rgba(72, 168, 96, 0.45);
+    background: rgba(72, 168, 96, 0.12);
+}
+.settings-server-row--bloods_guild_id {
+    border-color: rgba(200, 72, 72, 0.45);
+    background: rgba(200, 72, 72, 0.12);
+}
+.settings-server-row--marabunta_guild_id {
+    border-color: rgba(64, 188, 206, 0.45);
+    background: rgba(64, 188, 206, 0.12);
+}
 .settings-server-name {
     font-size: 14px;
     font-weight: 600;

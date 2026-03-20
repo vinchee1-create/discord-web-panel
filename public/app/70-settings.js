@@ -3,8 +3,8 @@
 const SETTINGS_SCOPES = [
   { key: 'main_curator_role_id', guildKey: 'main_guild_id', title: 'Основной сервер' },
   { key: 'ballas_curator_role_id', guildKey: 'ballas_guild_id', title: 'The Ballas Gang' },
-  { key: 'families_curator_role_id', guildKey: 'families_guild_id', title: 'The Families' },
   { key: 'vagos_curator_role_id', guildKey: 'vagos_guild_id', title: 'Los Santos Vagos' },
+  { key: 'families_curator_role_id', guildKey: 'families_guild_id', title: 'The Families' },
   { key: 'bloods_curator_role_id', guildKey: 'bloods_guild_id', title: 'The Bloods Gang' },
   { key: 'marabunta_curator_role_id', guildKey: 'marabunta_guild_id', title: 'Marabunta Grande' }
 ];
@@ -25,7 +25,7 @@ window.renderSettings = async function renderSettings() {
           <button type="button" class="btn-pill" data-act="save-guild">Сохранить сервер</button>
         </div>
       </div>
-      <div class="settings-server-row">
+      <div class="settings-server-row settings-server-row--${s.guildKey}">
         <div class="settings-server-main">
           <div class="settings-server-name" data-part="server-name">Загрузка...</div>
           <div class="settings-server-members" data-part="server-members">Участников: —</div>
