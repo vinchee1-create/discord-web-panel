@@ -955,17 +955,6 @@ body, button, input, select {
     pointer-events: auto;
 }
 
-/* Модалка мероприятий: компактная кнопка «развернуть» */
-.events-day-item-actions .btn-icon.btn-icon-expand {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-}
-.events-day-item-actions .btn-icon.btn-icon-expand svg {
-    width: 14px;
-    height: 14px;
-}
-
 /* Страница мероприятия по URL /<slug><DDMM> */
 .event-detail-page {
     max-width: 720px;

@@ -1,8 +1,10 @@
 // Events: persistence + calendar interactions + recurring events.
 
 window.events = []; // stored events loaded from DB for current month range
+window.eventsSuppressedSystem = []; // { date, key } — скрытые на дату автоматические ВЗЗ/ВЗМ
 window.eventsSelectedDate = null; // YYYY-MM-DD
 window.eventsEditingId = null; // dbId | null
+window.eventsEditingSystemKey = null; // 'vzz' | 'vzm' | null — редактирование шаблонного мероприятия
 window.eventsActiveCell = null; // currently selected day cell
 
 function pad2(n) { return String(n).padStart(2, '0'); }
@@ -18,19 +20,56 @@ function endOfMonthISO(year, monthIndex) {
 }
 
 function getSystemEventsForDate(isoDate) {
-  // isoDate is YYYY-MM-DD, interpret as local calendar day
   const [y, m, d] = isoDate.split('-').map(Number);
   const dt = new Date(y, (m - 1), d);
-  const day = dt.getDay(); // 0 Sun, 1 Mon, 2 Tue, 4 Thu
+  const day = dt.getDay(); // 0 Вс, 1 Пн, 2 Вт, 4 Чт
   const res = [];
-  if (day === 1) res.push({ kind: 'system', title: 'ВЗЗ', description: '', date: isoDate });
-  if (day === 2 || day === 4) res.push({ kind: 'system', title: 'ВЗМ', description: '', date: isoDate });
-  return res;
+  if (day === 1) {
+    res.push({
+      kind: 'system',
+      title: 'ВЗЗ',
+      description: 'Тип - Семейный',
+      date: isoDate,
+      systemKey: 'vzz'
+    });
+  }
+  if (day === 2) {
+    res.push({
+      kind: 'system',
+      title: 'ВЗМ',
+      description: 'Тип - Фракционный',
+      date: isoDate,
+      systemKey: 'vzm'
+    });
+  }
+  if (day === 4) {
+    res.push({
+      kind: 'system',
+      title: 'ВЗМ',
+      description: 'Тип - Семейный',
+      date: isoDate,
+      systemKey: 'vzm'
+    });
+  }
+  const suppressed = new Set(
+    (window.eventsSuppressedSystem || [])
+      .filter(x => x.date === isoDate)
+      .map(x => x.key)
+  );
+  return res.filter(ev => {
+    const key = ev.systemKey;
+    if (suppressed.has(key)) return false;
+    const override = (window.events || []).find(
+      e => e.date === isoDate && e.sourceSystemKey === key
+    );
+    if (override) return false;
+    return true;
+  });
 }
 
 function getEventsForDate(isoDate) {
-  const dbEvents = (window.events || []).filter(e => e.date === isoDate).map(e => ({ ...e, kind: 'db' }));
   const sysEvents = getSystemEventsForDate(isoDate);
+  const dbEvents = (window.events || []).filter(e => e.date === isoDate).map(e => ({ ...e, kind: 'db' }));
   return [...sysEvents, ...dbEvents];
 }
 
@@ -41,10 +80,17 @@ window.loadEventsForMonth = async function loadEventsForMonth(year, monthIndex) 
     const res = await fetch(`/api/events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
     if (!res.ok) throw new Error((await res.json()).error || 'error');
     const data = await res.json();
-    window.events = Array.isArray(data) ? data : [];
+    if (Array.isArray(data)) {
+      window.events = data;
+      window.eventsSuppressedSystem = [];
+    } else {
+      window.events = Array.isArray(data.events) ? data.events : [];
+      window.eventsSuppressedSystem = Array.isArray(data.suppressedSystem) ? data.suppressedSystem : [];
+    }
   } catch (e) {
     console.error('loadEventsForMonth:', e);
     window.events = [];
+    window.eventsSuppressedSystem = [];
   }
 };
 
@@ -261,7 +307,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
   if (back) back.onclick = () => window.goBackToEventsCalendar();
 };
 
-window.expandEventToPage = function expandEventToPage(iso, title, dbId) {
+window.expandEventToPage = function expandEventToPage(iso, title, dbId, prefilledDescription) {
   const slug = slugifyEventName(title);
   const segment = `${slug}${isoToDdmm(iso)}`;
   let description = '';
@@ -272,6 +318,8 @@ window.expandEventToPage = function expandEventToPage(iso, title, dbId) {
       description = ev.description || '';
       kind = 'db';
     }
+  } else {
+    description = prefilledDescription != null ? String(prefilledDescription) : '';
   }
   try {
     sessionStorage.setItem(eventDetailStorageKey(segment), JSON.stringify({
@@ -341,17 +389,21 @@ function renderEventsDayList(isoDate) {
     const title = window.escapeHtml(ev.title || '');
     const desc = window.escapeHtml(ev.description || '');
     const expandBtn = `
-      <button type="button" class="btn-icon btn-icon-expand" title="Развернуть на отдельной странице" aria-label="Развернуть" onclick="window.expandEventToPage(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.title || '')}, ${isSystem ? 'null' : ev.dbId})">${expandIconSvg()}</button>
+      <button type="button" class="btn-icon btn-icon-expand" title="Развернуть на отдельной странице" aria-label="Развернуть" onclick="window.expandEventToPage(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.title || '')}, ${isSystem ? 'null' : ev.dbId}, ${JSON.stringify(ev.description != null ? ev.description : '')})">${expandIconSvg()}</button>
     `;
-    const actions = isSystem ? `
-      <div class="events-day-item-actions">
-        ${expandBtn}
-      </div>
-    ` : `
-      <div class="events-day-item-actions">
-        ${expandBtn}
+    const editDelete = isSystem
+      ? `
+        <button type="button" class="btn-icon" title="Редактировать" onclick="window.startEditSystemEvent(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.systemKey)})">${editIconSvg()}</button>
+        <button type="button" class="btn-icon btn-icon-delete" title="Удалить" onclick="window.deleteSystemEvent(${JSON.stringify(isoDate)}, ${JSON.stringify(ev.systemKey)})">${trashIconSvg()}</button>
+      `
+      : `
         <button type="button" class="btn-icon" title="Редактировать" onclick="startEditEvent(${ev.dbId})">${editIconSvg()}</button>
         <button type="button" class="btn-icon btn-icon-delete" title="Удалить" onclick="deleteEvent(${ev.dbId})">${trashIconSvg()}</button>
+      `;
+    const actions = `
+      <div class="events-day-item-actions">
+        ${expandBtn}
+        ${editDelete}
       </div>
     `;
     return `
@@ -370,6 +422,7 @@ function renderEventsDayList(isoDate) {
 
 function hideEventsForm() {
   window.eventsEditingId = null;
+  window.eventsEditingSystemKey = null;
   eventsDayForm.style.display = 'none';
   if (eventsDayNewBtn) eventsDayNewBtn.style.display = '';
   document.getElementById('events-day-input-title').value = '';
@@ -408,6 +461,7 @@ eventsDayCloseBtn?.addEventListener('click', () => window.closeEventsDayModal())
 
 eventsDayNewBtn?.addEventListener('click', () => {
   window.eventsEditingId = null;
+  window.eventsEditingSystemKey = null;
   eventsDaySubmitBtn.textContent = 'Добавить';
   document.getElementById('events-day-input-title').value = '';
   document.getElementById('events-day-input-desc').value = '';
@@ -468,11 +522,58 @@ function renderEventsRightPanel() {
 window.startEditEvent = function startEditEvent(dbId) {
   const ev = (window.events || []).find(x => x.dbId === dbId);
   if (!ev) return;
+  window.eventsEditingSystemKey = null;
   window.eventsEditingId = dbId;
   document.getElementById('events-day-input-title').value = ev.title || '';
   document.getElementById('events-day-input-desc').value = ev.description || '';
   eventsDaySubmitBtn.textContent = 'Сохранить';
   showEventsForm();
+};
+
+const SYSTEM_KEY_DEFAULT_TITLE = { vzz: 'ВЗЗ', vzm: 'ВЗМ' };
+
+window.startEditSystemEvent = function startEditSystemEvent(isoDate, systemKey) {
+  if (systemKey !== 'vzz' && systemKey !== 'vzm') return;
+  const existing = (window.events || []).find(
+    e => e.date === isoDate && e.sourceSystemKey === systemKey
+  );
+  if (existing) {
+    window.startEditEvent(existing.dbId);
+    return;
+  }
+  window.eventsEditingId = null;
+  window.eventsEditingSystemKey = systemKey;
+  document.getElementById('events-day-date').value = isoDate;
+  document.getElementById('events-day-input-title').value = SYSTEM_KEY_DEFAULT_TITLE[systemKey] || '';
+  const virtual = getEventsForDate(isoDate).find(
+    e => e.kind === 'system' && e.systemKey === systemKey
+  );
+  document.getElementById('events-day-input-desc').value = virtual?.description || '';
+  eventsDaySubmitBtn.textContent = 'Сохранить';
+  showEventsForm();
+};
+
+window.deleteSystemEvent = async function deleteSystemEvent(isoDate, systemKey) {
+  if (systemKey !== 'vzz' && systemKey !== 'vzm') return;
+  if (!confirm('Удалить это мероприятие на выбранную дату?')) return;
+  try {
+    const res = await fetch('/api/events/system-suppress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: isoDate, key: systemKey })
+    });
+    if (!res.ok && res.status !== 204) throw new Error((await res.json()).error || 'error');
+    window.eventsSuppressedSystem = window.eventsSuppressedSystem || [];
+    if (!window.eventsSuppressedSystem.some(x => x.date === isoDate && x.key === systemKey)) {
+      window.eventsSuppressedSystem.push({ date: isoDate, key: systemKey });
+    }
+    if (window.eventsSelectedDate) renderEventsDayList(window.eventsSelectedDate);
+    updateCalendarCells();
+    renderEventsRightPanel();
+  } catch (e) {
+    console.error(e);
+    window.showToast('Не удалось удалить мероприятие.', 'error');
+  }
 };
 
 window.deleteEvent = async function deleteEvent(dbId) {
@@ -506,6 +607,24 @@ eventsDayForm?.addEventListener('submit', async (e) => {
       if (!res.ok) throw new Error((await res.json()).error || 'error');
       const updated = await res.json();
       window.events = (window.events || []).map(ev => ev.dbId === updated.dbId ? updated : ev);
+    } else if (window.eventsEditingSystemKey === 'vzz' || window.eventsEditingSystemKey === 'vzm') {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date,
+          title,
+          description,
+          sourceSystemKey: window.eventsEditingSystemKey
+        })
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'error');
+      const saved = await res.json();
+      const sk = window.eventsEditingSystemKey;
+      window.events = (window.events || []).filter(
+        e => !(e.date === date && e.sourceSystemKey === sk)
+      );
+      window.events.push(saved);
     } else {
       const res = await fetch('/api/events', {
         method: 'POST',

@@ -221,6 +221,20 @@ async function initEventsTable() {
             )
         `);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date)`);
+        await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS source_system_key VARCHAR(8)`);
+        await pool.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_events_date_source_system
+            ON events (event_date, source_system_key)
+            WHERE source_system_key IS NOT NULL
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS suppressed_system_events (
+                event_date DATE NOT NULL,
+                system_key VARCHAR(8) NOT NULL,
+                PRIMARY KEY (event_date, system_key)
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_suppressed_system_date ON suppressed_system_events (event_date)`);
         console.log('✅ Таблица events готова');
     } catch (e) {
         console.error('❌ Ошибка создания таблицы events:', e.message);
@@ -768,20 +782,32 @@ app.get('/api/events', async (req, res) => {
     }
     try {
         const { rows } = await pool.query(
-            `SELECT id, event_date, title, description, created_by, created_at
+            `SELECT id, event_date, title, description, created_by, created_at, source_system_key
              FROM events
              WHERE event_date >= $1::date AND event_date <= $2::date
              ORDER BY event_date ASC, id ASC`,
             [fromStr, toStr]
         );
-        res.json(rows.map(r => ({
-            dbId: r.id,
-            date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
-            title: r.title || '',
-            description: r.description || '',
-            createdBy: r.created_by ?? null,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
-        })));
+        const { rows: supRows } = await pool.query(
+            `SELECT event_date, system_key FROM suppressed_system_events
+             WHERE event_date >= $1::date AND event_date <= $2::date`,
+            [fromStr, toStr]
+        );
+        res.json({
+            events: rows.map(r => ({
+                dbId: r.id,
+                date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+                title: r.title || '',
+                description: r.description || '',
+                createdBy: r.created_by ?? null,
+                createdAt: r.created_at ? r.created_at.toISOString() : null,
+                sourceSystemKey: r.source_system_key || null
+            })),
+            suppressedSystem: supRows.map(r => ({
+                date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+                key: r.system_key
+            }))
+        });
     } catch (e) {
         console.error('GET /api/events:', e.message);
         res.status(500).json({ error: e.message });
@@ -791,17 +817,44 @@ app.get('/api/events', async (req, res) => {
 app.post('/api/events', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!pool) return res.status(503).json({ error: 'Database not configured' });
-    const { date, title, description } = req.body || {};
+    const { date, title, description, sourceSystemKey } = req.body || {};
     const dateStr = typeof date === 'string' ? date : '';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return res.status(400).json({ error: 'date (YYYY-MM-DD) required' });
     if (!title || !String(title).trim()) return res.status(400).json({ error: 'title required' });
+    const sysKey = sourceSystemKey === 'vzz' || sourceSystemKey === 'vzm' ? sourceSystemKey : null;
     try {
         const createdBy = req.session.user?.id ?? null;
+        if (sysKey) {
+            const { rows: existing } = await pool.query(
+                'SELECT id FROM events WHERE event_date = $1::date AND source_system_key = $2',
+                [dateStr, sysKey]
+            );
+            if (existing[0]) {
+                await pool.query(
+                    'UPDATE events SET title=$1, description=$2 WHERE id=$3',
+                    [String(title).trim(), description ? String(description) : null, existing[0].id]
+                );
+                const { rows } = await pool.query(
+                    'SELECT id, event_date, title, description, created_by, created_at, source_system_key FROM events WHERE id=$1',
+                    [existing[0].id]
+                );
+                const r = rows[0];
+                return res.json({
+                    dbId: r.id,
+                    date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
+                    title: r.title || '',
+                    description: r.description || '',
+                    createdBy: r.created_by ?? null,
+                    createdAt: r.created_at ? r.created_at.toISOString() : null,
+                    sourceSystemKey: r.source_system_key || null
+                });
+            }
+        }
         const { rows } = await pool.query(
-            `INSERT INTO events (event_date, title, description, created_by)
-             VALUES ($1::date, $2, $3, $4)
-             RETURNING id, event_date, title, description, created_by, created_at`,
-            [dateStr, String(title).trim(), description ? String(description) : null, createdBy]
+            `INSERT INTO events (event_date, title, description, created_by, source_system_key)
+             VALUES ($1::date, $2, $3, $4, $5)
+             RETURNING id, event_date, title, description, created_by, created_at, source_system_key`,
+            [dateStr, String(title).trim(), description ? String(description) : null, createdBy, sysKey]
         );
         const r = rows[0];
         res.status(201).json({
@@ -810,10 +863,32 @@ app.post('/api/events', async (req, res) => {
             title: r.title || '',
             description: r.description || '',
             createdBy: r.created_by ?? null,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            sourceSystemKey: r.source_system_key || null
         });
     } catch (e) {
         console.error('POST /api/events:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/** Скрыть автоматическое ВЗЗ/ВЗМ на конкретную дату (без записи в events) */
+app.post('/api/events/system-suppress', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { date, key } = req.body || {};
+    const dateStr = typeof date === 'string' ? date : '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return res.status(400).json({ error: 'date (YYYY-MM-DD) required' });
+    if (key !== 'vzz' && key !== 'vzm') return res.status(400).json({ error: 'key must be vzz or vzm' });
+    try {
+        await pool.query(
+            `INSERT INTO suppressed_system_events (event_date, system_key) VALUES ($1::date, $2)
+             ON CONFLICT (event_date, system_key) DO NOTHING`,
+            [dateStr, key]
+        );
+        res.status(204).end();
+    } catch (e) {
+        console.error('POST /api/events/system-suppress:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
@@ -831,7 +906,7 @@ app.put('/api/events/:id', async (req, res) => {
             [String(title).trim(), description ? String(description) : null, dbId]
         );
         const { rows } = await pool.query(
-            'SELECT id, event_date, title, description, created_by, created_at FROM events WHERE id=$1',
+            'SELECT id, event_date, title, description, created_by, created_at, source_system_key FROM events WHERE id=$1',
             [dbId]
         );
         if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -842,7 +917,8 @@ app.put('/api/events/:id', async (req, res) => {
             title: r.title || '',
             description: r.description || '',
             createdBy: r.created_by ?? null,
-            createdAt: r.created_at ? r.created_at.toISOString() : null
+            createdAt: r.created_at ? r.created_at.toISOString() : null,
+            sourceSystemKey: r.source_system_key || null
         });
     } catch (e) {
         console.error('PUT /api/events/:id:', e.message);
