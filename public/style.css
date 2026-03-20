@@ -1112,6 +1112,25 @@ body, button, input, select {
     color: rgba(255,255,255,0.9);
     vertical-align: middle;
 }
+/* Наличие, W, L — как у семейной таблицы (компактные колонки чекбоксов) */
+.event-detail-ff-table th:nth-child(3),
+.event-detail-ff-table td:nth-child(3),
+.event-detail-ff-table th:nth-child(5),
+.event-detail-ff-table td:nth-child(5) {
+    padding-left: 8px;
+    padding-right: 2px;
+    width: 42px;
+    min-width: 38px;
+    max-width: 48px;
+}
+.event-detail-ff-table th:nth-child(6),
+.event-detail-ff-table td:nth-child(6) {
+    padding-left: 8px;
+    padding-right: 16px;
+    width: 42px;
+    min-width: 38px;
+    max-width: 48px;
+}
 /* Как вкладка «Семьи»: чередование (ниже в файле есть .data-table tbody — дублируем с большей специфичностью) */
 .data-table.event-detail-fe-table tbody tr {
     background: #111111;

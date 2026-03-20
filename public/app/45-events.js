@@ -608,7 +608,7 @@ function buildEventDetailFactionRowsHtml(rows) {
         <td class="event-ff-fraction-cell">${window.escapeHtml(name)}</td>
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label">
-            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="present" ${present ? 'checked' : ''} aria-label="Наличие" />
+            <input type="checkbox" class="event-fe-flag" data-faction-id="${id}" data-ff-field="present" ${present ? 'checked' : ''} aria-label="Наличие" />
             <span class="event-fe-check-ui" aria-hidden="true"></span>
           </label>
         </td>
@@ -617,13 +617,13 @@ function buildEventDetailFactionRowsHtml(rows) {
         </td>
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label">
-            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="wFlag" ${wFlag ? 'checked' : ''} aria-label="W" />
+            <input type="checkbox" class="event-fe-flag" data-faction-id="${id}" data-ff-field="wFlag" ${wFlag ? 'checked' : ''} aria-label="W" />
             <span class="event-fe-check-ui" aria-hidden="true"></span>
           </label>
         </td>
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label">
-            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="lFlag" ${lFlag ? 'checked' : ''} aria-label="L" />
+            <input type="checkbox" class="event-fe-flag" data-faction-id="${id}" data-ff-field="lFlag" ${lFlag ? 'checked' : ''} aria-label="L" />
             <span class="event-fe-check-ui" aria-hidden="true"></span>
           </label>
         </td>
@@ -634,10 +634,10 @@ function buildEventDetailFactionRowsHtml(rows) {
 function eventFfRowToBody(tr) {
   if (!tr) return {};
   return {
-    present: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="present"]')?.checked),
+    present: Boolean(tr.querySelector('.event-fe-flag[data-ff-field="present"]')?.checked),
     curatorName: tr.querySelector('.event-fe-ff-curator')?.value?.trim() ?? '',
-    wFlag: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="wFlag"]')?.checked),
-    lFlag: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="lFlag"]')?.checked)
+    wFlag: Boolean(tr.querySelector('.event-fe-flag[data-ff-field="wFlag"]')?.checked),
+    lFlag: Boolean(tr.querySelector('.event-fe-flag[data-ff-field="lFlag"]')?.checked)
   };
 }
 
@@ -679,7 +679,7 @@ function attachEventDetailFactionListeners(pageKey) {
   wrap.dataset.ffListeners = '1';
   wrap.addEventListener('change', async e => {
     const t = e.target;
-    if (!t.classList.contains('event-fe-ff-flag')) return;
+    if (!t.matches?.('input.event-fe-flag[data-ff-field]')) return;
     const tr = t.closest('tr[data-ff-faction-id]');
     const fid = tr?.getAttribute('data-ff-faction-id');
     if (!fid || !pageKey) return;
