@@ -68,6 +68,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
       await window.loadUsers();
       if (window.__navRequestId !== navReqId) return;
       window.renderUsers();
+    } else if (title === 'Настройки') {
+      window.headerActions.style.display = 'none';
+      if (window.__navRequestId !== navReqId) return;
+      await window.renderSettings();
     } else {
       window.headerActions.style.display = 'none';
       if (window.__navRequestId !== navReqId) return;
@@ -147,6 +151,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     window.headerActions.style.display = 'none';
     await window.loadUsers();
     window.renderUsers();
+  } else if (window.initialPage === 'Настройки') {
+    window.pageTitle.textContent = 'Настройки';
+    window.headerActions.style.display = 'none';
+    await window.renderSettings();
   } else {
     // Для остальных страниц пока просто заголовок и плейсхолдер "в разработке"
     window.pageTitle.textContent = window.initialPage || 'Панель управления';
