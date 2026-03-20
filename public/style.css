@@ -1091,6 +1091,27 @@ body, button, input, select {
 .event-detail-fe-table {
     min-width: 1120px;
 }
+.event-detail-ff-table {
+    min-width: 720px;
+}
+.data-table.event-detail-ff-table tbody tr {
+    background: #111111;
+}
+.data-table.event-detail-ff-table tbody tr:nth-child(even) {
+    background: #151515;
+}
+.data-table.event-detail-ff-table tbody tr:hover {
+    background: #181818;
+}
+.event-detail-ff-table .event-ff-id-cell code {
+    font-size: 12px;
+    color: rgba(255,255,255,0.88);
+}
+.event-detail-ff-table .event-ff-fraction-cell {
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    vertical-align: middle;
+}
 /* Как вкладка «Семьи»: чередование (ниже в файле есть .data-table tbody — дублируем с большей специфичностью) */
 .data-table.event-detail-fe-table tbody tr {
     background: #111111;

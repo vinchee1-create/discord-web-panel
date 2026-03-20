@@ -323,19 +323,47 @@ function parseEventDescriptionForDetail(desc) {
   return { typeValue: '—', extra: raw };
 }
 
-/** Таблица семей — только для ВЗЗ/ВЗМ и для мероприятий с типом «Семейный» */
-function eventDetailShouldShowFamiliesTable(parsed, info, typeValue) {
-  const slug = String(parsed?.slug || '').toLowerCase();
-  if (slug === 'vzz' || slug === 'vzm') return true;
-  const titleUp = String(info?.title || '').trim().toUpperCase();
-  if (titleUp === 'ВЗЗ' || titleUp === 'ВЗМ') return true;
-  const t = String(typeValue || '')
+function eventDetailNormalizedType(typeValue) {
+  return String(typeValue || '')
     .trim()
     .toLowerCase()
     .replace(/ё/g, 'е');
-  if (t === 'семейный' || t === 'семеный') return true;
+}
+
+function eventDetailIsFractionalType(typeValue) {
+  const t = eventDetailNormalizedType(typeValue);
+  return t === 'фракционный' || t === 'фракционная';
+}
+
+function eventDetailIsFamilyType(typeValue) {
+  const t = eventDetailNormalizedType(typeValue);
+  return t === 'семейный' || t === 'семеный';
+}
+
+/** Таблица семей: ВЗЗ, тип «Семейный», ВЗМ в семейном варианте — не фракционный тип */
+function eventDetailShouldShowFamilyFeTable(parsed, info, typeValue) {
+  if (eventDetailIsFractionalType(typeValue)) return false;
+  const slug = String(parsed?.slug || '').toLowerCase();
+  const titleUp = String(info?.title || '').trim().toUpperCase();
+  if (slug === 'vzz' || titleUp === 'ВЗЗ') return true;
+  if (eventDetailIsFamilyType(typeValue)) return true;
+  if (slug === 'vzm' && eventDetailIsFamilyType(typeValue)) return true;
   return false;
 }
+
+/** Таблица фракций (5 констант): тип «Фракционный» (в т.ч. ВЗМ вторник) */
+function eventDetailShouldShowFactionFeTable(parsed, info, typeValue) {
+  return eventDetailIsFractionalType(typeValue);
+}
+
+/** Соответствует вкладке «Лидеры» (display_id) */
+window.EVENT_DETAIL_STATIC_FACTIONS = [
+  { factionDisplayId: 8, factionName: 'The Ballas Gang' },
+  { factionDisplayId: 9, factionName: 'Los Santos Vagos' },
+  { factionDisplayId: 10, factionName: 'The Families' },
+  { factionDisplayId: 11, factionName: 'The Bloods Gang' },
+  { factionDisplayId: 12, factionName: 'Marabunta Grande' }
+];
 
 window.EVENT_FE_COLOURS = [
   'red', 'white', 'blue', 'purple', 'green', 'brown', 'cyan', 'orange',
@@ -563,6 +591,124 @@ window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(page
   eventFeApplyDraftRowVisibility();
 };
 
+function buildEventDetailFactionRowsHtml(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const byId = new Map(list.map(r => [Number(r.factionDisplayId), r]));
+  return window.EVENT_DETAIL_STATIC_FACTIONS.map(def => {
+    const r = byId.get(def.factionDisplayId) || {};
+    const id = def.factionDisplayId;
+    const name = r.factionName || def.factionName;
+    const present = !!r.present;
+    const curatorName = r.curatorName || '';
+    const wFlag = !!r.wFlag;
+    const lFlag = !!r.lFlag;
+    return `
+      <tr data-ff-faction-id="${id}">
+        <td class="event-ff-id-cell event-fe-td-center"><code>${id}</code></td>
+        <td class="event-ff-fraction-cell">${window.escapeHtml(name)}</td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label">
+            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="present" ${present ? 'checked' : ''} aria-label="Наличие" />
+            <span class="event-fe-check-ui" aria-hidden="true"></span>
+          </label>
+        </td>
+        <td class="event-fe-curator-cell">
+          <input type="text" class="event-fe-ff-curator event-fe-curator" data-faction-id="${id}" value="${feEscapeAttr(curatorName)}" placeholder="Имя" autocomplete="off" aria-label="Следящий" />
+        </td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label">
+            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="wFlag" ${wFlag ? 'checked' : ''} aria-label="W" />
+            <span class="event-fe-check-ui" aria-hidden="true"></span>
+          </label>
+        </td>
+        <td class="event-fe-check-cell">
+          <label class="event-fe-check-label">
+            <input type="checkbox" class="event-fe-ff-flag" data-faction-id="${id}" data-ff-field="lFlag" ${lFlag ? 'checked' : ''} aria-label="L" />
+            <span class="event-fe-check-ui" aria-hidden="true"></span>
+          </label>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function eventFfRowToBody(tr) {
+  if (!tr) return {};
+  return {
+    present: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="present"]')?.checked),
+    curatorName: tr.querySelector('.event-fe-ff-curator')?.value?.trim() ?? '',
+    wFlag: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="wFlag"]')?.checked),
+    lFlag: Boolean(tr.querySelector('.event-fe-ff-flag[data-ff-field="lFlag"]')?.checked)
+  };
+}
+
+async function eventFfPutFactionRow(pageKey, factionDisplayId, body) {
+  const res = await fetch(
+    `/api/event-detail-faction-rows/${encodeURIComponent(factionDisplayId)}?pageKey=${encodeURIComponent(pageKey)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }
+  );
+  if (res.ok || res.status === 204) return;
+  let msg = 'error';
+  try {
+    const j = await res.json();
+    if (j?.error) msg = j.error;
+  } catch (_) { /* ignore */ }
+  throw new Error(msg);
+}
+
+window.refreshEventDetailFactionTable = async function refreshEventDetailFactionTable(pageKey) {
+  const tbody = document.getElementById('event-detail-ff-tbody');
+  if (!tbody || !pageKey) return;
+  try {
+    const res = await fetch(`/api/event-detail-faction-rows?pageKey=${encodeURIComponent(pageKey)}`);
+    const rows = res.ok ? await res.json() : [];
+    tbody.innerHTML = buildEventDetailFactionRowsHtml(Array.isArray(rows) ? rows : []);
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = buildEventDetailFactionRowsHtml([]);
+  }
+};
+
+function attachEventDetailFactionListeners(pageKey) {
+  const wrap = document.getElementById('event-detail-ff-wrap');
+  if (!wrap) return;
+  if (wrap.dataset.ffListeners === '1') return;
+  wrap.dataset.ffListeners = '1';
+  wrap.addEventListener('change', async e => {
+    const t = e.target;
+    if (!t.classList.contains('event-fe-ff-flag')) return;
+    const tr = t.closest('tr[data-ff-faction-id]');
+    const fid = tr?.getAttribute('data-ff-faction-id');
+    if (!fid || !pageKey) return;
+    try {
+      await eventFfPutFactionRow(pageKey, fid, eventFfRowToBody(tr));
+      await window.refreshEventDetailFactionTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      if (typeof window.showToast === 'function') window.showToast('Не удалось сохранить.', 'error');
+      await window.refreshEventDetailFactionTable(pageKey);
+    }
+  });
+  wrap.addEventListener('focusout', async e => {
+    const t = e.target;
+    if (!t.classList.contains('event-fe-ff-curator')) return;
+    const tr = t.closest('tr[data-ff-faction-id]');
+    const fid = tr?.getAttribute('data-ff-faction-id');
+    if (!fid || !pageKey) return;
+    try {
+      await eventFfPutFactionRow(pageKey, fid, eventFfRowToBody(tr));
+      await window.refreshEventDetailFactionTable(pageKey);
+    } catch (err) {
+      console.error(err);
+      if (typeof window.showToast === 'function') window.showToast('Не удалось сохранить следящего.', 'error');
+      await window.refreshEventDetailFactionTable(pageKey);
+    }
+  });
+}
+
 async function eventFePutRow(rowId, body) {
   const res = await fetch(`/api/event-detail-rows/${rowId}`, {
     method: 'PUT',
@@ -736,8 +882,9 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     ? `<div class="event-detail-extra">${window.escapeHtml(extra)}</div>`
     : '';
   const pageKey = `${info.iso}|${parsed.full}`;
-  const showFamiliesTable = eventDetailShouldShowFamiliesTable(parsed, info, typeValue);
-  const feSectionHtml = showFamiliesTable
+  const showFamilyTable = eventDetailShouldShowFamilyFeTable(parsed, info, typeValue);
+  const showFactionTable = eventDetailShouldShowFactionFeTable(parsed, info, typeValue);
+  const feSectionHtml = showFamilyTable
     ? `
           <div class="event-detail-fe-section">
             <div class="event-detail-fe-toolbar">
@@ -771,6 +918,31 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
             </div>
           </div>`
     : '';
+  const ffSectionHtml = showFactionTable
+    ? `
+          <div class="event-detail-fe-section event-detail-ff-section">
+            <div class="event-detail-fe-toolbar">
+              <h2 class="event-detail-fe-heading">Фракции</h2>
+            </div>
+            <div class="table-container event-detail-fe-wrap event-detail-ff-wrap" id="event-detail-ff-wrap">
+              <table class="data-table event-detail-fe-table event-detail-ff-table">
+                <thead>
+                  <tr>
+                    <th class="event-fe-th-id">ID</th>
+                    <th>Fraction</th>
+                    <th class="event-fe-th-check">Наличие</th>
+                    <th class="event-fe-th-curator">Следящий</th>
+                    <th class="event-fe-th-check">W</th>
+                    <th class="event-fe-th-check">L</th>
+                  </tr>
+                </thead>
+                <tbody id="event-detail-ff-tbody">
+                  <tr><td colspan="6" class="event-fe-empty">Загрузка…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`
+    : '';
 
   window.setPageContent(`
     <div class="event-detail-page">
@@ -793,6 +965,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
           </div>
           ${extraBlock}
           ${feSectionHtml}
+          ${ffSectionHtml}
         </div>
       </div>
     </div>
@@ -800,23 +973,37 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
   const back = document.getElementById('event-detail-back');
   if (back) back.onclick = () => window.goBackToEventsCalendar();
 
-  if (!showFamiliesTable) return;
+  if (!showFamilyTable && !showFactionTable) return;
 
-  Promise.all([
-    typeof window.loadFamilies === 'function' ? window.loadFamilies() : Promise.resolve(),
-    fetch(`/api/event-detail-rows?pageKey=${encodeURIComponent(pageKey)}`)
+  if (showFamilyTable) {
+    Promise.all([
+      typeof window.loadFamilies === 'function' ? window.loadFamilies() : Promise.resolve(),
+      fetch(`/api/event-detail-rows?pageKey=${encodeURIComponent(pageKey)}`)
+        .then(r => (r.ok ? r.json() : []))
+        .catch(() => [])
+    ]).then(([, rows]) => {
+      const tbody = document.getElementById('event-detail-fe-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
+      tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
+      attachEventDetailFeListeners(pageKey);
+      eventFeApplyDraftRowVisibility();
+      eventFeBindDraftToggle();
+      eventFeBindDeleteLastRowButton(pageKey);
+    });
+  }
+
+  if (showFactionTable) {
+    fetch(`/api/event-detail-faction-rows?pageKey=${encodeURIComponent(pageKey)}`)
       .then(r => (r.ok ? r.json() : []))
       .catch(() => [])
-  ]).then(([, rows]) => {
-    const tbody = document.getElementById('event-detail-fe-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
-    tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
-    attachEventDetailFeListeners(pageKey);
-    eventFeApplyDraftRowVisibility();
-    eventFeBindDraftToggle();
-    eventFeBindDeleteLastRowButton(pageKey);
-  });
+      .then(rows => {
+        const tbody = document.getElementById('event-detail-ff-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = buildEventDetailFactionRowsHtml(Array.isArray(rows) ? rows : []);
+        attachEventDetailFactionListeners(pageKey);
+      });
+  }
 };
 
 window.expandEventToPage = function expandEventToPage(iso, title, dbId, prefilledDescription) {

@@ -274,6 +274,40 @@ async function initEventDetailFamilyRowsTable() {
     }
 }
 
+/** 5 фракций как на вкладке «Лидеры» (display_id 8–12) — состояние строк ВЗМ на странице мероприятия */
+const STATIC_EVENT_DETAIL_FACTIONS = [
+    { displayId: 8, name: 'The Ballas Gang' },
+    { displayId: 9, name: 'Los Santos Vagos' },
+    { displayId: 10, name: 'The Families' },
+    { displayId: 11, name: 'The Bloods Gang' },
+    { displayId: 12, name: 'Marabunta Grande' }
+];
+
+async function initEventDetailFactionRowsTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS event_detail_faction_rows (
+                id SERIAL PRIMARY KEY,
+                page_key VARCHAR(512) NOT NULL,
+                faction_display_id INTEGER NOT NULL CHECK (faction_display_id >= 8 AND faction_display_id <= 12),
+                present BOOLEAN NOT NULL DEFAULT FALSE,
+                curator_name VARCHAR(255) NOT NULL DEFAULT '',
+                w_flag BOOLEAN NOT NULL DEFAULT FALSE,
+                l_flag BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                UNIQUE (page_key, faction_display_id)
+            )
+        `);
+        await pool.query(
+            `CREATE INDEX IF NOT EXISTS idx_edfar_page ON event_detail_faction_rows (page_key)`
+        );
+        console.log('✅ Таблица event_detail_faction_rows готова');
+    } catch (e) {
+        console.error('❌ Ошибка event_detail_faction_rows:', e.message);
+    }
+}
+
 async function initAccountsTable() {
     if (!pool) return;
     try {
@@ -1160,6 +1194,100 @@ app.delete('/api/event-detail-rows/:id', async (req, res) => {
     }
 });
 
+function mapEventDetailFactionRowMerged(displayId, name, saved) {
+    const s = saved || {};
+    return {
+        factionDisplayId: displayId,
+        factionName: name,
+        present: Boolean(s.present),
+        curatorName: s.curator_name || '',
+        wFlag: Boolean(s.w_flag),
+        lFlag: Boolean(s.l_flag)
+    };
+}
+
+app.get('/api/event-detail-faction-rows', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    const pageKey = typeof req.query.pageKey === 'string' ? req.query.pageKey.trim() : '';
+    if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
+    if (!pool) {
+        return res.json(
+            STATIC_EVENT_DETAIL_FACTIONS.map(({ displayId, name }) =>
+                mapEventDetailFactionRowMerged(displayId, name, null)
+            )
+        );
+    }
+    try {
+        const { rows: saved } = await pool.query(
+            `SELECT faction_display_id, present, curator_name, w_flag, l_flag
+             FROM event_detail_faction_rows WHERE page_key = $1`,
+            [pageKey]
+        );
+        const map = new Map(saved.map(r => [r.faction_display_id, r]));
+        res.json(
+            STATIC_EVENT_DETAIL_FACTIONS.map(({ displayId, name }) =>
+                mapEventDetailFactionRowMerged(displayId, name, map.get(displayId))
+            )
+        );
+    } catch (e) {
+        console.error('GET /api/event-detail-faction-rows:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/event-detail-faction-rows/:displayId', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const displayId = parseInt(req.params.displayId, 10);
+    if (isNaN(displayId) || displayId < 8 || displayId > 12) {
+        return res.status(400).json({ error: 'Invalid faction id' });
+    }
+    const pageKey = typeof req.query.pageKey === 'string' ? req.query.pageKey.trim() : '';
+    if (!pageKey || pageKey.length > 500) return res.status(400).json({ error: 'pageKey required' });
+    const b = req.body || {};
+    try {
+        const { rows: curRows } = await pool.query(
+            `SELECT present, curator_name, w_flag, l_flag FROM event_detail_faction_rows
+             WHERE page_key = $1 AND faction_display_id = $2`,
+            [pageKey, displayId]
+        );
+        const cur = curRows[0] || {
+            present: false,
+            curator_name: '',
+            w_flag: false,
+            l_flag: false
+        };
+        const next = {
+            present: Object.prototype.hasOwnProperty.call(b, 'present') ? Boolean(b.present) : Boolean(cur.present),
+            curator_name: Object.prototype.hasOwnProperty.call(b, 'curatorName')
+                ? String(b.curatorName).slice(0, 255)
+                : String(cur.curator_name || ''),
+            w_flag: Object.prototype.hasOwnProperty.call(b, 'wFlag') ? Boolean(b.wFlag) : Boolean(cur.w_flag),
+            l_flag: Object.prototype.hasOwnProperty.call(b, 'lFlag') ? Boolean(b.lFlag) : Boolean(cur.l_flag)
+        };
+        await pool.query(
+            `INSERT INTO event_detail_faction_rows (page_key, faction_display_id, present, curator_name, w_flag, l_flag)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (page_key, faction_display_id)
+             DO UPDATE SET present = EXCLUDED.present, curator_name = EXCLUDED.curator_name,
+                           w_flag = EXCLUDED.w_flag, l_flag = EXCLUDED.l_flag`,
+            [pageKey, displayId, next.present, next.curator_name, next.w_flag, next.l_flag]
+        );
+        const meta = STATIC_EVENT_DETAIL_FACTIONS.find(x => x.displayId === displayId);
+        res.json(
+            mapEventDetailFactionRowMerged(displayId, meta ? meta.name : '', {
+                present: next.present,
+                curator_name: next.curator_name,
+                w_flag: next.w_flag,
+                l_flag: next.l_flag
+            })
+        );
+    } catch (e) {
+        console.error('PUT /api/event-detail-faction-rows/:displayId:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- 5. МАРШРУТЫ САЙТА (ROUTES) ---
 function renderMain(req, res, activePage, opts = {}) {
     const data = {
@@ -1218,6 +1346,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initFactionMaterialsTable();
     await initEventsTable();
     await initEventDetailFamilyRowsTable();
+    await initEventDetailFactionRowsTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
