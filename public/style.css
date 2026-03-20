@@ -1138,7 +1138,7 @@ body, button, input, select {
 }
 .event-detail-fe-table .event-fe-del.event-fe-del-outside {
     position: absolute;
-    right: -12px;
+    right: -30px;
     top: 50%;
     transform: translateY(-50%);
     width: 22px;
