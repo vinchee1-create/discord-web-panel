@@ -304,7 +304,9 @@ window.eventFeApplyColourSelectBg = function eventFeApplyColourSelectBg(selectEl
   if (!selectEl || selectEl.tagName !== 'SELECT') return;
   const key = String(selectEl.value || 'white').toLowerCase();
   const tint = window.EVENT_FE_COLOUR_TINT[key] || window.EVENT_FE_COLOUR_TINT.white;
-  selectEl.style.backgroundColor = tint;
+  const wrap = selectEl.closest('.event-fe-colour-wrap');
+  selectEl.style.backgroundColor = 'transparent';
+  if (wrap) wrap.style.backgroundColor = tint;
 };
 
 function feEscapeAttr(s) {
@@ -387,7 +389,7 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
           <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
         </td>
         <td>
-          <select class="event-fe-colour" data-row-id="${rid}" aria-label="Цвет">${colOpts}</select>
+          <span class="event-fe-colour-wrap"><select class="event-fe-colour" data-row-id="${rid}" aria-label="Цвет">${colOpts}</select></span>
         </td>
         <td class="event-fe-id-cell event-fe-td-center"><code>${window.escapeHtml(gameId) || '—'}</code></td>
         <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.temp)}</code></div></td>
@@ -396,7 +398,7 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="died" ${row.died ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
-        <td><input type="text" class="event-fe-curator" data-row-id="${rid}" value="${feEscapeAttr(row.curatorName)}" placeholder="Имя" autocomplete="off" /></td>
+        <td class="event-fe-curator-cell"><input type="text" class="event-fe-curator" data-row-id="${rid}" value="${feEscapeAttr(row.curatorName)}" placeholder="Имя" autocomplete="off" /></td>
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="lFlag" ${row.lFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
@@ -419,7 +421,7 @@ function buildEventDetailFeDraftRowHtml(draftNum) {
           <select class="event-fe-family event-fe-draft-control" aria-label="Семья">${famOpts}</select>
         </td>
         <td>
-          <select class="event-fe-colour event-fe-draft-control" aria-label="Цвет">${colOpts}</select>
+          <span class="event-fe-colour-wrap"><select class="event-fe-colour event-fe-draft-control" aria-label="Цвет">${colOpts}</select></span>
         </td>
         <td class="event-fe-id-cell event-fe-td-center"><code>—</code></td>
         <td class="event-fe-cmd" title="${feEscapeAttr(cmds.temp)}"><div class="event-fe-cmd-inner"><code>${window.escapeHtml(cmds.temp)}</code></div></td>
@@ -428,7 +430,7 @@ function buildEventDetailFeDraftRowHtml(draftNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="died" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
-        <td><input type="text" class="event-fe-curator event-fe-draft-control" value="" placeholder="Имя" autocomplete="off" /></td>
+        <td class="event-fe-curator-cell"><input type="text" class="event-fe-curator event-fe-draft-control" value="" placeholder="Имя" autocomplete="off" /></td>
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="lFlag" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
@@ -752,8 +754,8 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                     <th class="event-fe-th-cmd">/tempfamily</th>
                     <th class="event-fe-th-cmd">/feventon</th>
                     <th class="event-fe-th-cmd">/feventoff</th>
-                    <th class="event-fe-th-check">Присутствовали</th>
-                    <th>Следящий</th>
+                    <th class="event-fe-th-check">Наличие</th>
+                    <th class="event-fe-th-curator">Следящий</th>
                     <th class="event-fe-th-check">L</th>
                     <th class="event-fe-th-check">W</th>
                     <th class="event-fe-th-actions" aria-label="Действия"></th>
