@@ -1315,7 +1315,9 @@ app.get('/api/settings/discord', async (req, res) => {
             `${s}_fraction_role_id`,
             `${s}_curators_news_channel_id`,
             `${s}_curator_leader_role_id`,
-            `${s}_player_requests_channel_id`
+            `${s}_player_requests_channel_id`,
+            `${s}_curators_questions_channel_id`,
+            `${s}_treasury_channel_id`
         );
     });
     // legacy keys (compat)
@@ -1348,7 +1350,9 @@ app.get('/api/settings/discord', async (req, res) => {
             fractionRoleId: kv[`${scope}_fraction_role_id`] || '',
             curatorsNewsId: kv[`${scope}_curators_news_channel_id`] || '',
             curatorLeaderId: kv[`${scope}_curator_leader_role_id`] || '',
-            playerRequestsId: kv[`${scope}_player_requests_channel_id`] || ''
+            playerRequestsId: kv[`${scope}_player_requests_channel_id`] || '',
+            curatorsQuestionsId: kv[`${scope}_curators_questions_channel_id`] || '',
+            treasuryId: kv[`${scope}_treasury_channel_id`] || ''
         };
     });
     const guilds = Array.from(client.guilds.cache.values())
@@ -1380,9 +1384,11 @@ app.put('/api/settings/discord', async (req, res) => {
         fractionRoleId: req.body?.fractionRoleId == null ? '' : String(req.body.fractionRoleId).trim(),
         curatorsNewsId: req.body?.curatorsNewsId == null ? '' : String(req.body.curatorsNewsId).trim(),
         curatorLeaderId: req.body?.curatorLeaderId == null ? '' : String(req.body.curatorLeaderId).trim(),
-        playerRequestsId: req.body?.playerRequestsId == null ? '' : String(req.body.playerRequestsId).trim()
+        playerRequestsId: req.body?.playerRequestsId == null ? '' : String(req.body.playerRequestsId).trim(),
+        curatorsQuestionsId: req.body?.curatorsQuestionsId == null ? '' : String(req.body.curatorsQuestionsId).trim(),
+        treasuryId: req.body?.treasuryId == null ? '' : String(req.body.treasuryId).trim()
     };
-    const idFields = ['fractionCuratorId', 'fractionRoleId', 'curatorsNewsId', 'curatorLeaderId', 'playerRequestsId'];
+    const idFields = ['fractionCuratorId', 'fractionRoleId', 'curatorsNewsId', 'curatorLeaderId', 'playerRequestsId', 'curatorsQuestionsId', 'treasuryId'];
     for (const f of idFields) {
         if (body[f] && !/^\d{3,30}$/.test(body[f])) return res.status(400).json({ error: `Некорректное значение ${f}` });
     }
@@ -1396,7 +1402,9 @@ app.put('/api/settings/discord', async (req, res) => {
             [`${scope}_fraction_role_id`, body.fractionRoleId],
             [`${scope}_curators_news_channel_id`, body.curatorsNewsId],
             [`${scope}_curator_leader_role_id`, body.curatorLeaderId],
-            [`${scope}_player_requests_channel_id`, body.playerRequestsId]
+            [`${scope}_player_requests_channel_id`, body.playerRequestsId],
+            [`${scope}_curators_questions_channel_id`, body.curatorsQuestionsId],
+            [`${scope}_treasury_channel_id`, body.treasuryId]
         ];
         for (const [k, v] of entries) {
             await pool.query(

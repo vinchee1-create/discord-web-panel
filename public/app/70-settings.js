@@ -54,6 +54,10 @@ window.renderSettings = async function renderSettings() {
           <input type="text" id="settings-modal-curator-leader" inputmode="numeric" autocomplete="off" />
           <label>ID Запросы от игроков</label>
           <input type="text" id="settings-modal-player-requests" inputmode="numeric" autocomplete="off" />
+          <label>ID Вопросы Кураторам</label>
+          <input type="text" id="settings-modal-curators-questions" inputmode="numeric" autocomplete="off" />
+          <label>ID Казна</label>
+          <input type="text" id="settings-modal-treasury" inputmode="numeric" autocomplete="off" />
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-ghost" id="settings-guild-modal-cancel">Отмена</button>
@@ -71,6 +75,8 @@ window.renderSettings = async function renderSettings() {
   const modalCuratorsNews = document.getElementById('settings-modal-curators-news');
   const modalCuratorLeader = document.getElementById('settings-modal-curator-leader');
   const modalPlayerRequests = document.getElementById('settings-modal-player-requests');
+  const modalCuratorsQuestions = document.getElementById('settings-modal-curators-questions');
+  const modalTreasury = document.getElementById('settings-modal-treasury');
   const modalSaveBtn = document.getElementById('settings-guild-modal-save');
   const modalCancelBtn = document.getElementById('settings-guild-modal-cancel');
 
@@ -123,6 +129,8 @@ window.renderSettings = async function renderSettings() {
       if (modalCuratorsNews) modalCuratorsNews.value = cur.curatorsNewsId || '';
       if (modalCuratorLeader) modalCuratorLeader.value = cur.curatorLeaderId || '';
       if (modalPlayerRequests) modalPlayerRequests.value = cur.playerRequestsId || '';
+      if (modalCuratorsQuestions) modalCuratorsQuestions.value = cur.curatorsQuestionsId || '';
+      if (modalTreasury) modalTreasury.value = cur.treasuryId || '';
       modal?.classList.add('is-open');
     });
   });
@@ -144,7 +152,9 @@ window.renderSettings = async function renderSettings() {
           fractionRoleId: String(modalFractionRole?.value || '').trim(),
           curatorsNewsId: String(modalCuratorsNews?.value || '').trim(),
           curatorLeaderId: String(modalCuratorLeader?.value || '').trim(),
-          playerRequestsId: String(modalPlayerRequests?.value || '').trim()
+          playerRequestsId: String(modalPlayerRequests?.value || '').trim(),
+          curatorsQuestionsId: String(modalCuratorsQuestions?.value || '').trim(),
+          treasuryId: String(modalTreasury?.value || '').trim()
         })
       });
       if (!res.ok) {
