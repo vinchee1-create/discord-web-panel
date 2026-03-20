@@ -1975,6 +1975,10 @@ body, button, input, select {
     font-weight: 700;
     color: rgba(255,255,255,0.95);
 }
+.settings-title-latin {
+    font-weight: 650;
+    letter-spacing: 0;
+}
 .settings-add-bot-btn {
     text-decoration: none;
 }

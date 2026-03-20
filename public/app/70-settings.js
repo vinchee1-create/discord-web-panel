@@ -6,7 +6,7 @@ window.renderSettings = async function renderSettings() {
     <div class="settings-page">
       <div class="settings-card">
         <div class="settings-card-head">
-          <h2 class="settings-title">Основной Discord сервер</h2>
+          <h2 class="settings-title">Основной <span class="settings-title-latin">Discord</span> сервер</h2>
           <a class="btn-pill settings-add-bot-btn" id="settings-add-bot-btn" href="#" target="_blank" rel="noopener noreferrer">Добавить бота</a>
         </div>
         <div class="settings-server-row">
