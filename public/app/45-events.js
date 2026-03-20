@@ -356,6 +356,13 @@ function eventDetailShouldShowFactionFeTable(parsed, info, typeValue) {
   return eventDetailIsFractionalType(typeValue);
 }
 
+function eventDetailShouldShowFamilyRewardPanel(parsed, info, typeValue) {
+  if (!eventDetailIsFamilyType(typeValue)) return false;
+  const slug = String(parsed?.slug || '').toLowerCase();
+  const titleUp = String(info?.title || '').trim().toUpperCase();
+  return slug === 'vzm' || titleUp === 'ВЗМ';
+}
+
 /** Соответствует вкладке «Лидеры» (display_id) */
 window.EVENT_DETAIL_STATIC_FACTIONS = [
   { factionDisplayId: 8, factionName: 'The Ballas Gang' },
@@ -573,6 +580,32 @@ window.buildEventDetailFeRowsHtml = function buildEventDetailFeRowsHtml(rows) {
   return persisted + buildEventDetailFeDraftRowHtml(draftNum);
 };
 
+function renderEventDetailFeRewards(rows) {
+  const tbody = document.getElementById('event-detail-fe-reward-tbody');
+  if (!tbody) return;
+  const list = Array.isArray(rows) ? rows : [];
+  let displayNum = 0;
+  const rewardRows = [];
+  for (const row of list) {
+    if (row?.isSpacer) continue;
+    displayNum += 1;
+    if (!row?.died) continue; // Только с Visit
+    let rewardText = '—';
+    if (row?.wFlag) rewardText = '13000 материалов';
+    else if (row?.lFlag) rewardText = '4000 материалов';
+    rewardRows.push(
+      `<tr>
+        <td class="event-fe-td-center">${displayNum}</td>
+        <td>${window.escapeHtml(row.familyName || '—')}</td>
+        <td>${rewardText}</td>
+      </tr>`
+    );
+  }
+  tbody.innerHTML = rewardRows.length
+    ? rewardRows.join('')
+    : '<tr><td colspan="3" class="event-fe-empty">Нет строк с Visit.</td></tr>';
+}
+
 window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(pageKey) {
   const tbody = document.getElementById('event-detail-fe-tbody');
   if (!tbody || !pageKey) return;
@@ -582,11 +615,13 @@ window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(page
     if (typeof window.loadFamilies === 'function') await window.loadFamilies();
     tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
     tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
+    renderEventDetailFeRewards(Array.isArray(rows) ? rows : []);
   } catch (e) {
     console.error(e);
     if (typeof window.loadFamilies === 'function') await window.loadFamilies();
     tbody.innerHTML = window.buildEventDetailFeRowsHtml([]);
     tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
+    renderEventDetailFeRewards([]);
   }
   eventFeApplyDraftRowVisibility();
 };
@@ -884,6 +919,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
   const pageKey = `${info.iso}|${parsed.full}`;
   const showFamilyTable = eventDetailShouldShowFamilyFeTable(parsed, info, typeValue);
   const showFactionTable = eventDetailShouldShowFactionFeTable(parsed, info, typeValue);
+  const showFamilyRewardPanel = eventDetailShouldShowFamilyRewardPanel(parsed, info, typeValue);
   const feSectionHtml = showFamilyTable
     ? `
           <div class="event-detail-fe-section">
@@ -916,6 +952,21 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                 </tbody>
               </table>
             </div>
+            ${showFamilyRewardPanel ? `
+            <div class="table-container event-detail-fe-reward-wrap">
+              <table class="data-table event-detail-fe-table event-detail-fe-reward-table">
+                <thead>
+                  <tr>
+                    <th>N</th>
+                    <th>Family</th>
+                    <th>reward</th>
+                  </tr>
+                </thead>
+                <tbody id="event-detail-fe-reward-tbody">
+                  <tr><td colspan="3" class="event-fe-empty">Загрузка…</td></tr>
+                </tbody>
+              </table>
+            </div>` : ''}
           </div>`
     : '';
   const ffSectionHtml = showFactionTable
@@ -986,6 +1037,7 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
       if (!tbody) return;
       tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
       tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
+      renderEventDetailFeRewards(Array.isArray(rows) ? rows : []);
       attachEventDetailFeListeners(pageKey);
       eventFeApplyDraftRowVisibility();
       eventFeBindDraftToggle();

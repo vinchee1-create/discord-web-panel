@@ -1081,6 +1081,23 @@ body, button, input, select {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
 }
+.event-detail-fe-reward-wrap {
+    margin-top: 14px;
+    width: min(50%, 560px);
+    margin-left: auto;
+}
+.event-detail-fe-reward-table {
+    min-width: 0;
+}
+.data-table.event-detail-fe-reward-table tbody tr {
+    background: #111111;
+}
+.data-table.event-detail-fe-reward-table tbody tr:nth-child(even) {
+    background: #151515;
+}
+.data-table.event-detail-fe-reward-table tbody tr:hover {
+    background: #181818;
+}
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
     display: none;
 }
