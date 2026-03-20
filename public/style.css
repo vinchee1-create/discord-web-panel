@@ -1051,6 +1051,10 @@ body, button, input, select {
     border-top: 1px solid #1f1f1f;
 }
 .event-detail-fe-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     margin-bottom: 14px;
 }
 .event-detail-fe-heading {
@@ -1059,13 +1063,38 @@ body, button, input, select {
     font-weight: 600;
     color: rgba(255,255,255,0.92);
     letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 0;
+}
+.event-fe-toggle-draft {
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 6px 12px;
+    white-space: nowrap;
 }
 .event-detail-fe-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
+.event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
+    display: none;
+}
+/* Черновик скрыт, но в DOM остаётся последним — убираем нижнюю границу у последней видимой строки */
+.event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden .event-detail-fe-table tbody tr:nth-last-child(2) td {
+    border-bottom: none;
+}
 .event-detail-fe-table {
-    min-width: 1140px;
+    min-width: 1160px;
+}
+/* Как вкладка «Семьи»: чередование (ниже в файле есть .data-table tbody — дублируем с большей специфичностью) */
+.data-table.event-detail-fe-table tbody tr {
+    background: #111111;
+}
+.data-table.event-detail-fe-table tbody tr:nth-child(even) {
+    background: #151515;
+}
+.data-table.event-detail-fe-table tbody tr:hover {
+    background: #181818;
 }
 .event-detail-fe-table th.event-fe-th-n,
 .event-detail-fe-table td.event-fe-col-n {
@@ -1077,11 +1106,11 @@ body, button, input, select {
 }
 .event-detail-fe-table th.event-fe-th-actions,
 .event-detail-fe-table td.event-fe-actions-cell {
-    width: 40px;
-    min-width: 40px;
-    max-width: 48px;
-    padding-left: 4px;
-    padding-right: 8px;
+    width: 52px;
+    min-width: 48px;
+    max-width: 72px;
+    padding-left: 8px;
+    padding-right: 16px;
     text-align: right;
     vertical-align: middle;
 }
@@ -1093,10 +1122,10 @@ body, button, input, select {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    min-width: 32px;
+    min-width: 36px;
     min-height: 36px;
-    margin: -4px -6px -4px 0;
-    padding: 4px 2px 4px 10px;
+    margin: -4px 0 -4px 0;
+    padding: 4px 4px 4px 12px;
     box-sizing: border-box;
     border-radius: 6px;
 }
@@ -1143,14 +1172,13 @@ body, button, input, select {
     font-weight: 600;
     color: rgba(255,255,255,0.75);
 }
-/* Строка «Пустая»: пустая полоса; удаление справа в той же зоне, что и у обычных строк */
+/* Строка «Пустая»: без своего фона — участвует в чередовании как обычная строка */
 .event-detail-fe-table tr.event-fe-spacer-row td.event-fe-spacer-cell,
 .event-detail-fe-table tr.event-fe-spacer-row td.event-fe-actions-cell {
     padding: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(0, 0, 0, 0.25);
+    background: transparent;
     vertical-align: middle;
+    border-bottom: 1px solid #1a1a1a;
 }
 .event-detail-fe-table tr.event-fe-spacer-row td.event-fe-spacer-cell {
     min-height: 12px;
@@ -1281,8 +1309,9 @@ body, button, input, select {
     color: rgba(255,255,255,0.45);
     font-size: 13px;
 }
-.event-fe-draft-row td {
-    background: rgba(255,255,255,0.02);
+/* Фон черновика = полоса таблицы (см. .event-detail-fe-table tbody tr) */
+.event-detail-fe-table .event-fe-draft-row td {
+    background: transparent;
 }
 
 .events-expanded {

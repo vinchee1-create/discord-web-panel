@@ -7,6 +7,49 @@ window.eventsEditingId = null; // dbId | null
 window.eventsEditingSystemKey = null; // 'vzz' | 'vzm' | null — редактирование шаблонного мероприятия
 window.eventsActiveCell = null; // currently selected day cell
 
+const EVENT_FE_HIDE_DRAFT_STORAGE_KEY = 'eventDetailFeHideDraft';
+
+function eventFeDraftRowHiddenRead() {
+  try {
+    return localStorage.getItem(EVENT_FE_HIDE_DRAFT_STORAGE_KEY) === '1';
+  } catch (_) {
+    return false;
+  }
+}
+
+function eventFeDraftRowHiddenWrite(hidden) {
+  try {
+    if (hidden) localStorage.setItem(EVENT_FE_HIDE_DRAFT_STORAGE_KEY, '1');
+    else localStorage.removeItem(EVENT_FE_HIDE_DRAFT_STORAGE_KEY);
+  } catch (_) { /* ignore */ }
+}
+
+function eventFeApplyDraftRowVisibility() {
+  const wrap = document.getElementById('event-detail-fe-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('event-detail-fe-wrap--draft-hidden', eventFeDraftRowHiddenRead());
+}
+
+function eventFeUpdateDraftToggleButton() {
+  const btn = document.getElementById('event-fe-toggle-draft');
+  if (!btn) return;
+  const hidden = eventFeDraftRowHiddenRead();
+  const label = btn.querySelector('.event-fe-toggle-draft-label');
+  if (label) label.textContent = hidden ? 'Показать ввод' : 'Скрыть ввод';
+  btn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+}
+
+function eventFeBindDraftToggle() {
+  const btn = document.getElementById('event-fe-toggle-draft');
+  if (!btn) return;
+  btn.onclick = () => {
+    eventFeDraftRowHiddenWrite(!eventFeDraftRowHiddenRead());
+    eventFeApplyDraftRowVisibility();
+    eventFeUpdateDraftToggleButton();
+  };
+  eventFeUpdateDraftToggleButton();
+}
+
 function pad2(n) { return String(n).padStart(2, '0'); }
 function toISODateLocal(d) {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
@@ -469,6 +512,7 @@ window.refreshEventDetailFeTable = async function refreshEventDetailFeTable(page
     tbody.innerHTML = window.buildEventDetailFeRowsHtml([]);
     tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
   }
+  eventFeApplyDraftRowVisibility();
 };
 
 async function eventFePutRow(rowId, body) {
@@ -693,6 +737,9 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
           <div class="event-detail-fe-section">
             <div class="event-detail-fe-toolbar">
               <h2 class="event-detail-fe-heading">Семьи и команды</h2>
+              <button type="button" class="btn-ghost event-fe-toggle-draft" id="event-fe-toggle-draft" aria-pressed="false" title="Скрыть или показать нижнюю строку для ввода">
+                <span class="event-fe-toggle-draft-label">Скрыть ввод</span>
+              </button>
             </div>
             <div class="table-container event-detail-fe-wrap" id="event-detail-fe-wrap">
               <table class="data-table event-detail-fe-table">
@@ -736,6 +783,8 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
     tbody.innerHTML = window.buildEventDetailFeRowsHtml(Array.isArray(rows) ? rows : []);
     tbody.querySelectorAll('select.event-fe-colour').forEach(sel => window.eventFeApplyColourSelectBg(sel));
     attachEventDetailFeListeners(pageKey);
+    eventFeApplyDraftRowVisibility();
+    eventFeBindDraftToggle();
   });
 };
 
