@@ -1076,6 +1076,7 @@ body, button, input, select {
 .event-detail-fe-wrap.table-container {
     overflow-x: auto;
     overflow-y: hidden;
+    padding-right: 30px;
     -webkit-overflow-scrolling: touch;
 }
 .event-detail-fe-wrap.event-detail-fe-wrap--draft-hidden tbody tr.event-fe-draft-row {
@@ -1113,43 +1114,9 @@ body, button, input, select {
     white-space: nowrap;
     vertical-align: middle;
 }
-/* Колонка удаления: фон как у .table-container — вне полосатых строк */
-.event-detail-fe-table thead .event-fe-th-actions {
-    background: #1a1a1a;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
-}
-.event-detail-fe-table tbody td.event-fe-actions-cell {
-    background-color: #0d0d0d !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
-}
-.data-table.event-detail-fe-table tbody tr:hover td.event-fe-actions-cell {
-    background-color: #0d0d0d !important;
-}
-.event-detail-fe-table th.event-fe-th-actions,
-.event-detail-fe-table td.event-fe-actions-cell {
-    width: 40px;
-    min-width: 36px;
-    max-width: 52px;
-    padding-left: 4px;
-    padding-right: 12px;
-    text-align: right;
-    vertical-align: middle;
-}
-.event-detail-fe-table td.event-fe-actions-cell--draft {
-    background-color: #0d0d0d !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
-}
-/* Удаление: зона справа, иконка чуть в «поле» скролла, не в полосе строки */
-.event-fe-actions-hover {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 32px;
-    min-height: 36px;
-    margin: -4px -8px -4px 0;
-    padding: 4px 2px 4px 8px;
-    box-sizing: border-box;
-    border-radius: 6px;
+/* Удаление: кнопка вынесена за правый край таблицы, без отдельной колонки */
+.event-detail-fe-table tbody tr {
+    position: relative;
 }
 .event-detail-fe-table .event-fe-del {
     display: inline-flex;
@@ -1169,13 +1136,20 @@ body, button, input, select {
     pointer-events: none;
     transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
 }
+.event-detail-fe-table .event-fe-del.event-fe-del-outside {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
 .event-detail-fe-table .event-fe-del svg {
     width: 13px;
     height: 13px;
     display: block;
 }
-.event-detail-fe-table .event-fe-actions-hover:hover .event-fe-del,
-.event-detail-fe-table .event-fe-actions-hover:focus-within .event-fe-del {
+/* Видимость только в правой зоне строки (как на скрине) */
+.event-detail-fe-table tbody tr:hover .event-fe-del.event-fe-del-outside,
+.event-detail-fe-table .event-fe-del.event-fe-del-outside:focus-visible {
     opacity: 1;
     pointer-events: auto;
 }
@@ -1201,19 +1175,9 @@ body, button, input, select {
     vertical-align: middle;
     border-bottom: 1px solid #1a1a1a;
 }
-.event-detail-fe-table tr.event-fe-spacer-row td.event-fe-actions-cell {
-    padding: 0;
-    background-color: #0d0d0d !important;
-    vertical-align: middle;
-    border-bottom: 1px solid #1a1a1a;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
-}
 .event-detail-fe-table tr.event-fe-spacer-row td.event-fe-spacer-cell {
     min-height: 12px;
     height: 12px;
-}
-.event-detail-fe-table tr.event-fe-spacer-row .event-fe-actions-hover {
-    min-height: 28px;
 }
 /* Семья: как раньше */
 .event-detail-fe-table select.event-fe-family {
@@ -1261,6 +1225,10 @@ body, button, input, select {
     background-repeat: no-repeat;
     background-position: right 12px center;
     cursor: pointer;
+}
+.event-detail-fe-table .event-fe-colour-wrap select.event-fe-colour option {
+    background-color: #1a1a1a;
+    color: #f5f5f5;
 }
 .event-detail-fe-table .event-fe-td-center,
 .event-detail-fe-table .event-fe-id-cell {

@@ -353,25 +353,13 @@ function eventFeColourOptionsHtml(selectedColour) {
   }).join('');
 }
 
-/** Правый край таблицы: удаление видно только при наведении на эту зону */
-function eventFeDeleteActionCellHtml(rowId) {
-  return `<td class="event-fe-actions-cell">
-    <div class="event-fe-actions-hover" role="presentation">
-      <button type="button" class="event-fe-del" data-row-id="${rowId}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
-    </div>
-  </td>`;
-}
-
-function eventFeDraftActionsCellHtml() {
-  return '<td class="event-fe-actions-cell event-fe-actions-cell--draft"></td>';
-}
-
 function buildEventDetailFeSpacerRowHtml(row) {
   const rid = row.rowId;
   return `
       <tr class="event-fe-spacer-row" data-fe-row-id="${rid}" data-fe-spacer="1">
-        <td colspan="11" class="event-fe-spacer-cell" aria-hidden="true"></td>
-        ${eventFeDeleteActionCellHtml(rid)}
+        <td colspan="11" class="event-fe-spacer-cell" aria-hidden="true">
+          <button type="button" class="event-fe-del event-fe-del-outside" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
+        </td>
       </tr>`;
 }
 
@@ -384,7 +372,10 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
   const rid = row.rowId;
   return `
       <tr data-fe-row-id="${rid}">
-        <td class="event-fe-col-n"><span class="event-fe-num">${n}</span></td>
+        <td class="event-fe-col-n">
+          <span class="event-fe-num">${n}</span>
+          <button type="button" class="event-fe-del event-fe-del-outside" data-row-id="${rid}" title="Удалить строку" aria-label="Удалить строку">${trashIconSvg()}</button>
+        </td>
         <td>
           <select class="event-fe-family" data-row-id="${rid}" aria-label="Семья">${famOpts}</select>
         </td>
@@ -405,7 +396,6 @@ function buildEventDetailFePersistedRowHtml(row, displayNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag" data-row-id="${rid}" data-field="wFlag" ${row.wFlag ? 'checked' : ''} /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
-        ${eventFeDeleteActionCellHtml(rid)}
       </tr>`;
 }
 
@@ -437,7 +427,6 @@ function buildEventDetailFeDraftRowHtml(draftNum) {
         <td class="event-fe-check-cell">
           <label class="event-fe-check-label"><input type="checkbox" class="event-fe-flag event-fe-draft-control" data-field="wFlag" /><span class="event-fe-check-ui" aria-hidden="true"></span></label>
         </td>
-        ${eventFeDraftActionsCellHtml()}
       </tr>`;
 }
 
@@ -758,11 +747,10 @@ window.renderEventDetailPage = function renderEventDetailPage(segment) {
                     <th class="event-fe-th-curator">Следящий</th>
                     <th class="event-fe-th-check">L</th>
                     <th class="event-fe-th-check">W</th>
-                    <th class="event-fe-th-actions" aria-label="Действия"></th>
                   </tr>
                 </thead>
                 <tbody id="event-detail-fe-tbody">
-                  <tr><td colspan="12" class="event-fe-empty">Загрузка…</td></tr>
+                  <tr><td colspan="11" class="event-fe-empty">Загрузка…</td></tr>
                 </tbody>
               </table>
             </div>
