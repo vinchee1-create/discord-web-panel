@@ -72,6 +72,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
       window.headerActions.style.display = 'none';
       if (window.__navRequestId !== navReqId) return;
       await window.renderSettings();
+    } else if (title === 'Кураторы') {
+      window.headerActions.style.display = 'none';
+      await window.loadCurators();
+      if (window.__navRequestId !== navReqId) return;
+      window.renderCurators();
     } else {
       window.headerActions.style.display = 'none';
       if (window.__navRequestId !== navReqId) return;
@@ -155,6 +160,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     window.pageTitle.textContent = 'Настройки';
     window.headerActions.style.display = 'none';
     await window.renderSettings();
+  } else if (window.initialPage === 'Кураторы') {
+    window.pageTitle.textContent = 'Кураторы';
+    window.headerActions.style.display = 'none';
+    await window.loadCurators();
+    window.renderCurators();
   } else {
     // Для остальных страниц пока просто заголовок и плейсхолдер "в разработке"
     window.pageTitle.textContent = window.initialPage || 'Панель управления';

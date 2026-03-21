@@ -130,6 +130,35 @@
     </div>
 </div>
 
+<div id="curator-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <h2 id="curator-modal-title" style="margin-top:0; font-size:18px;">Редактировать куратора</h2>
+        <form id="curator-form">
+            <input type="hidden" id="curator-discord-id" />
+            <div class="form-group">
+                <label>Discord ID</label>
+                <input type="text" id="curator-discord-id-display" disabled />
+            </div>
+            <div class="form-group">
+                <label>Nickname</label>
+                <input type="text" id="curator-nickname" maxlength="128" placeholder="Как в Discord, если совпадает — можно не менять" />
+            </div>
+            <div class="form-group">
+                <label>LVL</label>
+                <input type="text" id="curator-lvl" maxlength="64" />
+            </div>
+            <div class="form-group">
+                <label>Curate</label>
+                <textarea id="curator-curate" rows="3" maxlength="2000" style="width:100%;resize:vertical;min-height:72px;font-family:inherit;font-size:13px;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" id="curator-modal-cancel">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="confirm-modal-overlay" class="modal-overlay">
     <div class="modal-card">
         <h2 style="margin-top:0; font-size:18px;" id="confirm-title">Подтверждение</h2>

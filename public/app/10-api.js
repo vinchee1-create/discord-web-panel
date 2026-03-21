@@ -65,3 +65,18 @@ window.loadLeaders = async function loadLeaders() {
   }
 };
 
+window.loadCurators = async function loadCurators() {
+  window.curatorsWarning = null;
+  window.curatorsList = [];
+  try {
+    const res = await fetch('/api/curators');
+    const data = res.ok ? await res.json() : null;
+    if (!data) throw new Error('bad response');
+    window.curatorsList = Array.isArray(data.curators) ? data.curators : [];
+    window.curatorsWarning = data.warning || null;
+  } catch (e) {
+    console.error('Ошибка загрузки кураторов:', e);
+    window.curatorsWarning = 'Не удалось загрузить список кураторов.';
+  }
+};
+

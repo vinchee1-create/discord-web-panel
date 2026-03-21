@@ -39,9 +39,14 @@ window.renderSettings = async function renderSettings() {
     <div class="modal-overlay settings-main-modal" id="settings-main-modal">
       <div class="modal-card settings-guild-modal-card">
         <h3 class="settings-guild-modal-title">Настройка основного сервера</h3>
+        <div class="settings-guild-picker-row">
+          <select class="settings-guild-select" id="settings-main-guild-select" aria-label="Основной сервер Discord"></select>
+        </div>
         <div class="settings-modal-fields">
           <label>ID Теги</label>
           <input type="text" id="settings-main-tags-id" inputmode="numeric" autocomplete="off" />
+          <label>ID Основной роли</label>
+          <input type="text" id="settings-main-primary-role-id" inputmode="numeric" autocomplete="off" />
           <label>Период</label>
           <input type="text" id="settings-main-period-minutes" inputmode="numeric" autocomplete="off" placeholder="Значение в минутах" />
         </div>
@@ -84,7 +89,9 @@ window.renderSettings = async function renderSettings() {
 
   const cards = Array.from(document.querySelectorAll('.settings-card'));
   const mainModal = document.getElementById('settings-main-modal');
+  const mainGuildSelect = document.getElementById('settings-main-guild-select');
   const mainTagsInput = document.getElementById('settings-main-tags-id');
+  const mainPrimaryRoleInput = document.getElementById('settings-main-primary-role-id');
   const mainPeriodInput = document.getElementById('settings-main-period-minutes');
   const mainModalSaveBtn = document.getElementById('settings-main-modal-save');
   const mainModalCancelBtn = document.getElementById('settings-main-modal-cancel');
@@ -139,7 +146,14 @@ window.renderSettings = async function renderSettings() {
       currentScope = scope;
       const cur = scopeSettings[currentScope] || {};
       if (scope === 'main') {
+        if (mainGuildSelect) {
+          mainGuildSelect.innerHTML = guilds.length
+            ? guilds.map(g => `<option value="${window.escapeHtml(String(g.id))}">${window.escapeHtml(g.name)} (${Number(g.memberCount || 0).toLocaleString('ru-RU')})</option>`).join('')
+            : '<option value="">Серверы не найдены</option>';
+          mainGuildSelect.value = String(cur.guildId || guilds[0]?.id || '');
+        }
         if (mainTagsInput) mainTagsInput.value = cur.tagsId || '';
+        if (mainPrimaryRoleInput) mainPrimaryRoleInput.value = cur.primaryRoleId || '';
         if (mainPeriodInput) mainPeriodInput.value = cur.periodMinutes || '';
         mainModal?.classList.add('is-open');
         return;
@@ -209,7 +223,9 @@ window.renderSettings = async function renderSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           scope: 'main',
+          guildId: String(mainGuildSelect?.value || '').trim(),
           tagsId: String(mainTagsInput?.value || '').trim(),
+          primaryRoleId: String(mainPrimaryRoleInput?.value || '').trim(),
           periodMinutes: String(mainPeriodInput?.value || '').trim()
         })
       });

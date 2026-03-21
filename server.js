@@ -344,6 +344,24 @@ async function initAppSettingsTable() {
     }
 }
 
+async function initCuratorMetaTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS curator_meta (
+                discord_id VARCHAR(32) PRIMARY KEY,
+                nickname_override VARCHAR(128),
+                lvl VARCHAR(64) DEFAULT '',
+                curate TEXT DEFAULT '',
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+        `);
+        console.log('✅ Таблица curator_meta готова');
+    } catch (e) {
+        console.error('❌ Ошибка curator_meta:', e.message);
+    }
+}
+
 // --- 2. ИНИЦИАЛИЗАЦИЯ БОТА ---
 const client = new Client({
     intents: [
@@ -533,6 +551,199 @@ app.delete('/api/families/:id', async (req, res) => {
     } catch (e) {
         console.error('DELETE /api/families:', e.message);
         res.status(500).json({ error: e.message });
+    }
+});
+
+async function getMainCuratorGuildAndRole() {
+    if (!pool) return { guildId: '', roleId: '' };
+    const { rows } = await pool.query(
+        "SELECT key, value FROM app_settings WHERE key IN ('main_guild_id', 'main_primary_role_id')"
+    );
+    const map = {};
+    rows.forEach(r => { map[r.key] = r.value || ''; });
+    let guildId = map.main_guild_id || '';
+    if (!guildId && client.guilds.cache.size === 1) {
+        guildId = client.guilds.cache.first().id;
+    }
+    return { guildId, roleId: map.main_primary_role_id || '' };
+}
+
+// --- 4.0.1. API КУРАТОРОВ (участники с основной ролью на основном сервере) ---
+app.get('/api/curators', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) {
+        return res.json({
+            curators: [],
+            warning: 'База данных не настроена',
+            guildConfigured: false,
+            roleConfigured: false
+        });
+    }
+    try {
+        const { guildId, roleId } = await getMainCuratorGuildAndRole();
+        if (!guildId || !roleId) {
+            return res.json({
+                curators: [],
+                warning: 'Укажите основной сервер и «ID основной роли» в разделе «Настройки».',
+                guildConfigured: Boolean(guildId),
+                roleConfigured: Boolean(roleId)
+            });
+        }
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.json({
+                curators: [],
+                warning: 'Бот не на указанном сервере или сервер недоступен.',
+                guildConfigured: true,
+                roleConfigured: true
+            });
+        }
+        let role = guild.roles.cache.get(roleId);
+        if (!role) {
+            role = await guild.roles.fetch(roleId).catch(() => null);
+        }
+        if (!role) {
+            return res.json({
+                curators: [],
+                warning: 'Роль с указанным ID не найдена на сервере.',
+                guildConfigured: true,
+                roleConfigured: true
+            });
+        }
+        try {
+            await guild.members.fetch();
+        } catch (fe) {
+            console.error('GET /api/curators members.fetch:', fe.message);
+            return res.json({
+                curators: [],
+                warning: 'Не удалось загрузить участников Discord (проверьте права бота).',
+                guildConfigured: true,
+                roleConfigured: true
+            });
+        }
+        const { rows: metaRows } = await pool.query(
+            'SELECT discord_id, nickname_override, lvl, curate FROM curator_meta'
+        );
+        const meta = {};
+        metaRows.forEach(r => {
+            meta[r.discord_id] = {
+                nickname_override: r.nickname_override || '',
+                lvl: r.lvl || '',
+                curate: r.curate || ''
+            };
+        });
+        const curators = [];
+        guild.members.cache.forEach(m => {
+            if (!m.roles.cache.has(roleId)) return;
+            const mid = m.id;
+            const mrow = meta[mid] || { nickname_override: '', lvl: '', curate: '' };
+            const display = m.displayName || m.user?.username || mid;
+            const nickname = (mrow.nickname_override && mrow.nickname_override.trim())
+                ? mrow.nickname_override.trim()
+                : display;
+            curators.push({
+                discordId: mid,
+                nickname,
+                discordDisplayName: display,
+                lvl: mrow.lvl || '',
+                curate: mrow.curate || '',
+                discordTag: m.user?.tag || m.user?.username || ''
+            });
+        });
+        curators.sort((a, b) => String(a.nickname).localeCompare(String(b.nickname), 'ru'));
+        return res.json({
+            curators,
+            warning: null,
+            guildConfigured: true,
+            roleConfigured: true
+        });
+    } catch (e) {
+        console.error('GET /api/curators:', e.message);
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/curators/:discordId', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const discordId = String(req.params.discordId || '').trim();
+    if (!/^\d{5,30}$/.test(discordId)) return res.status(400).json({ error: 'Некорректный Discord ID' });
+    const nicknameRaw = req.body?.nickname == null ? '' : String(req.body.nickname).trim();
+    const lvl = req.body?.lvl == null ? '' : String(req.body.lvl).trim().slice(0, 64);
+    const curate = req.body?.curate == null ? '' : String(req.body.curate).trim().slice(0, 2000);
+    if (nicknameRaw.length > 128) return res.status(400).json({ error: 'Ник слишком длинный' });
+    try {
+        const { guildId, roleId } = await getMainCuratorGuildAndRole();
+        if (!guildId || !roleId) {
+            return res.status(400).json({ error: 'Не заданы основной сервер или ID основной роли в настройках' });
+        }
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) return res.status(400).json({ error: 'Сервер недоступен' });
+        const member = await guild.members.fetch(discordId).catch(() => null);
+        if (!member || !member.roles.cache.has(roleId)) {
+            return res.status(404).json({ error: 'Участник не найден или не имеет основной роли' });
+        }
+        const display = String(member.displayName || member.user?.username || '').trim();
+        let nicknameOverride = null;
+        if (nicknameRaw !== '' && nicknameRaw !== display) {
+            nicknameOverride = nicknameRaw;
+        }
+        await pool.query(
+            `INSERT INTO curator_meta (discord_id, nickname_override, lvl, curate, updated_at)
+             VALUES ($1, $2, $3, $4, NOW())
+             ON CONFLICT (discord_id) DO UPDATE SET
+               nickname_override = EXCLUDED.nickname_override,
+               lvl = EXCLUDED.lvl,
+               curate = EXCLUDED.curate,
+               updated_at = NOW()`,
+            [discordId, nicknameOverride, lvl, curate]
+        );
+        const mrow = { nickname_override: nicknameOverride || '', lvl, curate };
+        const nickname = (mrow.nickname_override && mrow.nickname_override.trim())
+            ? mrow.nickname_override.trim()
+            : display;
+        return res.json({
+            discordId,
+            nickname,
+            discordDisplayName: display,
+            lvl: mrow.lvl || '',
+            curate: mrow.curate || '',
+            discordTag: member.user?.tag || member.user?.username || ''
+        });
+    } catch (e) {
+        console.error('PUT /api/curators:', e.message);
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/curators/:discordId', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const discordId = String(req.params.discordId || '').trim();
+    if (!/^\d{5,30}$/.test(discordId)) return res.status(400).json({ error: 'Некорректный Discord ID' });
+    try {
+        const { guildId, roleId } = await getMainCuratorGuildAndRole();
+        if (!guildId || !roleId) {
+            return res.status(400).json({ error: 'Не заданы основной сервер или ID основной роли в настройках' });
+        }
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) return res.status(400).json({ error: 'Сервер недоступен' });
+        const member = await guild.members.fetch(discordId).catch(() => null);
+        if (member && member.roles.cache.has(roleId)) {
+            try {
+                await member.roles.remove(roleId, 'Снятие куратора через панель');
+            } catch (re) {
+                console.error('DELETE /api/curators remove role:', re.message);
+                return res.status(400).json({
+                    error: 'Не удалось снять роль. Проверьте, что роль бота выше основной роли и есть право «Управлять ролями».'
+                });
+            }
+        }
+        await pool.query('DELETE FROM curator_meta WHERE discord_id=$1', [discordId]);
+        return res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/curators:', e.message);
+        return res.status(500).json({ error: e.message });
     }
 });
 
@@ -1322,6 +1533,7 @@ app.get('/api/settings/discord', async (req, res) => {
             `${s}_period_minutes`
         );
     });
+    keys.push('main_primary_role_id');
     // legacy keys (compat)
     keys.push(
         'main_curator_role_id',
@@ -1356,7 +1568,8 @@ app.get('/api/settings/discord', async (req, res) => {
             curatorsQuestionsId: kv[`${scope}_curators_questions_channel_id`] || '',
             treasuryId: kv[`${scope}_treasury_channel_id`] || '',
             tagsId: kv[`${scope}_tags_id`] || '',
-            periodMinutes: kv[`${scope}_period_minutes`] || ''
+            periodMinutes: kv[`${scope}_period_minutes`] || '',
+            primaryRoleId: scope === 'main' ? (kv.main_primary_role_id || '') : ''
         };
     });
     const guilds = Array.from(client.guilds.cache.values())
@@ -1392,7 +1605,8 @@ app.put('/api/settings/discord', async (req, res) => {
         curatorsQuestionsId: req.body?.curatorsQuestionsId == null ? '' : String(req.body.curatorsQuestionsId).trim(),
         treasuryId: req.body?.treasuryId == null ? '' : String(req.body.treasuryId).trim(),
         tagsId: req.body?.tagsId == null ? '' : String(req.body.tagsId).trim(),
-        periodMinutes: req.body?.periodMinutes == null ? '' : String(req.body.periodMinutes).trim()
+        periodMinutes: req.body?.periodMinutes == null ? '' : String(req.body.periodMinutes).trim(),
+        primaryRoleId: req.body?.primaryRoleId == null ? '' : String(req.body.primaryRoleId).trim()
     };
     const idFields = ['fractionCuratorId', 'fractionRoleId', 'curatorsNewsId', 'curatorLeaderId', 'playerRequestsId', 'curatorsQuestionsId', 'treasuryId'];
     for (const f of idFields) {
@@ -1400,25 +1614,33 @@ app.put('/api/settings/discord', async (req, res) => {
     }
     if (body.tagsId && !/^\d{3,30}$/.test(body.tagsId)) return res.status(400).json({ error: 'Некорректное значение tagsId' });
     if (body.periodMinutes && !/^\d{1,6}$/.test(body.periodMinutes)) return res.status(400).json({ error: 'Некорректное значение periodMinutes' });
+    if (scope === 'main' && body.primaryRoleId && !/^\d{3,30}$/.test(body.primaryRoleId)) {
+        return res.status(400).json({ error: 'Некорректное значение primaryRoleId' });
+    }
     if (body.guildId && !client.guilds.cache.has(body.guildId)) {
         return res.status(400).json({ error: 'Бот не состоит в выбранном сервере' });
     }
     try {
-        const entries = [
-            [`${scope}_guild_id`, body.guildId],
-            [`${scope}_fraction_curator_role_id`, body.fractionCuratorId],
-            [`${scope}_fraction_role_id`, body.fractionRoleId],
-            [`${scope}_curators_news_channel_id`, body.curatorsNewsId],
-            [`${scope}_curator_leader_role_id`, body.curatorLeaderId],
-            [`${scope}_player_requests_channel_id`, body.playerRequestsId],
-            [`${scope}_curators_questions_channel_id`, body.curatorsQuestionsId],
-            [`${scope}_treasury_channel_id`, body.treasuryId]
-        ];
+        /** Для main сохраняем только сервер + теги/период/основная роль — не затираем прочие main_* из других экранов. */
+        let entries;
         if (scope === 'main') {
-            entries.push(
-                [`${scope}_tags_id`, body.tagsId],
-                [`${scope}_period_minutes`, body.periodMinutes]
-            );
+            entries = [
+                ['main_guild_id', body.guildId],
+                ['main_tags_id', body.tagsId],
+                ['main_period_minutes', body.periodMinutes],
+                ['main_primary_role_id', body.primaryRoleId]
+            ];
+        } else {
+            entries = [
+                [`${scope}_guild_id`, body.guildId],
+                [`${scope}_fraction_curator_role_id`, body.fractionCuratorId],
+                [`${scope}_fraction_role_id`, body.fractionRoleId],
+                [`${scope}_curators_news_channel_id`, body.curatorsNewsId],
+                [`${scope}_curator_leader_role_id`, body.curatorLeaderId],
+                [`${scope}_player_requests_channel_id`, body.playerRequestsId],
+                [`${scope}_curators_questions_channel_id`, body.curatorsQuestionsId],
+                [`${scope}_treasury_channel_id`, body.treasuryId]
+            ];
         }
         for (const [k, v] of entries) {
             await pool.query(
@@ -1495,6 +1717,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initEventDetailFamilyRowsTable();
     await initEventDetailFactionRowsTable();
     await initAppSettingsTable();
+    await initCuratorMetaTable();
     app.listen(PORT, () => {
         console.log(`🚀 Сайт открыт по порту: ${PORT}`);
     });
