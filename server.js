@@ -1572,7 +1572,16 @@ app.get('/api/settings/discord', async (req, res) => {
             primaryRoleId: scope === 'main' ? (kv.main_primary_role_id || '') : ''
         };
     });
-    const guilds = Array.from(client.guilds.cache.values())
+    let guildRows = Array.from(client.guilds.cache.values());
+    if (client.isReady() && guildRows.length === 0) {
+        try {
+            await client.guilds.fetch();
+            guildRows = Array.from(client.guilds.cache.values());
+        } catch (e) {
+            console.error('GET /api/settings/discord guilds.fetch:', e.message);
+        }
+    }
+    const guilds = guildRows
         .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ru'))
         .map(g => ({
             id: g.id,
@@ -1718,14 +1727,17 @@ const TOKEN = process.env.BOT_TOKEN;
     await initEventDetailFactionRowsTable();
     await initAppSettingsTable();
     await initCuratorMetaTable();
-    app.listen(PORT, () => {
-        console.log(`🚀 Сайт открыт по порту: ${PORT}`);
-    });
+    // Сначала вход бота: иначе при первом запросе настроек guilds.cache ещё пустой («серверы не найдены»).
     if (TOKEN) {
-        client.login(TOKEN).catch(err => {
+        try {
+            await client.login(TOKEN);
+        } catch (err) {
             console.error('❌ Ошибка подключения бота к Discord:', err.message);
-        });
+        }
     } else {
         console.warn('⚠️ BOT_TOKEN не задан — бот не запущен');
     }
+    app.listen(PORT, () => {
+        console.log(`🚀 Сайт открыт по порту: ${PORT}`);
+    });
 })();
