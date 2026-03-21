@@ -64,7 +64,6 @@ window.editCurator = function editCurator(i) {
   if (idDisp) idDisp.value = c.discordId;
   document.getElementById('curator-nickname').value = c.nickname || '';
   document.getElementById('curator-lvl').value = c.lvl || '';
-  document.getElementById('curator-curate').value = c.curate || '';
   const facWrap = document.getElementById('curator-factions-wrap');
   const facEl = document.getElementById('curator-factions-readonly');
   const factions = Array.isArray(c.factions) ? c.factions : [];
@@ -90,7 +89,7 @@ window.deleteCurator = function deleteCurator(i) {
   const name = c.nickname || c.discordId;
   window.openConfirm({
     title: 'Удалить куратора',
-    message: `Снять основную роль с «${name}» и удалить сохранённые поля (LVL, Curate)?`,
+    message: `Снять основную роль с «${name}» и удалить сохранённые поля (LVL)?`,
     onConfirm: async () => {
       try {
         const res = await fetch(`/api/curators/${encodeURIComponent(c.discordId)}`, { method: 'DELETE' });
@@ -125,13 +124,12 @@ document.getElementById('curator-form')?.addEventListener('submit', async (e) =>
   const discordId = String(document.getElementById('curator-discord-id')?.value || '').trim();
   const nickname = String(document.getElementById('curator-nickname')?.value || '').trim();
   const lvl = String(document.getElementById('curator-lvl')?.value || '').trim();
-  const curate = String(document.getElementById('curator-curate')?.value || '').trim();
   if (!discordId) return;
   try {
     const res = await fetch(`/api/curators/${encodeURIComponent(discordId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, lvl, curate })
+      body: JSON.stringify({ nickname, lvl })
     });
     if (!res.ok) {
       let msg = 'Не удалось сохранить';

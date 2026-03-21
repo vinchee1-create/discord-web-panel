@@ -6,6 +6,7 @@ const { Pool } = require('pg');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
+const registerCuratorTagWatch = require('./curatorTagWatch');
 
 const app = express();
 
@@ -359,6 +360,30 @@ async function initCuratorMetaTable() {
         console.log('✅ Таблица curator_meta готова');
     } catch (e) {
         console.error('❌ Ошибка curator_meta:', e.message);
+    }
+}
+
+async function initCuratorTagWatchesTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS curator_tag_watches (
+                id SERIAL PRIMARY KEY,
+                faction_scope VARCHAR(32) NOT NULL,
+                source_guild_id VARCHAR(32) NOT NULL,
+                source_channel_id VARCHAR(32) NOT NULL,
+                source_message_id VARCHAR(32) NOT NULL,
+                fraction_curator_role_id VARCHAR(32) NOT NULL,
+                reminders_sent INTEGER NOT NULL DEFAULT 0,
+                started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                last_reminder_at TIMESTAMPTZ,
+                resolved_at TIMESTAMPTZ,
+                UNIQUE(source_guild_id, source_channel_id, source_message_id)
+            )
+        `);
+        console.log('✅ Таблица curator_tag_watches готова');
+    } catch (e) {
+        console.error('❌ Ошибка curator_tag_watches:', e.message);
     }
 }
 
@@ -725,7 +750,6 @@ app.put('/api/curators/:discordId', async (req, res) => {
     if (!/^\d{5,30}$/.test(discordId)) return res.status(400).json({ error: 'Некорректный Discord ID' });
     const nicknameRaw = req.body?.nickname == null ? '' : String(req.body.nickname).trim();
     const lvl = req.body?.lvl == null ? '' : String(req.body.lvl).trim().slice(0, 64);
-    const curate = req.body?.curate == null ? '' : String(req.body.curate).trim().slice(0, 2000);
     if (nicknameRaw.length > 128) return res.status(400).json({ error: 'Ник слишком длинный' });
     try {
         const { guildId, roleId } = await getMainCuratorGuildAndRole();
@@ -743,17 +767,18 @@ app.put('/api/curators/:discordId', async (req, res) => {
         if (nicknameRaw !== '' && nicknameRaw !== display) {
             nicknameOverride = nicknameRaw;
         }
-        await pool.query(
+        const { rows: upRows } = await pool.query(
             `INSERT INTO curator_meta (discord_id, nickname_override, lvl, curate, updated_at)
-             VALUES ($1, $2, $3, $4, NOW())
+             VALUES ($1, $2, $3, '', NOW())
              ON CONFLICT (discord_id) DO UPDATE SET
                nickname_override = EXCLUDED.nickname_override,
                lvl = EXCLUDED.lvl,
-               curate = EXCLUDED.curate,
-               updated_at = NOW()`,
-            [discordId, nicknameOverride, lvl, curate]
+               updated_at = NOW()
+             RETURNING curate`,
+            [discordId, nicknameOverride, lvl]
         );
-        const mrow = { nickname_override: nicknameOverride || '', lvl, curate };
+        const savedCurate = upRows[0]?.curate || '';
+        const mrow = { nickname_override: nicknameOverride || '', lvl, curate: savedCurate };
         const nickname = (mrow.nickname_override && mrow.nickname_override.trim())
             ? mrow.nickname_override.trim()
             : display;
@@ -764,7 +789,7 @@ app.put('/api/curators/:discordId', async (req, res) => {
             nickname,
             discordDisplayName: display,
             lvl: mrow.lvl || '',
-            curate: mrow.curate || '',
+            curate: savedCurate || '',
             factions,
             discordTag: member.user?.tag || member.user?.username || ''
         });
@@ -1767,6 +1792,7 @@ app.get('/:segment', requireAuthStrict, (req, res, next) => {
 // --- 4. СОБЫТИЯ БОТА ---
 client.once('ready', () => {
     console.log(`✅ Бот запущен как: ${client.user.tag}`);
+    registerCuratorTagWatch(client, pool);
 });
 
 // --- 6. ЗАПУСК ВСЕЙ СИСТЕМЫ ---
@@ -1785,6 +1811,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initEventDetailFactionRowsTable();
     await initAppSettingsTable();
     await initCuratorMetaTable();
+    await initCuratorTagWatchesTable();
     // Сначала вход бота: иначе при первом запросе настроек guilds.cache ещё пустой («серверы не найдены»).
     if (TOKEN) {
         try {
