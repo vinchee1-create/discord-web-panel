@@ -568,6 +568,28 @@ async function getMainCuratorGuildAndRole() {
     return { guildId, roleId: map.main_primary_role_id || '' };
 }
 
+/**
+ * Подгружает участников страницами (REST). Один вызов members.fetch() без опций
+ * часто опирается на gateway-chunking и падает, если в портале Discord не включён Server Members Intent.
+ */
+async function fetchGuildMembersPaginated(guild) {
+    let after;
+    for (let page = 0; page < 500; page++) {
+        const options = { limit: 1000 };
+        if (after) options.after = after;
+        const batch = await guild.members.fetch(options);
+        if (batch.size === 0) return;
+        if (batch.size < 1000) return;
+        let maxId = '0';
+        batch.forEach(m => {
+            if (m.id > maxId) maxId = m.id;
+        });
+        after = maxId;
+    }
+}
+
+const CURATORS_INTENT_WARNING = 'Не удалось загрузить полный список участников. Откройте Discord Developer Portal → ваше приложение → вкладка Bot → блок «Privileged Gateway Intents» и включите «SERVER MEMBERS INTENT», сохраните и перезапустите бота. Пока отображаются только участники из кэша бота (список может быть неполным).';
+
 // --- 4.0.1. API КУРАТОРОВ (участники с основной ролью на основном сервере) ---
 app.get('/api/curators', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -610,16 +632,12 @@ app.get('/api/curators', async (req, res) => {
                 roleConfigured: true
             });
         }
+        let memberFetchWarning = null;
         try {
-            await guild.members.fetch();
+            await fetchGuildMembersPaginated(guild);
         } catch (fe) {
-            console.error('GET /api/curators members.fetch:', fe.message);
-            return res.json({
-                curators: [],
-                warning: 'Не удалось загрузить участников Discord (проверьте права бота).',
-                guildConfigured: true,
-                roleConfigured: true
-            });
+            console.error('GET /api/curators members paginated fetch:', fe.message, fe.code || '');
+            memberFetchWarning = CURATORS_INTENT_WARNING;
         }
         const { rows: metaRows } = await pool.query(
             'SELECT discord_id, nickname_override, lvl, curate FROM curator_meta'
@@ -653,7 +671,7 @@ app.get('/api/curators', async (req, res) => {
         curators.sort((a, b) => String(a.nickname).localeCompare(String(b.nickname), 'ru'));
         return res.json({
             curators,
-            warning: null,
+            warning: memberFetchWarning || null,
             guildConfigured: true,
             roleConfigured: true
         });
