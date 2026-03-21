@@ -1,5 +1,20 @@
 // Curators: участники с основной ролью на основном сервере (настройки Discord).
 
+function renderCurateCell(c) {
+  const factions = Array.isArray(c.factions) ? c.factions : [];
+  const pills = factions.map((f) => {
+    const key = String(f.key || '').replace(/[^a-z]/g, '') || 'unknown';
+    return `<span class="curator-faction-pill curator-faction-pill--${key}">${window.escapeHtml(f.label || '')}</span>`;
+  }).join('');
+  const note = String(c.curate || '').trim();
+  const noteHtml = note
+    ? `<span class="curator-curate-note">${window.escapeHtml(note)}</span>`
+    : '';
+  if (!pills && !note) return '—';
+  const gap = pills && note ? ' ' : '';
+  return `<div class="curator-curate-cell">${pills}${gap}${noteHtml}</div>`;
+}
+
 window.renderCurators = function renderCurators() {
   const warn = window.curatorsWarning;
   const rows = window.curatorsList || [];
@@ -8,7 +23,7 @@ window.renderCurators = function renderCurators() {
             <td>${window.escapeHtml(c.nickname || '—')}</td>
             <td>${window.escapeHtml(c.lvl || '—')}</td>
             <td><span class="id-tag">#${window.escapeHtml(c.discordId)}</span></td>
-            <td>${window.escapeHtml(c.curate || '—')}</td>
+            <td>${renderCurateCell(c)}</td>
             <td class="cell-actions">
                 <button type="button" class="btn-icon" onclick="editCurator(${i})" title="Редактировать"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
                 <button type="button" class="btn-icon btn-icon-delete" onclick="deleteCurator(${i})" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></button>
@@ -50,6 +65,21 @@ window.editCurator = function editCurator(i) {
   document.getElementById('curator-nickname').value = c.nickname || '';
   document.getElementById('curator-lvl').value = c.lvl || '';
   document.getElementById('curator-curate').value = c.curate || '';
+  const facWrap = document.getElementById('curator-factions-wrap');
+  const facEl = document.getElementById('curator-factions-readonly');
+  const factions = Array.isArray(c.factions) ? c.factions : [];
+  if (facWrap && facEl) {
+    if (factions.length) {
+      facEl.innerHTML = factions.map((f) => {
+        const key = String(f.key || '').replace(/[^a-z]/g, '') || 'unknown';
+        return `<span class="curator-faction-pill curator-faction-pill--${key}">${window.escapeHtml(f.label || '')}</span>`;
+      }).join(' ');
+      facWrap.style.display = 'block';
+    } else {
+      facEl.innerHTML = '';
+      facWrap.style.display = 'none';
+    }
+  }
   document.getElementById('curator-modal-title').textContent = 'Редактировать куратора';
   document.getElementById('curator-modal-overlay')?.classList.add('is-open');
 };

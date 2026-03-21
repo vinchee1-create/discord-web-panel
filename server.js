@@ -590,6 +590,40 @@ async function fetchGuildMembersPaginated(guild) {
 
 const CURATORS_INTENT_WARNING = 'Не удалось загрузить полный список участников. Откройте Discord Developer Portal → ваше приложение → вкладка Bot → блок «Privileged Gateway Intents» и включите «SERVER MEMBERS INTENT», сохраните и перезапустите бота. Пока отображаются только участники из кэша бота (список может быть неполным).';
 
+const CURATOR_FACTION_SCOPES = [
+    { scope: 'ballas', label: 'The Ballas Gang' },
+    { scope: 'vagos', label: 'Los Santos Vagos' },
+    { scope: 'families', label: 'The Families' },
+    { scope: 'bloods', label: 'The Bloods Gang' },
+    { scope: 'marabunta', label: 'Marabunta Grande' }
+];
+
+/** ID Fraction Role из настроек каждой фракции; сами роли должны быть выданы на основном сервере. */
+async function loadCuratorFractionRoleIdsFromSettings() {
+    if (!pool) return [];
+    const keys = CURATOR_FACTION_SCOPES.map(({ scope }) => `${scope}_fraction_role_id`);
+    const { rows } = await pool.query('SELECT key, value FROM app_settings WHERE key = ANY($1::text[])', [keys]);
+    const kv = {};
+    rows.forEach(r => { kv[r.key] = r.value || ''; });
+    return CURATOR_FACTION_SCOPES.map(({ scope, label }) => ({
+        scope,
+        label,
+        roleId: kv[`${scope}_fraction_role_id`] || ''
+    })).filter(b => b.roleId && /^\d{5,30}$/.test(b.roleId));
+}
+
+/** Проверка ролей у участника основного сервера (member уже с main guild). */
+function curatorFactionsFromRolesOnMain(member, fractionRoles) {
+    if (!fractionRoles.length) return [];
+    const out = [];
+    for (const fr of fractionRoles) {
+        if (member.roles.cache.has(fr.roleId)) {
+            out.push({ key: fr.scope, label: fr.label });
+        }
+    }
+    return out.sort((a, b) => String(a.label).localeCompare(String(b.label), 'ru'));
+}
+
 // --- 4.0.1. API КУРАТОРОВ (участники с основной ролью на основном сервере) ---
 app.get('/api/curators', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -650,24 +684,27 @@ app.get('/api/curators', async (req, res) => {
                 curate: r.curate || ''
             };
         });
+        const fractionRoles = await loadCuratorFractionRoleIdsFromSettings();
         const curators = [];
-        guild.members.cache.forEach(m => {
-            if (!m.roles.cache.has(roleId)) return;
+        for (const m of guild.members.cache.values()) {
+            if (!m.roles.cache.has(roleId)) continue;
             const mid = m.id;
             const mrow = meta[mid] || { nickname_override: '', lvl: '', curate: '' };
             const display = m.displayName || m.user?.username || mid;
             const nickname = (mrow.nickname_override && mrow.nickname_override.trim())
                 ? mrow.nickname_override.trim()
                 : display;
+            const factions = curatorFactionsFromRolesOnMain(m, fractionRoles);
             curators.push({
                 discordId: mid,
                 nickname,
                 discordDisplayName: display,
                 lvl: mrow.lvl || '',
                 curate: mrow.curate || '',
+                factions,
                 discordTag: m.user?.tag || m.user?.username || ''
             });
-        });
+        }
         curators.sort((a, b) => String(a.nickname).localeCompare(String(b.nickname), 'ru'));
         return res.json({
             curators,
@@ -720,12 +757,15 @@ app.put('/api/curators/:discordId', async (req, res) => {
         const nickname = (mrow.nickname_override && mrow.nickname_override.trim())
             ? mrow.nickname_override.trim()
             : display;
+        const fractionRoles = await loadCuratorFractionRoleIdsFromSettings();
+        const factions = curatorFactionsFromRolesOnMain(member, fractionRoles);
         return res.json({
             discordId,
             nickname,
             discordDisplayName: display,
             lvl: mrow.lvl || '',
             curate: mrow.curate || '',
+            factions,
             discordTag: member.user?.tag || member.user?.username || ''
         });
     } catch (e) {
