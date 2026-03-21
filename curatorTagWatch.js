@@ -12,10 +12,11 @@ const FACTION_SCOPES = [
     { scope: 'marabunta', label: 'Marabunta Grande' }
 ];
 
-/** Каналы под разделителем в настройках фракции (ID Curator Leader — роль, не канал). */
+/** Каналы под разделителем в настройках фракции (включая Curator Leader — канал; ключ в БД *_curator_leader_role_id). */
 function channelKeysForScope(scope) {
     return [
         `${scope}_curators_news_channel_id`,
+        `${scope}_curator_leader_role_id`,
         `${scope}_player_requests_channel_id`,
         `${scope}_curators_questions_channel_id`,
         `${scope}_treasury_channel_id`

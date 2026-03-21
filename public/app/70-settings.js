@@ -70,7 +70,7 @@ window.renderSettings = async function renderSettings() {
           <hr class="settings-modal-separator" />
           <label>ID Новости кураторов</label>
           <input type="text" id="settings-modal-curators-news" inputmode="numeric" autocomplete="off" />
-          <label>ID Curator Leader</label>
+          <label>ID Curator Leader (канал)</label>
           <input type="text" id="settings-modal-curator-leader" inputmode="numeric" autocomplete="off" />
           <label>ID Запросы от игроков</label>
           <input type="text" id="settings-modal-player-requests" inputmode="numeric" autocomplete="off" />
