@@ -101,12 +101,21 @@ async function insertWatch(pool, row) {
     );
 }
 
-async function resolveWatch(pool, guildId, channelId, parentMessageId) {
-    await pool.query(
-        `UPDATE curator_tag_watches SET resolved_at = NOW()
+/** Закрывает слежение и возвращает id сообщений напоминаний в канале «Теги». */
+async function resolveWatchAndGetReminderMessageIds(pool, guildId, channelId, parentMessageId) {
+    const { rows } = await pool.query(
+        `SELECT id, COALESCE(tags_reminder_message_ids, ARRAY[]::varchar(32)[]) AS mids
+         FROM curator_tag_watches
          WHERE source_guild_id = $1 AND source_channel_id = $2 AND source_message_id = $3 AND resolved_at IS NULL`,
         [guildId, channelId, parentMessageId]
     );
+    if (!rows[0]) return [];
+    const mids = rows[0].mids;
+    await pool.query(
+        `UPDATE curator_tag_watches SET resolved_at = NOW() WHERE id = $1`,
+        [rows[0].id]
+    );
+    return Array.isArray(mids) ? mids.filter(Boolean) : [];
 }
 
 async function fetchActiveWatches(pool) {
@@ -118,12 +127,15 @@ async function fetchActiveWatches(pool) {
     return rows;
 }
 
-async function bumpReminder(pool, id) {
+async function bumpReminderAndRecordTagMessage(pool, watchId, tagsMessageId) {
     await pool.query(
         `UPDATE curator_tag_watches
-         SET reminders_sent = reminders_sent + 1, last_reminder_at = NOW()
+         SET reminders_sent = reminders_sent + 1,
+             last_reminder_at = NOW(),
+             tags_reminder_message_ids = COALESCE(tags_reminder_message_ids, ARRAY[]::varchar(32)[])
+               || ARRAY[$2::varchar(32)]
          WHERE id = $1`,
-        [id]
+        [watchId, tagsMessageId]
     );
 }
 
@@ -143,6 +155,22 @@ module.exports = function registerCuratorTagWatch(client, pool) {
         const list = await loadFactionMonitorConfigs(pool);
         configCache = { list, at: now };
         return list;
+    }
+
+    async function addCheckmarkReactionsToTagMessages(mainGuildId, tagsChannelId, messageIds) {
+        if (!messageIds?.length) return;
+        const guild = client.guilds.cache.get(mainGuildId);
+        if (!guild) return;
+        const channel = await guild.channels.fetch(tagsChannelId).catch(() => null);
+        if (!channel || !channel.isTextBased()) return;
+        for (const mid of messageIds) {
+            try {
+                const msg = await channel.messages.fetch(String(mid)).catch(() => null);
+                if (msg) await msg.react('✅').catch(() => {});
+            } catch (e) {
+                console.error('curatorTagWatch addCheckmarkReactions:', e.message);
+            }
+        }
     }
 
     async function processReminders() {
@@ -178,11 +206,11 @@ module.exports = function registerCuratorTagWatch(client, pool) {
                 const text = `${rolePing} **${cfg.label}** — тег роли куратора фракции без ответа уже **${elapsedMin}** мин. [Исходное сообщение](${msgLink})`;
 
                 try {
-                    await tagsChannel.send({
+                    const sent = await tagsChannel.send({
                         content: text,
                         allowedMentions: { roles: [cfg.fractionRoleId] }
                     });
-                    await bumpReminder(pool, w.id);
+                    await bumpReminderAndRecordTagMessage(pool, w.id, sent.id);
                 } catch (e) {
                     console.error('curatorTagWatch reminder send:', e.message);
                 }
@@ -227,7 +255,15 @@ module.exports = function registerCuratorTagWatch(client, pool) {
             const member = message.member || (await message.guild.members.fetch(message.author.id).catch(() => null));
             if (!member || !member.roles.cache.has(cfgReply.fractionCuratorRoleId)) return;
 
-            await resolveWatch(pool, refGuildId, refChannelId, refId);
+            const reminderMsgIds = await resolveWatchAndGetReminderMessageIds(pool, refGuildId, refChannelId, refId);
+            const mainSet = await loadMainReminderSettings(pool);
+            if (mainSet.guildId && mainSet.tagsChannelId && reminderMsgIds.length) {
+                await addCheckmarkReactionsToTagMessages(
+                    mainSet.guildId,
+                    mainSet.tagsChannelId,
+                    reminderMsgIds
+                );
+            }
         } catch (e) {
             console.error('curatorTagWatch messageCreate:', e.message);
         }

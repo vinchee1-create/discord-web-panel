@@ -381,6 +381,10 @@ async function initCuratorTagWatchesTable() {
                 UNIQUE(source_guild_id, source_channel_id, source_message_id)
             )
         `);
+        await pool.query(`
+            ALTER TABLE curator_tag_watches
+            ADD COLUMN IF NOT EXISTS tags_reminder_message_ids VARCHAR(32)[] DEFAULT ARRAY[]::varchar(32)[]
+        `);
         console.log('✅ Таблица curator_tag_watches готова');
     } catch (e) {
         console.error('❌ Ошибка curator_tag_watches:', e.message);
