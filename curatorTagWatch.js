@@ -230,7 +230,7 @@ module.exports = function registerCuratorTagWatch(client, pool) {
 
                 const msgLink = `https://discord.com/channels/${w.source_guild_id}/${w.source_channel_id}/${w.source_message_id}`;
                 const rolePing = `<@&${cfg.fractionRoleId}>`;
-                const text = `${rolePing} тег без ответа уже **${elapsedMin}** мин.\n${msgLink}`;
+                const text = `${rolePing} **${cfg.label}** — тег роли куратора фракции без ответа уже **${elapsedMin}** мин. [Исходное сообщение](${msgLink})`;
 
                 try {
                     const prevIds = Array.isArray(w.tags_reminder_message_ids)
