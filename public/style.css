@@ -5,9 +5,25 @@ body {
     margin: 0; padding: 0; 
     background-color: #161616; 
     color: white; 
-    display: flex; 
     height: 100vh; 
     overflow: hidden;
+}
+
+/* Оболочка: верхняя полоса на всю ширину, под ней сайдбар + контент (без «двух капсул») */
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+.app-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    align-items: stretch;
 }
 
 /* Единый шрифт/кернинг ближе к референсу */
@@ -39,15 +55,19 @@ body, button, input, select {
 /* САЙДБАР */
 .sidebar-container { 
     width: 260px; 
-    height: 100vh; 
+    height: auto;
+    min-height: 0;
     padding: 8px; 
     box-sizing: border-box; 
     flex-shrink: 0; 
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-inner { 
     width: 100%; 
-    height: 100%; 
+    flex: 1;
+    min-height: 0;
     display: flex; 
     flex-direction: column; 
 }
@@ -246,23 +266,26 @@ body, button, input, select {
 /* ПРАВАЯ ЧАСТЬ */
 .main-content {
     background-color: #0a0a0a; 
-    flex-grow: 1; 
-    margin: 8px 8px 8px 0;
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    border-radius: 14px;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
     display: flex; 
     flex-direction: column; 
     overflow: hidden;
 }
 
-.content-header {
-    height: 64px; 
+.app-topbar {
+    height: 52px; 
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex; 
     align-items: center; 
     justify-content: space-between;
-    padding: 0 16px; 
+    padding: 0 20px; 
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .header-left { display: flex; align-items: center; gap: 8px; }

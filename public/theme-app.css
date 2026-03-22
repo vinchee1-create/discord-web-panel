@@ -1,26 +1,35 @@
 /**
- * Кастомная тема админки (v2): нейтральный графит + редкий бирюзовый акцент.
- * Не копирует внешние проекты — другая сетка и иерархия, шрифт как в style.css.
- * Отключить: уберите link ниже в views/index.ejs
+ * Оболочка v3: верхняя полоса на всю ширину + плоский main без «капсулы».
+ * Акцент — розовый, но точечно (полоска, иконки, hover), без заливки всего UI.
+ * Отключить: уберите link в views/index.ejs
  */
 :root {
-    --app-bg: #09090b;
-    --app-surface: #0f0f12;
-    --app-elevated: #141418;
-    --app-border: rgba(255, 255, 255, 0.06);
-    --app-border-strong: rgba(255, 255, 255, 0.1);
-    --app-text: #fafafa;
-    --app-muted: rgba(250, 250, 250, 0.52);
-    --app-accent: #2dd4bf;
-    --app-accent-dim: rgba(45, 212, 191, 0.14);
-    --app-accent-hover: #5eead4;
-    --app-scrollbar: #27272a;
-    --app-scrollbar-track: #09090b;
+    --app-bg: #0c0c0e;
+    --app-surface: #101014;
+    --app-elevated: #16161c;
+    --app-border: rgba(255, 255, 255, 0.055);
+    --app-border-strong: rgba(255, 255, 255, 0.09);
+    --app-text: #f4f4f5;
+    --app-muted: rgba(244, 244, 245, 0.48);
+    /* Сдержанный розовый — только акценты */
+    --app-accent: #e879a8;
+    --app-accent-dim: rgba(232, 121, 168, 0.09);
+    --app-accent-soft: rgba(232, 121, 168, 0.16);
+    --app-accent-hover: #f5a4c8;
+    --app-scrollbar: #2a2a30;
+    --app-scrollbar-track: #0c0c0e;
+    --app-shell-accent-h: 2px;
 }
 
 body {
     background-color: var(--app-bg);
     color: var(--app-text);
+    /* Лёгкая «сетка» на фоне — отличает от плоского старого вида */
+    background-image:
+        linear-gradient(var(--app-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--app-border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: -1px -1px;
 }
 
 * {
@@ -31,23 +40,36 @@ body {
 }
 *::-webkit-scrollbar-thumb {
     background: var(--app-scrollbar);
-    border-radius: 99px;
+    border-radius: 3px;
 }
 *::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
+    background: #3a3a42;
 }
 
-/* Правая область — плоская плита, без «неоновых» рамок */
-.main-content {
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: 12px;
-    box-shadow: none;
-}
-
-.content-header {
+/* Верхняя полоса — отдельный слой над колонками */
+.app-topbar {
+    background: linear-gradient(180deg, rgba(22, 22, 28, 0.98) 0%, rgba(16, 16, 20, 0.96) 100%);
     border-bottom: 1px solid var(--app-border);
-    background: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    position: relative;
+}
+.app-topbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--app-shell-accent-h);
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(232, 121, 168, 0.45) 18%,
+        rgba(232, 121, 168, 0.2) 50%,
+        rgba(232, 121, 168, 0.45) 82%,
+        transparent 100%
+    );
+    pointer-events: none;
+    opacity: 0.85;
 }
 
 .header-separator {
@@ -57,15 +79,42 @@ body {
 .page-title {
     color: var(--app-text);
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    font-size: 15px;
 }
 
-/* Левая колонка: ровная, без отдельной «капсулы» — только разделитель */
+.sidebar-trigger {
+    opacity: 0.65;
+    border-radius: 6px;
+    padding: 6px;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.sidebar-trigger:hover {
+    opacity: 1;
+    background: var(--app-accent-dim);
+    color: var(--app-accent);
+}
+
+/* Main: без скруглений и отступов — «лист», а не карточка */
+.main-content {
+    background: var(--app-surface);
+    border: none;
+    border-left: 1px solid var(--app-border-strong);
+    border-radius: 0;
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.02);
+}
+
+.content-body {
+    padding: 28px 32px;
+}
+
+/* Левая колонка — узкая «полоса» с другим тоном */
 .sidebar-container {
-    width: 268px;
+    width: 244px;
     padding: 0;
-    border-right: 1px solid var(--app-border);
-    background: var(--app-bg);
+    border-right: none;
+    background: linear-gradient(180deg, #0a0a0d 0%, var(--app-bg) 55%, var(--app-bg) 100%);
+    box-shadow: inset -1px 0 0 var(--app-border);
 }
 
 .sidebar-inner {
@@ -73,20 +122,19 @@ body {
     border-radius: 0;
     box-shadow: none;
     background: transparent;
-    height: 100%;
 }
 
 .sidebar-header {
-    padding: 20px 16px 16px;
+    padding: 18px 14px 14px;
     margin-top: 0;
-    border-bottom: none;
+    border-bottom: 1px solid var(--app-border);
 }
 
 .brand-button {
     min-height: 0;
     height: auto;
     padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid transparent;
     color: var(--app-text);
     transition: background 0.15s ease, border-color 0.15s ease;
@@ -99,18 +147,19 @@ body {
 }
 
 .brand-icon-box {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 4px;
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
     box-shadow: none;
 }
 
 .brand-icon-box svg {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     color: var(--app-accent);
+    opacity: 0.92;
 }
 
 .brand-main-text {
@@ -120,15 +169,15 @@ body {
 
 .brand-sub-text {
     color: var(--app-muted);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     opacity: 1;
 }
 
 .sidebar-content {
-    padding: 8px 10px 0;
+    padding: 10px 8px 0;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -137,13 +186,12 @@ body {
 
 .nav-list {
     gap: 0;
-    margin-top: 8px;
+    margin-top: 6px;
     padding: 0 0 12px;
 }
 
-/* Группы — только типографика, без вложенных «карточек» */
 .sidebar-group {
-    padding: 12px 8px 8px;
+    padding: 14px 6px 8px;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -155,35 +203,37 @@ body {
 }
 
 .sidebar-group-label {
-    padding: 0 8px 8px;
+    padding: 0 10px 8px;
     height: auto;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--app-muted);
 }
 
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
-/* Пункты меню — плоские; акцент только полоска + лёгкий фон */
+/* Навигация: острые углы, акцент — тонкая полоска + лёгкий фон */
 .nav-item {
-    min-height: 40px;
+    min-height: 38px;
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: 2px;
     gap: 10px;
     border: none;
+    border-left: 2px solid transparent;
     color: var(--app-muted);
     font-weight: 500;
-    transition: color 0.12s ease, background 0.12s ease;
+    transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.035);
     color: var(--app-text);
     border: none;
+    border-left: 2px solid transparent;
     box-shadow: none;
 }
 
@@ -191,7 +241,8 @@ body {
     background: var(--app-accent-dim);
     color: var(--app-text);
     border: none;
-    box-shadow: inset 2px 0 0 var(--app-accent);
+    border-left: 2px solid var(--app-accent);
+    box-shadow: none;
 }
 
 .nav-item svg {
@@ -207,12 +258,8 @@ body {
     box-shadow: none;
 }
 
-.nav-item:hover svg,
-.nav-item.active svg {
+.nav-item:hover svg {
     color: var(--app-accent-hover);
-    background: transparent;
-    border: none;
-    box-shadow: none;
 }
 
 .nav-item.active svg {
@@ -220,23 +267,23 @@ body {
 }
 
 .nav-badge {
-    background: #3f3f46;
-    color: var(--app-text);
-    border-radius: 4px;
+    background: rgba(232, 121, 168, 0.2);
+    color: var(--app-accent-hover);
+    border: 1px solid rgba(232, 121, 168, 0.25);
+    border-radius: 3px;
     font-size: 11px;
     font-weight: 600;
     box-shadow: none;
 }
 
-/* Профиль */
 .sidebar-footer {
-    padding: 12px 12px 16px;
+    padding: 12px 10px 14px;
     border-top: 1px solid var(--app-border);
     background: transparent;
 }
 
 .profile-button {
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 10px 12px;
     border: 1px solid transparent;
     color: var(--app-text);
@@ -250,7 +297,7 @@ body {
 .profile-avatar {
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 .profile-lvl {
@@ -260,61 +307,74 @@ body {
 .profile-menu {
     background: var(--app-elevated);
     border: 1px solid var(--app-border-strong);
-    border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
 }
 
 .profile-menu-item:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
 }
 
-/* Кнопки контента */
 .btn-pill,
 .btn-primary {
     background: var(--app-elevated);
     border: 1px solid var(--app-border-strong);
     color: var(--app-text);
+    border-radius: 4px;
 }
 
 .btn-pill:hover,
 .btn-primary:hover {
-    background: rgba(45, 212, 191, 0.12);
-    border-color: rgba(45, 212, 191, 0.35);
+    background: var(--app-accent-soft);
+    border-color: rgba(232, 121, 168, 0.35);
     color: var(--app-text);
 }
 
 .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
 }
 
-/* Главная — нейтральные карточки */
 .dashboard-stat-card,
 .dashboard-factions-panel {
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
+    border-radius: 6px;
     box-shadow: none;
 }
 
 .dashboard-stat-header-icon {
     color: var(--app-accent);
-    opacity: 1;
+    opacity: 0.85;
 }
 
 .dashboard-stat-footer {
     color: var(--app-muted) !important;
 }
 
-/* Таблицы */
 .table-families {
     background: var(--app-surface);
     border-color: var(--app-border);
 }
 
 .data-table-families thead {
-    background: #18181b;
+    background: #141418;
 }
 
 .data-table-families th {
     color: var(--app-muted);
     font-weight: 600;
+}
+
+/* Кнопка в шапке (добавить семью и т.д.) — тёмная, акцент при hover */
+.header-actions .btn-month {
+    background: var(--app-elevated);
+    color: var(--app-text);
+    border: 1px solid var(--app-border-strong);
+    border-radius: 4px;
+    box-shadow: none;
+}
+.header-actions .btn-month:hover {
+    background: var(--app-accent-soft);
+    border-color: rgba(232, 121, 168, 0.32);
+    color: var(--app-text);
 }
