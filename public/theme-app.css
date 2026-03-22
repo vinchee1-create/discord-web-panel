@@ -3,8 +3,8 @@
  * Акцент — розовый точечно. Отключить: уберите link в views/index.ejs
  */
 :root {
-    /* База ближе к фону страницы (под размытый слой) */
-    --app-bg: #0e0e11;
+    /* Нейтральные серые R=G=B — без холодного синего подтона */
+    --app-bg: #101010;
     --app-surface: #161616;
     --app-elevated: #1c1c1c;
     --app-border: rgba(255, 255, 255, 0.06);
@@ -20,7 +20,7 @@
     --app-nav-item-bg-hover: #222222;
     --app-nav-item-bg-active: #262626;
     --app-scrollbar: #2a2a2a;
-    --app-scrollbar-track: #0e0e10;
+    --app-scrollbar-track: #0a0a0a;
     --app-shell-accent-h: 2px;
     --app-radius-lg: 14px;
     --app-radius-md: 10px;
@@ -28,13 +28,13 @@
 }
 
 html {
-    background-color: #0e0e11;
+    background-color: var(--app-bg);
 }
 
 /* Мягкий «туман»: размытые пятна акцента + нейтральная база (без сетки) */
 body {
     position: relative;
-    background-color: #0e0e11;
+    background-color: var(--app-bg);
     color: var(--app-text);
 }
 
@@ -86,14 +86,15 @@ body::after {
     border-radius: 999px;
 }
 *::-webkit-scrollbar-thumb:hover {
-    background: #3a3a42;
+    background: #484848;
 }
 
-/* Верхняя полоса — нейтральный графит без синего отлива */
+/* Шапка внутри общей плиты .app-body — без отдельной «второй карточки» */
 .app-topbar {
-    background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #191919 0%, #151515 100%);
     border-bottom: 1px solid var(--app-border);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: none;
     position: relative;
 }
 .app-topbar::after {
@@ -156,35 +157,46 @@ body::after {
     opacity: 0.95;
 }
 
+/* Одна общая область: рамка, скругление и тень только снаружи */
 .app-body {
-    padding: 0 14px 14px;
-    gap: 12px;
+    margin: 14px 16px 16px;
+    padding: 0;
     box-sizing: border-box;
+    border-radius: var(--app-radius-lg);
+    border: 1px solid var(--app-border-strong);
+    background: var(--app-surface);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.25),
+        0 24px 56px rgba(0, 0, 0, 0.42);
+    overflow: hidden;
 }
 
-/* Main и сайдбар — отдельные скруглённые панели */
+.app-workspace-split {
+    gap: 0;
+    background: transparent;
+}
+
+/* Контент — продолжение той же плиты, без второй рамки */
 .main-content {
-    background: var(--app-surface);
-    border: 1px solid var(--app-border-strong);
-    border-radius: var(--app-radius-lg);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .content-body {
     padding: 28px 32px;
 }
 
-/* Левая колонка — как на референсе, глубокий серый */
+/* Та же плоскость, что и контент — только вертикальный разделитель */
 .sidebar-container {
-    width: 244px;
+    width: 260px;
     padding: 0;
-    border-right: none;
-    border-radius: var(--app-radius-lg);
+    border-right: 1px solid var(--app-border-strong);
+    border-radius: 0;
     overflow: hidden;
-    background: var(--app-bg);
-    box-shadow:
-        inset 0 0 0 1px var(--app-border),
-        0 8px 28px rgba(0, 0, 0, 0.35);
+    background: var(--app-surface);
+    box-shadow: none;
 }
 
 .sidebar-inner {
@@ -195,7 +207,7 @@ body::after {
 }
 
 .sidebar-header {
-    padding: 10px 10px 8px;
+    padding: 14px 12px 10px;
     margin-top: 0;
     border-bottom: 1px solid var(--app-border);
 }
@@ -203,7 +215,7 @@ body::after {
 .brand-button {
     min-height: 0;
     height: auto;
-    padding: 6px 8px;
+    padding: 8px 10px;
     border-radius: var(--app-radius-sm);
     border: 1px solid transparent;
     color: var(--app-text);
@@ -217,29 +229,29 @@ body::after {
 }
 
 .brand-icon-box {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--app-radius-md);
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
     box-shadow: none;
 }
 
 .brand-icon-box svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     color: var(--app-accent);
     opacity: 0.92;
 }
 
 .brand-main-text {
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .brand-sub-text {
     color: var(--app-muted);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -247,7 +259,7 @@ body::after {
 }
 
 .sidebar-content {
-    padding: 4px 6px 0;
+    padding: 8px 8px 0;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -256,12 +268,12 @@ body::after {
 
 .nav-list {
     gap: 0;
-    margin-top: 2px;
-    padding: 0 0 6px;
+    margin-top: 4px;
+    padding: 0 0 8px;
 }
 
 .sidebar-group {
-    padding: 8px 5px 4px;
+    padding: 10px 6px 6px;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -273,9 +285,9 @@ body::after {
 }
 
 .sidebar-group-label {
-    padding: 0 8px 4px;
+    padding: 0 10px 6px;
     height: auto;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -284,27 +296,27 @@ body::after {
 }
 
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 3px;
+    margin-top: 5px;
 }
 
-/* Навигация: компактные строки, чтобы всё помещалось без прокрутки */
+/* Навигация: комфортный размер клика и текста */
 .nav-item {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-height: 0;
+    gap: 10px;
+    min-height: 40px;
     height: auto;
-    padding: 5px 8px 5px 13px;
+    padding: 8px 10px 8px 15px;
     box-sizing: border-box;
-    border-radius: 8px;
+    border-radius: var(--app-radius-md);
     border: none;
     background: var(--app-nav-item-bg);
     color: var(--app-text);
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 0.01em;
-    line-height: 1.25;
+    line-height: 1.3;
     transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
     box-shadow: none;
 }
@@ -325,11 +337,11 @@ body::after {
 .nav-item::after {
     content: "";
     flex-shrink: 0;
-    width: 5px;
-    height: 5px;
-    margin-left: 1px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
+    width: 6px;
+    height: 6px;
+    margin-left: 2px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
     transform: rotate(-45deg);
     opacity: 0.38;
     align-self: center;
@@ -361,14 +373,14 @@ body::after {
 .nav-item.active::before {
     content: "";
     position: absolute;
-    left: 5px;
+    left: 7px;
     top: 50%;
     transform: translateY(-50%);
-    width: 3px;
-    height: 16px;
+    width: 4px;
+    height: 20px;
     border-radius: 999px;
     background: var(--app-accent);
-    box-shadow: 0 0 10px rgba(255, 26, 94, 0.4);
+    box-shadow: 0 0 12px rgba(255, 26, 94, 0.42);
 }
 
 .nav-item:focus-visible {
@@ -377,8 +389,8 @@ body::after {
 }
 
 .nav-item svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     padding: 0;
     box-sizing: border-box;
@@ -402,27 +414,27 @@ body::after {
     background: rgba(255, 26, 94, 0.18);
     color: var(--app-accent-hover);
     border: 1px solid rgba(255, 26, 94, 0.28);
-    border-radius: 4px;
-    font-size: 10px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    min-height: 16px;
-    padding: 0 5px;
+    min-height: 18px;
+    padding: 0 6px;
     line-height: 1;
     box-shadow: none;
 }
 
 .sidebar-footer {
-    padding: 6px 8px 8px;
+    padding: 10px 10px 12px;
     border-top: 1px solid var(--app-border);
     background: transparent;
 }
 
 .profile-button {
     border-radius: var(--app-radius-sm);
-    padding: 6px 8px;
+    padding: 8px 10px;
     border: 1px solid transparent;
     color: var(--app-text);
-    gap: 8px;
+    gap: 10px;
 }
 
 .profile-button:hover {
@@ -431,25 +443,25 @@ body::after {
 }
 
 .profile-avatar {
-    width: 30px;
-    height: 30px;
-    font-size: 12px;
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
-    border-radius: 8px;
+    border-radius: var(--app-radius-md);
 }
 
 .profile-name {
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .profile-chevron svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
 }
 
 .profile-lvl {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--app-muted);
 }
 
@@ -506,7 +518,7 @@ body::after {
 }
 
 .data-table-families thead {
-    background: #141418;
+    background: #141414;
 }
 
 .data-table-families th {

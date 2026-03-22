@@ -78,3 +78,30 @@ window.escapeHtml = function escapeHtml(s) {
   return div.innerHTML;
 };
 
+/**
+ * Иконка слева в шапке = иконка активного пункта меню (клонируем SVG из сайдбара).
+ * @param {Element} [navItem] — .nav-item; иначе берётся .nav-item.active
+ */
+window.syncTopbarSectionIcon = function syncTopbarSectionIcon(navItem) {
+  const mark = document.querySelector('.topbar-logo-mark');
+  const link = document.querySelector('a.topbar-logo');
+  if (!mark) return;
+  const item = navItem || document.querySelector('.nav-item.active');
+  if (!item) return;
+  const svg = item.querySelector(':scope > svg');
+  if (!svg) return;
+  const clone = svg.cloneNode(true);
+  clone.removeAttribute('class');
+  if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', '18');
+  clone.setAttribute('height', '18');
+  mark.replaceChildren(clone);
+  if (link) {
+    const href = item.getAttribute('href');
+    if (href) link.setAttribute('href', href);
+    const title = item.getAttribute('data-title') || '';
+    link.setAttribute('title', title ? `${title}` : 'Раздел');
+    link.setAttribute('aria-label', title ? `Раздел: ${title}` : 'Раздел');
+  }
+};
+

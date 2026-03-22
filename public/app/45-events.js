@@ -306,6 +306,9 @@ function syncEventsNavActive() {
   document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
   const evNav = document.querySelector('.nav-item[href="/events"]');
   if (evNav) evNav.classList.add('active');
+  if (evNav && typeof window.syncTopbarSectionIcon === 'function') {
+    window.syncTopbarSectionIcon(evNav);
+  }
 }
 
 /** Для страницы развёрнутого мероприятия: выделить «Тип - …» из описания */

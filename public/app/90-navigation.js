@@ -12,6 +12,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     }
     document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
     btn.classList.add('active');
+    window.syncTopbarSectionIcon(btn);
     const title = btn.getAttribute('data-title');
     window.pageTitle.textContent = title;
     // Clear content immediately to avoid showing the previous page during async loads.
@@ -185,7 +186,22 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   try { await window.loadFamilyMaterials(); } catch (_) { }
   // Бейдж "Материалы фракций" — тоже подгружаем в фоне
   try { await window.loadFactionMaterials(); } catch (_) { }
+
+  window.syncTopbarSectionIcon();
 })();
+
+/* Клик по иконке раздела в шапке — как клик по пункту меню (без полной перезагрузки) */
+document.querySelector('a.topbar-logo')?.addEventListener('click', (e) => {
+  const link = e.currentTarget;
+  const href = link.getAttribute('href') || '/';
+  const nav = Array.from(document.querySelectorAll('.nav-item')).find(
+    (a) => a.getAttribute('href') === href
+  );
+  if (nav) {
+    e.preventDefault();
+    nav.click();
+  }
+});
 
 const profileButton = document.getElementById('profile-button');
 const profileMenu = document.getElementById('profile-menu');
