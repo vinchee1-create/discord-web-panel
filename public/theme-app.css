@@ -260,6 +260,7 @@ body::after {
 
 .sidebar-content {
     padding: 8px 8px 0;
+    padding-left: 11px;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -318,11 +319,12 @@ body::after {
     gap: 10px;
     min-height: 40px;
     height: auto;
-    /* Полоса активного пункта — у левого края «плитки», не в зоне иконки */
-    padding: 8px 10px 8px 12px;
+    /* Запас слева: полоска активного пункта наполовину выходит за край кнопки */
+    padding: 8px 10px 8px 14px;
     box-sizing: border-box;
     border-radius: var(--app-radius-md);
     border: none;
+    overflow: visible;
     background: var(--app-nav-item-bg);
     color: var(--app-text);
     font-weight: 600;
@@ -374,6 +376,7 @@ body::after {
     background: var(--app-nav-item-bg-active);
     color: var(--app-text);
     border: none;
+    overflow: visible;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
@@ -381,20 +384,28 @@ body::after {
     opacity: 0.55;
 }
 
-/* Розовая полоска у левого края кнопки (как на референсе), не между краем и иконкой */
+/*
+ * Розовая полоска: центр на левом краю кнопки — половина «вшита» в плитку, половина чуть наружу.
+ */
 .nav-item.active::before {
     content: "";
     position: absolute;
-    left: 4px;
+    left: 0;
     top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 22px;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 28px;
     border-radius: 999px;
-    background: var(--app-accent);
+    background: linear-gradient(
+        180deg,
+        #ff3d78 0%,
+        var(--app-accent) 45%,
+        #e01052 100%
+    );
     box-shadow:
-        0 0 10px rgba(255, 26, 94, 0.55),
-        0 0 18px rgba(255, 26, 94, 0.35);
+        -3px 0 12px rgba(255, 26, 94, 0.5),
+        0 0 14px rgba(255, 26, 94, 0.35),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
