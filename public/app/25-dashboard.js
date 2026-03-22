@@ -42,38 +42,61 @@ window.renderDashboard = function renderDashboard() {
       ? names.map(n => window.escapeHtml(n)).join(', ')
       : '<span class="dashboard-faction-curators-empty">—</span>';
     const ot = f.openTags || {};
+    const scopeSlug = String(f.scope || '').replace(/[^a-z0-9_-]/gi, '') || 'unknown';
+    const tagsCell = `
+            <div class="dashboard-faction-tags">
+              ${tagMetric(DASHBOARD_SVG.question, ot.questionsAndLeader, 'Вопросы кураторам и Curator Leader')}
+              ${tagMetric(DASHBOARD_SVG.dollar, ot.treasury, 'Казна')}
+              ${tagMetric(DASHBOARD_SVG.swords, ot.playerRequests, 'Запросы от игроков')}
+            </div>`;
     return `
-      <div class="dashboard-faction-row">
-        <div class="dashboard-faction-left">
-          <div class="dashboard-faction-name">${window.escapeHtml(f.label || f.scope || '')}</div>
-          <div class="dashboard-faction-curators">${curLine}</div>
-        </div>
-        <div class="dashboard-faction-tags">
-          ${tagMetric(DASHBOARD_SVG.question, ot.questionsAndLeader, 'Вопросы кураторам и Curator Leader')}
-          ${tagMetric(DASHBOARD_SVG.dollar, ot.treasury, 'Казна')}
-          ${tagMetric(DASHBOARD_SVG.swords, ot.playerRequests, 'Запросы от игроков')}
-        </div>
-      </div>`;
+        <tr>
+          <td>
+            <div class="dashboard-faction-name-row">
+              <span class="dashboard-faction-color-dot dashboard-faction-dot--${scopeSlug}" aria-hidden="true"></span>
+              <span class="dashboard-faction-online-dot" title="Фракция в списке"></span>
+              <div class="dashboard-faction-text-block">
+                <div class="dashboard-faction-cell-name">${window.escapeHtml(f.label || f.scope || '')}</div>
+                <div class="dashboard-faction-cell-curators">${curLine}</div>
+              </div>
+            </div>
+          </td>
+          <td class="dashboard-faction-tags-cell">${tagsCell}</td>
+        </tr>`;
   }).join('');
 
   window.setPageContent(`
     <div class="dashboard-home">
       <div class="dashboard-top-cards">
         <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Кураторов онлайн</div>
+          <div class="dashboard-stat-kicker">Основной дискорд</div>
           <div class="dashboard-stat-value">${cur.toLocaleString('ru-RU')}</div>
-          <div class="dashboard-stat-hint">С основной ролью на основном сервере</div>
+          <div class="dashboard-stat-footer">Кураторов онлайн</div>
         </div>
         <div class="dashboard-stat-card">
-          <div class="dashboard-stat-label">Игроков онлайн</div>
+          <div class="dashboard-stat-kicker">Фракционные дискорды</div>
           <div class="dashboard-stat-value">${play.toLocaleString('ru-RU')}</div>
-          <div class="dashboard-stat-hint">Всего участников на фракционных серверах</div>
+          <div class="dashboard-stat-footer">Игроков онлайн</div>
         </div>
       </div>
-      <section class="dashboard-factions-panel">
-        <h2 class="dashboard-factions-title">Фракционные дискорды</h2>
-        <p class="dashboard-factions-sub">Список всех фракционных дискорд серверов</p>
-        <div class="dashboard-faction-list">${rows}</div>
-      </section>
+      <div class="dashboard-factions-outer">
+        <section class="dashboard-factions-panel">
+          <header class="dashboard-factions-head">
+            <h2 class="dashboard-factions-title">Фракционные дискорды</h2>
+            <p class="dashboard-factions-sub">Список всех фракционных дискорд серверов</p>
+          </header>
+          <div class="table-container table-families dashboard-factions-table">
+            <table class="data-table data-table-families data-table-dashboard-factions">
+              <thead>
+                <tr>
+                  <th>Фракция</th>
+                  <th class="dashboard-factions-th-tags">Теги</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>`);
 };
