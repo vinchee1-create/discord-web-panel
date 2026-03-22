@@ -2250,7 +2250,7 @@ body, button, input, select {
         color: #fafafa;
     }
 }
-/* Верхняя панель-стат: внутренние блоки как в макете (header row / число / подпись) */
+/* Верхняя панель-стат: grid 2 ряда (шапка 380px + основной блок), как в макете */
 .dashboard-stat-card {
     box-sizing: border-box;
     width: 382.667px;
@@ -2259,10 +2259,11 @@ body, button, input, select {
     height: auto;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-auto-rows: min-content;
+    align-items: start;
+    justify-items: center;
     gap: 0;
     line-height: 24px;
     background: oklch(0.205 0 0);
@@ -2283,21 +2284,23 @@ body, button, input, select {
         color: #fafafa;
     }
 }
-/* Шапка карточки: row, space-between, высота 28px, отступы 0 24px 8px 24px */
+/* Шапка: ровно 380×28, padding 0 / 24px / 8px / 24px, space-between */
 .dashboard-stat-card-header {
     container-type: inline-size;
-    container-name: stat-card-header;
+    container-name: card-header;
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
     column-gap: 6px;
     row-gap: 6px;
     gap: 6px;
-    width: 100%;
+    width: 380px;
+    max-width: 100%;
     min-height: 28px;
-    height: 28px;
+    height: auto;
     margin: 0;
     padding: 0 24px 8px 24px;
     border: none;
@@ -2305,6 +2308,14 @@ body, button, input, select {
     line-height: 24px;
     scrollbar-width: thin;
     scrollbar-color: rgb(181, 181, 181) rgb(68, 68, 68);
+    grid-row: 1;
+    justify-self: center;
+}
+.dashboard-stat-header-rail {
+    flex: 1 1 auto;
+    min-width: 6px;
+    min-height: 1px;
+    pointer-events: none;
 }
 @supports not (color: oklch(0.985 0 0)) {
     .dashboard-stat-card-header {
@@ -2317,6 +2328,21 @@ body, button, input, select {
     color: inherit;
     line-height: 24px;
     margin: 0;
+    flex-shrink: 0;
+}
+/* Второй ряд сетки карточки: число + подпись, ширина 380px */
+.dashboard-stat-card-main {
+    box-sizing: border-box;
+    width: 380px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    grid-row: 2;
+    justify-self: center;
 }
 /* Блок крупного числа: высота 52px, боковые отступы 24px */
 .dashboard-stat-value-wrap {
@@ -2347,12 +2373,12 @@ body, button, input, select {
     letter-spacing: -0.02em;
     margin: 0;
 }
-/* Нижняя подпись: 12px / 16px, приглушённый oklch(0.708), max-width текста 332px */
+/* Нижняя подпись: 12px / 16px, приглушённый oklch(0.708), строка до 332px внутри 380 */
 .dashboard-stat-footer {
     box-sizing: border-box;
     display: block;
     width: 100%;
-    max-width: 332px;
+    max-width: 100%;
     margin: 0;
     padding: 0 24px 24px 24px;
     border: none;
@@ -2577,7 +2603,7 @@ body, button, input, select {
     min-width: 22px;
 }
 .dashboard-tag-metric-icon {
-    color: rgba(255, 255, 255, 0.48);
+    color: rgba(255, 255, 255, 0.58);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2587,6 +2613,8 @@ body, button, input, select {
     height: 18px;
     display: block;
     flex-shrink: 0;
+    stroke: currentColor;
+    shape-rendering: geometricPrecision;
 }
 .dashboard-tag-metric-num {
     font-size: 11px;
@@ -2611,6 +2639,9 @@ body, button, input, select {
     .dashboard-stat-footer {
         padding-left: 16px;
         padding-right: 16px;
+    }
+    .dashboard-stat-card-main {
+        width: 100%;
     }
     .dashboard-stat-footer {
         max-width: 100%;

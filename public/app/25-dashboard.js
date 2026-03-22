@@ -15,13 +15,14 @@ window.loadDashboard = async function loadDashboard() {
   }
 };
 
+/* Единый стиль: тонкий штрих 1.5, скругления — как панель / Lucide */
 const DASHBOARD_SVG = {
-  /* Вопросы кураторам — круг с «?» */
-  question: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>`,
-  /* Казна — доллар в круге */
-  dollar: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="6" x2="12" y2="18"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
-  /* Запросы от игроков — пистолет (силуэт) */
-  pistol: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h6l1-2h6a1 1 0 0 1 1 1v1h3"></path><path d="M5 12v2h8"></path><path d="M7 14v4H5"></path><path d="M15 12h4"></path></svg>`
+  /* Вопросы кураторам — сообщение с строками текста */
+  question: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M8 10h8"></path><path d="M8 14h5"></path></svg>`,
+  /* Казна — кошелёк */
+  treasury: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1"></path></svg>`,
+  /* Запросы от игроков — входящие */
+  requests: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>`
 };
 
 function tagMetric(svgHtml, count, title) {
@@ -64,8 +65,8 @@ window.renderDashboard = function renderDashboard() {
     const tagsCell = `
             <div class="dashboard-faction-tags">
               ${tagMetric(DASHBOARD_SVG.question, ot.questionsAndLeader, 'Вопросы кураторам и Curator Leader')}
-              ${tagMetric(DASHBOARD_SVG.dollar, ot.treasury, 'Казна')}
-              ${tagMetric(DASHBOARD_SVG.pistol, ot.playerRequests, 'Запросы от игроков')}
+              ${tagMetric(DASHBOARD_SVG.treasury, ot.treasury, 'Казна')}
+              ${tagMetric(DASHBOARD_SVG.requests, ot.playerRequests, 'Запросы от игроков')}
             </div>`;
     return `
         <tr>
@@ -88,20 +89,26 @@ window.renderDashboard = function renderDashboard() {
         <div class="dashboard-stat-card">
           <div class="dashboard-stat-card-header">
             <span class="dashboard-stat-kicker">Основной дискорд</span>
+            <span class="dashboard-stat-header-rail" aria-hidden="true"></span>
           </div>
-          <div class="dashboard-stat-value-wrap">
-            <div class="dashboard-stat-value">${cur.toLocaleString('ru-RU')}</div>
+          <div class="dashboard-stat-card-main">
+            <div class="dashboard-stat-value-wrap">
+              <div class="dashboard-stat-value">${cur.toLocaleString('ru-RU')}</div>
+            </div>
+            <div class="dashboard-stat-footer">Кураторов онлайн</div>
           </div>
-          <div class="dashboard-stat-footer">Кураторов онлайн</div>
         </div>
         <div class="dashboard-stat-card">
           <div class="dashboard-stat-card-header">
             <span class="dashboard-stat-kicker">Фракционные дискорды</span>
+            <span class="dashboard-stat-header-rail" aria-hidden="true"></span>
           </div>
-          <div class="dashboard-stat-value-wrap">
-            <div class="dashboard-stat-value">${play.toLocaleString('ru-RU')}</div>
+          <div class="dashboard-stat-card-main">
+            <div class="dashboard-stat-value-wrap">
+              <div class="dashboard-stat-value">${play.toLocaleString('ru-RU')}</div>
+            </div>
+            <div class="dashboard-stat-footer">Игроков онлайн</div>
           </div>
-          <div class="dashboard-stat-footer">Игроков онлайн</div>
         </div>
       </div>
       <div class="dashboard-factions-outer">
