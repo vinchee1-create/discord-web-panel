@@ -25,6 +25,12 @@ const DASHBOARD_SVG = {
   requests: `<svg class="dashboard-tag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>`
 };
 
+/* Иконки в шапке верхних карточек (как «сервер» на референсе) */
+const DASHBOARD_STAT_HEADER_SVG = {
+  server: `<svg class="dashboard-stat-header-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>`,
+  layers: `<svg class="dashboard-stat-header-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
+};
+
 function tagMetric(svgHtml, count, title) {
   const n = Number(count) || 0;
   return `
@@ -89,24 +95,20 @@ window.renderDashboard = function renderDashboard() {
         <div class="dashboard-stat-card">
           <div class="dashboard-stat-card-header">
             <span class="dashboard-stat-kicker">Основной дискорд</span>
-            <span class="dashboard-stat-header-rail" aria-hidden="true"></span>
+            <span class="dashboard-stat-header-icon" aria-hidden="true">${DASHBOARD_STAT_HEADER_SVG.server}</span>
           </div>
-          <div class="dashboard-stat-card-main">
-            <div class="dashboard-stat-value-wrap">
-              <div class="dashboard-stat-value">${cur.toLocaleString('ru-RU')}</div>
-            </div>
+          <div class="dashboard-stat-card-body">
+            <div class="dashboard-stat-value">${cur.toLocaleString('ru-RU')}</div>
             <div class="dashboard-stat-footer">Кураторов онлайн</div>
           </div>
         </div>
         <div class="dashboard-stat-card">
           <div class="dashboard-stat-card-header">
             <span class="dashboard-stat-kicker">Фракционные дискорды</span>
-            <span class="dashboard-stat-header-rail" aria-hidden="true"></span>
+            <span class="dashboard-stat-header-icon" aria-hidden="true">${DASHBOARD_STAT_HEADER_SVG.layers}</span>
           </div>
-          <div class="dashboard-stat-card-main">
-            <div class="dashboard-stat-value-wrap">
-              <div class="dashboard-stat-value">${play.toLocaleString('ru-RU')}</div>
-            </div>
+          <div class="dashboard-stat-card-body">
+            <div class="dashboard-stat-value">${play.toLocaleString('ru-RU')}</div>
             <div class="dashboard-stat-footer">Игроков онлайн</div>
           </div>
         </div>

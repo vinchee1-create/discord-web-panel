@@ -2250,21 +2250,20 @@ body, button, input, select {
         color: #fafafa;
     }
 }
-/* Верхняя панель-стат: grid 2 ряда (шапка 380px + основной блок), как в макете */
+/* Верхние карточки: как референс — padding 24px, шапка (текст | иконка), ниже число и подпись столбиком */
 .dashboard-stat-card {
     box-sizing: border-box;
     width: 382.667px;
     max-width: 100%;
-    min-height: 154.667px;
+    min-height: 0;
     height: auto;
     margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-rows: auto auto;
-    grid-auto-rows: min-content;
-    align-items: start;
-    justify-items: center;
-    gap: 0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 20px;
     line-height: 24px;
     background: oklch(0.205 0 0);
     border: 1.33333px solid oklch(1 0 0 / 0.1);
@@ -2284,7 +2283,6 @@ body, button, input, select {
         color: #fafafa;
     }
 }
-/* Шапка: ровно 380×28, padding 0 / 24px / 8px / 24px, space-between */
 .dashboard-stat-card-header {
     container-type: inline-size;
     container-name: card-header;
@@ -2294,28 +2292,29 @@ body, button, input, select {
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    column-gap: 6px;
-    row-gap: 6px;
-    gap: 6px;
-    width: 380px;
-    max-width: 100%;
-    min-height: 28px;
-    height: auto;
+    gap: 12px;
+    width: 100%;
     margin: 0;
-    padding: 0 24px 8px 24px;
+    padding: 0;
     border: none;
     color: oklch(0.985 0 0);
     line-height: 24px;
     scrollbar-width: thin;
     scrollbar-color: rgb(181, 181, 181) rgb(68, 68, 68);
-    grid-row: 1;
-    justify-self: center;
 }
-.dashboard-stat-header-rail {
-    flex: 1 1 auto;
-    min-width: 6px;
-    min-height: 1px;
-    pointer-events: none;
+.dashboard-stat-header-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.45);
+}
+.dashboard-stat-header-icon-svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    stroke: currentColor;
+    shape-rendering: geometricPrecision;
 }
 @supports not (color: oklch(0.985 0 0)) {
     .dashboard-stat-card-header {
@@ -2323,69 +2322,46 @@ body, button, input, select {
     }
 }
 .dashboard-stat-kicker {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     color: inherit;
     line-height: 24px;
     margin: 0;
-    flex-shrink: 0;
+    flex: 1 1 auto;
+    min-width: 0;
 }
-/* Второй ряд сетки карточки: число + подпись, ширина 380px */
-.dashboard-stat-card-main {
+/* Число + подпись сразу под ним, выравнивание влево как на скриншоте */
+.dashboard-stat-card-body {
     box-sizing: border-box;
-    width: 380px;
-    max-width: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    grid-row: 2;
-    justify-self: center;
-}
-/* Блок крупного числа: высота 52px, боковые отступы 24px */
-.dashboard-stat-value-wrap {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    min-height: 52px;
-    height: 52px;
-    margin: 0;
-    padding: 0 24px;
-    border: none;
-    color: oklch(0.985 0 0);
-    line-height: 24px;
-    scrollbar-width: thin;
-    scrollbar-color: rgb(181, 181, 181) rgb(68, 68, 68);
-}
-@supports not (color: oklch(0.985 0 0)) {
-    .dashboard-stat-value-wrap {
-        color: #fafafa;
-    }
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
 }
 .dashboard-stat-value {
-    font-size: 30px;
+    font-size: 40px;
     font-weight: 700;
     color: inherit;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
     margin: 0;
 }
-/* Нижняя подпись: 12px / 16px, приглушённый oklch(0.708), строка до 332px внутри 380 */
+/* Подпись под числом — серый вторичный текст */
 .dashboard-stat-footer {
     box-sizing: border-box;
     display: block;
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: 0 24px 24px 24px;
+    padding: 0;
     border: none;
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    min-height: 16px;
     color: oklch(0.708 0 0);
     scrollbar-width: thin;
     scrollbar-color: rgb(181, 181, 181) rgb(68, 68, 68);
@@ -2631,20 +2607,7 @@ body, button, input, select {
     }
     .dashboard-stat-card {
         width: 100%;
-        min-height: 154.667px;
-        height: auto;
-    }
-    .dashboard-stat-card-header,
-    .dashboard-stat-value-wrap,
-    .dashboard-stat-footer {
-        padding-left: 16px;
-        padding-right: 16px;
-    }
-    .dashboard-stat-card-main {
-        width: 100%;
-    }
-    .dashboard-stat-footer {
-        max-width: 100%;
+        padding: 20px;
     }
     .dashboard-factions-panel {
         width: 100%;
