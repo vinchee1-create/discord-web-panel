@@ -84,49 +84,6 @@ body, button, input, select {
     flex-direction: column; 
 }
 
-/* Смещаем хедер сайдбара, чтобы выровнять Boston Crime Bot с Панелью управления */
-.sidebar-header { 
-    padding: 10px 16px; 
-    margin-top: -8px; 
-}
-
-.brand-button {
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    padding: 8px; 
-    height: 48px;
-    text-decoration: none; 
-    color: white; 
-    border-radius: 6px; 
-    transition: background 0.2s;
-}
-
-.brand-button:hover { background: #222; }
-
-.brand-icon-box {
-    width: 32px; 
-    height: 32px; 
-    background-color: rgb(10, 10, 10);
-    border-radius: 8px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    flex-shrink: 0;
-}
-
-.brand-icon-box svg { width: 16px; height: 16px; color: white; }
-
-.brand-text-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 2px; 
-    line-height: 1; 
-}
-
-.brand-main-text { font-size: 14px; font-weight: 500; }
-.brand-sub-text { font-size: 12px; color: #ffffff; }
-
 /* Навигация — Текст и иконки теперь белые */
 .nav-list { 
     display: flex; 
@@ -280,9 +237,9 @@ body, button, input, select {
     color: rgba(255,255,255,0.55);
 }
 
-/* вертикальный отступ между кнопками внутри группы */
+/* Без зазора между кнопками в группе */
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 4px;
+    margin-top: 0;
 }
 
 /* ПРАВАЯ ЧАСТЬ (разделитель — border-right у .sidebar-container) */
