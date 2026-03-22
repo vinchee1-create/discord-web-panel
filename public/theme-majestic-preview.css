@@ -1,0 +1,172 @@
+/**
+ * ДЕМО: палитра в духе тёмного RP-интерфейса (оранжево-янтарный акцент на графите).
+ * Подключается ПОСЛЕ /style.css. Чтобы отключить — закомментируйте link в views/index.ejs
+ *
+ * Дальше можно: вынести эти токены в :root основного style.css и убрать дубли.
+ */
+:root {
+    --mj-bg-body: #101010;
+    --mj-bg-shell: #0a0a0a;
+    --mj-bg-raised: #171717;
+    --mj-bg-hover: #1f1f1f;
+    --mj-border: rgba(255, 170, 90, 0.14);
+    --mj-border-subtle: rgba(255, 255, 255, 0.08);
+    --mj-accent: #e8943a;
+    --mj-accent-bright: #ffb24d;
+    --mj-accent-glow: rgba(232, 148, 58, 0.22);
+    --mj-accent-muted: rgba(232, 148, 58, 0.12);
+    --mj-text: #f4f4f5;
+    --mj-text-muted: rgba(244, 244, 245, 0.55);
+    --mj-scrollbar-thumb: #3d3428;
+    --mj-scrollbar-track: #0d0d0d;
+}
+
+/* Оболочка */
+body {
+    background-color: var(--mj-bg-body);
+    color: var(--mj-text);
+}
+
+* {
+    scrollbar-color: var(--mj-scrollbar-thumb) var(--mj-scrollbar-track);
+}
+*::-webkit-scrollbar-track {
+    background: var(--mj-scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--mj-scrollbar-thumb);
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: #524636;
+}
+
+/* Правая колонка */
+.main-content {
+    background-color: var(--mj-bg-shell);
+    border: 1px solid var(--mj-border);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+}
+
+.content-header {
+    border-bottom-color: var(--mj-border-subtle);
+}
+
+.header-separator {
+    background: var(--mj-border-subtle);
+}
+
+.page-title {
+    color: var(--mj-text);
+    letter-spacing: 0.02em;
+}
+
+/* Бренд в сайдбаре */
+.brand-button:hover {
+    background: var(--mj-bg-hover);
+}
+
+.brand-icon-box {
+    background: linear-gradient(145deg, rgba(232, 148, 58, 0.18) 0%, #0c0c0c 55%);
+    border: 1px solid var(--mj-border);
+    box-shadow: 0 0 20px var(--mj-accent-glow);
+}
+
+.brand-sub-text {
+    color: var(--mj-accent-bright);
+    opacity: 0.85;
+}
+
+/* Навигация */
+.sidebar-group-label {
+    color: var(--mj-text-muted);
+}
+
+.nav-item {
+    color: var(--mj-text);
+}
+
+.nav-item svg {
+    color: var(--mj-text);
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: linear-gradient(
+        90deg,
+        var(--mj-accent-muted) 0%,
+        var(--mj-bg-hover) 48%
+    );
+    color: var(--mj-text);
+    box-shadow: inset 3px 0 0 var(--mj-accent);
+}
+
+.nav-item.active svg {
+    color: var(--mj-accent-bright);
+    opacity: 1;
+}
+
+/* Профиль */
+.profile-button:hover {
+    background-color: var(--mj-bg-hover);
+}
+
+.profile-avatar {
+    background: var(--mj-bg-shell);
+    border: 1px solid var(--mj-border-subtle);
+}
+
+.profile-menu {
+    background: var(--mj-bg-raised);
+    border: 1px solid var(--mj-border);
+}
+
+.profile-menu-item:hover {
+    background: var(--mj-accent-muted);
+}
+
+/* Кнопки (частые классы) */
+.btn-pill,
+.btn-primary {
+    background: linear-gradient(180deg, #3a2e1f 0%, #2a2218 100%);
+    border: 1px solid rgba(232, 148, 58, 0.35);
+    color: var(--mj-text);
+}
+
+.btn-pill:hover,
+.btn-primary:hover {
+    background: linear-gradient(180deg, #4a3a28 0%, #352a1e 100%);
+    border-color: rgba(255, 180, 90, 0.45);
+    color: #fff;
+}
+
+.btn-ghost:hover {
+    background: var(--mj-accent-muted);
+    border-color: transparent;
+}
+
+/* Главная: верхние карточки и панель фракций */
+.dashboard-stat-card,
+.dashboard-factions-panel {
+    background: oklch(0.16 0.02 55);
+    border-color: var(--mj-border);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.dashboard-stat-header-icon {
+    color: var(--mj-accent);
+    opacity: 0.9;
+}
+
+/* Таблицы «семей» / дашборда — лёгкий тёплый оттенок шапки */
+.table-families {
+    background: var(--mj-bg-shell);
+    border-color: rgba(255, 170, 90, 0.08);
+}
+
+.data-table-families thead {
+    background: linear-gradient(180deg, #221c16 0%, #1a1612 100%);
+}
+
+.data-table-families th {
+    color: var(--mj-accent-bright);
+}
