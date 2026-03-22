@@ -288,15 +288,32 @@ body, button, input, select {
     box-sizing: border-box;
 }
 
-.header-left { display: flex; align-items: center; gap: 8px; }
+.header-left { display: flex; align-items: center; gap: 10px; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
-.sidebar-trigger { 
-    background: transparent; 
-    border: none; 
-    color: white; 
-    opacity: 0.5; 
-    cursor: pointer; 
+/* Логотип в шапке (без темы — простая заглушка) */
+.topbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
+}
+.topbar-logo-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.topbar-logo-mark svg {
+    width: 18px;
+    height: 18px;
+    color: #fff;
 }
 
 .header-separator { 

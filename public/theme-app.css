@@ -1,24 +1,30 @@
 /**
- * Оболочка v3: верхняя полоса на всю ширину + плоский main без «капсулы».
- * Акцент — розовый, но точечно (полоска, иконки, hover), без заливки всего UI.
- * Отключить: уберите link в views/index.ejs
+ * Оболочка v3: топбар на всю ширину + две колонки с закруглениями.
+ * Акцент — розовый точечно. Отключить: уберите link в views/index.ejs
  */
 :root {
-    --app-bg: #0c0c0e;
-    --app-surface: #101014;
-    --app-elevated: #16161c;
-    --app-border: rgba(255, 255, 255, 0.055);
-    --app-border-strong: rgba(255, 255, 255, 0.09);
-    --app-text: #f4f4f5;
-    --app-muted: rgba(244, 244, 245, 0.48);
-    /* Сдержанный розовый — только акценты */
-    --app-accent: #e879a8;
-    --app-accent-dim: rgba(232, 121, 168, 0.09);
-    --app-accent-soft: rgba(232, 121, 168, 0.16);
-    --app-accent-hover: #f5a4c8;
-    --app-scrollbar: #2a2a30;
-    --app-scrollbar-track: #0c0c0e;
+    /* Как на референсе: тёмный фон + яркий розовый акцент */
+    --app-bg: #121212;
+    --app-surface: #161616;
+    --app-elevated: #1c1c1c;
+    --app-border: rgba(255, 255, 255, 0.06);
+    --app-border-strong: rgba(255, 255, 255, 0.1);
+    --app-text: #ffffff;
+    --app-muted: rgba(255, 255, 255, 0.52);
+    /* Основной розовый со скриншота */
+    --app-accent: #ff1a5e;
+    --app-accent-dim: rgba(255, 26, 94, 0.14);
+    --app-accent-soft: rgba(255, 26, 94, 0.22);
+    --app-accent-hover: #ff4d7d;
+    --app-nav-item-bg: #1c1c1c;
+    --app-nav-item-bg-hover: #222222;
+    --app-nav-item-bg-active: #262626;
+    --app-scrollbar: #2a2a2a;
+    --app-scrollbar-track: #121212;
     --app-shell-accent-h: 2px;
+    --app-radius-lg: 14px;
+    --app-radius-md: 10px;
+    --app-radius-sm: 8px;
 }
 
 body {
@@ -40,7 +46,7 @@ body {
 }
 *::-webkit-scrollbar-thumb {
     background: var(--app-scrollbar);
-    border-radius: 3px;
+    border-radius: 999px;
 }
 *::-webkit-scrollbar-thumb:hover {
     background: #3a3a42;
@@ -63,13 +69,13 @@ body {
     background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(232, 121, 168, 0.45) 18%,
-        rgba(232, 121, 168, 0.2) 50%,
-        rgba(232, 121, 168, 0.45) 82%,
+        rgba(255, 26, 94, 0.55) 18%,
+        rgba(255, 26, 94, 0.25) 50%,
+        rgba(255, 26, 94, 0.55) 82%,
         transparent 100%
     );
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .header-separator {
@@ -83,38 +89,65 @@ body {
     font-size: 15px;
 }
 
-.sidebar-trigger {
-    opacity: 0.65;
-    border-radius: 6px;
-    padding: 6px;
-    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+/* Логотип в шапке — как иконка бренда в сайдбаре, не кнопка меню */
+.topbar-logo {
+    border-radius: var(--app-radius-sm);
+    transition: background 0.15s ease;
 }
-.sidebar-trigger:hover {
-    opacity: 1;
-    background: var(--app-accent-dim);
+.topbar-logo:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+.topbar-logo:focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
+}
+.topbar-logo-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--app-radius-md);
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border-strong);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.topbar-logo:hover .topbar-logo-mark {
+    border-color: rgba(255, 26, 94, 0.45);
+    box-shadow: 0 0 0 1px rgba(255, 26, 94, 0.15);
+}
+.topbar-logo-mark svg {
     color: var(--app-accent);
+    opacity: 0.95;
 }
 
-/* Main: без скруглений и отступов — «лист», а не карточка */
+.app-body {
+    padding: 0 14px 14px;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+/* Main и сайдбар — отдельные скруглённые панели */
 .main-content {
     background: var(--app-surface);
-    border: none;
-    border-left: 1px solid var(--app-border-strong);
-    border-radius: 0;
-    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--app-border-strong);
+    border-radius: var(--app-radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .content-body {
     padding: 28px 32px;
 }
 
-/* Левая колонка — узкая «полоса» с другим тоном */
+/* Левая колонка — как на референсе, глубокий серый */
 .sidebar-container {
     width: 244px;
     padding: 0;
     border-right: none;
-    background: linear-gradient(180deg, #0a0a0d 0%, var(--app-bg) 55%, var(--app-bg) 100%);
-    box-shadow: inset -1px 0 0 var(--app-border);
+    border-radius: var(--app-radius-lg);
+    overflow: hidden;
+    background: var(--app-bg);
+    box-shadow:
+        inset 0 0 0 1px var(--app-border),
+        0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .sidebar-inner {
@@ -134,7 +167,7 @@ body {
     min-height: 0;
     height: auto;
     padding: 10px 12px;
-    border-radius: 4px;
+    border-radius: var(--app-radius-sm);
     border: 1px solid transparent;
     color: var(--app-text);
     transition: background 0.15s ease, border-color 0.15s ease;
@@ -149,7 +182,7 @@ body {
 .brand-icon-box {
     width: 34px;
     height: 34px;
-    border-radius: 4px;
+    border-radius: var(--app-radius-md);
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
     box-shadow: none;
@@ -213,64 +246,124 @@ body {
 }
 
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 1px;
+    margin-top: 6px;
 }
 
-/* Навигация: острые углы, акцент — тонкая полоска + лёгкий фон */
+/* Навигация в стиле референса: «плитки», шеврон справа, активная — розовая таблетка слева */
 .nav-item {
-    min-height: 38px;
-    padding: 8px 10px;
-    border-radius: 2px;
-    gap: 10px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    height: auto;
+    padding: 10px 12px 10px 16px;
+    box-sizing: border-box;
+    border-radius: var(--app-radius-md);
     border: none;
-    border-left: 2px solid transparent;
-    color: var(--app-muted);
-    font-weight: 500;
-    transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+    background: var(--app-nav-item-bg);
+    color: var(--app-text);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: none;
+}
+
+/* Текст раздела (первый span после иконки) растягивается, справа — бейдж и шеврон */
+.nav-item > svg + span:not(.nav-badge) {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+.nav-item .nav-badge {
+    margin-left: 0;
+    flex-shrink: 0;
+}
+
+/* Шеврон вправо, как на скриншоте */
+.nav-item::after {
+    content: "";
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    margin-left: 2px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    opacity: 0.38;
+    align-self: center;
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.035);
+    background: var(--app-nav-item-bg-hover);
     color: var(--app-text);
     border: none;
-    border-left: 2px solid transparent;
     box-shadow: none;
+}
+
+.nav-item:hover::after {
+    opacity: 0.5;
 }
 
 .nav-item.active {
-    background: var(--app-accent-dim);
+    background: var(--app-nav-item-bg-active);
     color: var(--app-text);
     border: none;
-    border-left: 2px solid var(--app-accent);
-    box-shadow: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.nav-item.active::after {
+    opacity: 0.55;
+}
+
+/* Розовая вертикальная «таблетка» слева у активного пункта */
+.nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--app-accent);
+    box-shadow: 0 0 14px rgba(255, 26, 94, 0.45);
+}
+
+.nav-item:focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
 }
 
 .nav-item svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
     padding: 0;
     box-sizing: border-box;
     border-radius: 0;
     background: transparent;
     border: none;
-    color: inherit;
+    color: rgba(255, 255, 255, 0.55);
     opacity: 1;
     box-shadow: none;
 }
 
 .nav-item:hover svg {
-    color: var(--app-accent-hover);
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .nav-item.active svg {
-    color: var(--app-accent);
+    color: #ffffff;
 }
 
 .nav-badge {
-    background: rgba(232, 121, 168, 0.2);
+    background: rgba(255, 26, 94, 0.18);
     color: var(--app-accent-hover);
-    border: 1px solid rgba(232, 121, 168, 0.25);
-    border-radius: 3px;
+    border: 1px solid rgba(255, 26, 94, 0.28);
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 600;
     box-shadow: none;
@@ -283,7 +376,7 @@ body {
 }
 
 .profile-button {
-    border-radius: 4px;
+    border-radius: var(--app-radius-sm);
     padding: 10px 12px;
     border: 1px solid transparent;
     color: var(--app-text);
@@ -297,7 +390,7 @@ body {
 .profile-avatar {
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
-    border-radius: 4px;
+    border-radius: var(--app-radius-md);
 }
 
 .profile-lvl {
@@ -307,7 +400,7 @@ body {
 .profile-menu {
     background: var(--app-elevated);
     border: 1px solid var(--app-border-strong);
-    border-radius: 6px;
+    border-radius: var(--app-radius-md);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
 }
 
@@ -320,13 +413,13 @@ body {
     background: var(--app-elevated);
     border: 1px solid var(--app-border-strong);
     color: var(--app-text);
-    border-radius: 4px;
+    border-radius: var(--app-radius-sm);
 }
 
 .btn-pill:hover,
 .btn-primary:hover {
     background: var(--app-accent-soft);
-    border-color: rgba(232, 121, 168, 0.35);
+    border-color: rgba(255, 26, 94, 0.4);
     color: var(--app-text);
 }
 
@@ -338,7 +431,7 @@ body {
 .dashboard-factions-panel {
     background: var(--app-elevated);
     border: 1px solid var(--app-border);
-    border-radius: 6px;
+    border-radius: var(--app-radius-md);
     box-shadow: none;
 }
 
@@ -370,11 +463,11 @@ body {
     background: var(--app-elevated);
     color: var(--app-text);
     border: 1px solid var(--app-border-strong);
-    border-radius: 4px;
+    border-radius: var(--app-radius-sm);
     box-shadow: none;
 }
 .header-actions .btn-month:hover {
     background: var(--app-accent-soft);
-    border-color: rgba(232, 121, 168, 0.32);
+    border-color: rgba(255, 26, 94, 0.38);
     color: var(--app-text);
 }
