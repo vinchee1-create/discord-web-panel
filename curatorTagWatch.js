@@ -121,22 +121,49 @@ async function resolveWatchAndGetReminderMessageIds(pool, guildId, channelId, pa
 async function fetchActiveWatches(pool) {
     const { rows } = await pool.query(
         `SELECT id, faction_scope, source_guild_id, source_channel_id, source_message_id,
-                fraction_curator_role_id, reminders_sent, started_at
+                fraction_curator_role_id, reminders_sent, started_at, tags_reminder_message_ids
          FROM curator_tag_watches WHERE resolved_at IS NULL`
     );
     return rows;
 }
 
-async function bumpReminderAndRecordTagMessage(pool, watchId, tagsMessageId) {
+/** Одно актуальное напоминание в «Теги»: при обновлении заменяем массив целиком. */
+async function bumpReminderSetTagMessages(pool, watchId, tagsMessageId) {
     await pool.query(
         `UPDATE curator_tag_watches
          SET reminders_sent = reminders_sent + 1,
              last_reminder_at = NOW(),
-             tags_reminder_message_ids = COALESCE(tags_reminder_message_ids, ARRAY[]::varchar(32)[])
-               || ARRAY[$2::varchar(32)]
+             tags_reminder_message_ids = ARRAY[$2::varchar(32)]
          WHERE id = $1`,
         [watchId, tagsMessageId]
     );
+}
+
+/** Есть ли на сообщении реакция ✅ (напоминание уже отмечено). */
+async function messageHasCheckReaction(msg) {
+    if (!msg) return false;
+    try {
+        await msg.reactions.fetch().catch(() => {});
+        const r = msg.reactions.cache.find(
+            x => x.emoji.name === '✅' || x.emoji.identifier === '✅'
+        );
+        return Boolean(r && r.count > 0);
+    } catch (_) {
+        return false;
+    }
+}
+
+/** Удаляет прошлые напоминания в «Теги», если на них ещё нет ✅. */
+async function deletePreviousTagRemindersWithoutCheck(tagsChannel, messageIds) {
+    if (!messageIds?.length) return;
+    for (const mid of messageIds) {
+        try {
+            const old = await tagsChannel.messages.fetch(String(mid)).catch(() => null);
+            if (!old) continue;
+            if (await messageHasCheckReaction(old)) continue;
+            await old.delete().catch(() => {});
+        } catch (_) { /* ignore */ }
+    }
 }
 
 module.exports = function registerCuratorTagWatch(client, pool) {
@@ -203,14 +230,19 @@ module.exports = function registerCuratorTagWatch(client, pool) {
 
                 const msgLink = `https://discord.com/channels/${w.source_guild_id}/${w.source_channel_id}/${w.source_message_id}`;
                 const rolePing = `<@&${cfg.fractionRoleId}>`;
-                const text = `${rolePing} **${cfg.label}** — тег роли куратора фракции без ответа уже **${elapsedMin}** мин. [Исходное сообщение](${msgLink})`;
+                const text = `${rolePing} тег без ответа уже **${elapsedMin}** мин.\n${msgLink}`;
 
                 try {
+                    const prevIds = Array.isArray(w.tags_reminder_message_ids)
+                        ? w.tags_reminder_message_ids.filter(Boolean)
+                        : [];
+                    await deletePreviousTagRemindersWithoutCheck(tagsChannel, prevIds);
+
                     const sent = await tagsChannel.send({
                         content: text,
                         allowedMentions: { roles: [cfg.fractionRoleId] }
                     });
-                    await bumpReminderAndRecordTagMessage(pool, w.id, sent.id);
+                    await bumpReminderSetTagMessages(pool, w.id, sent.id);
                 } catch (e) {
                     console.error('curatorTagWatch reminder send:', e.message);
                 }
