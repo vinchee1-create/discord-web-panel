@@ -2222,11 +2222,13 @@ body, button, input, select {
 
 /* --- Главная (дашборд) --- */
 .dashboard-home {
+    width: 100%;
     max-width: 1462px;
     display: flex;
     flex-direction: column;
     row-gap: 24px;
     column-gap: 24px;
+    box-sizing: border-box;
 }
 /* Сетка верхних карточек: две колонки фиксированной ширины как в макете */
 .dashboard-top-cards {
@@ -2372,17 +2374,21 @@ body, button, input, select {
     }
 }
 
-/* Левая панель фракций: макет ~515px, border 1.333px */
+/* Левая панель: 50% ширины блока главной (правой области контента) */
 .dashboard-factions-outer {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .dashboard-factions-panel {
     align-self: flex-start;
     box-sizing: border-box;
-    width: 515.542px;
+    width: 50%;
     max-width: 100%;
+    min-width: 0;
     margin: 0;
     padding: 0;
     display: flex;
@@ -2452,15 +2458,16 @@ body, button, input, select {
     padding-right: 8px;
     padding-bottom: 10px;
 }
+/* Как у .data-table-families td (10px 18px): иконки на одной линии со строкой «точка + название» */
 .data-table-dashboard-factions td.dashboard-faction-tags-cell {
-    padding: 6px 6px 8px 4px;
+    padding: 10px 8px 10px 4px;
 }
 .data-table-dashboard-factions thead th:first-child,
 .data-table-dashboard-factions td:first-child {
     width: auto;
 }
 .data-table-dashboard-factions td:first-child {
-    vertical-align: middle;
+    vertical-align: top;
 }
 
 /* Колонка: строка «точка + название» и ниже кураторы ближе к названию */
@@ -2472,7 +2479,7 @@ body, button, input, select {
     align-content: flex-start;
     gap: 2px;
     min-width: 0;
-    width: 378.958px;
+    width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
@@ -2562,7 +2569,7 @@ body, button, input, select {
     color: rgba(230, 230, 235, 0.92);
 }
 
-/* Теги: иконки + цифры, правый верх ячейки */
+/* Теги: выравнивание по верхней линии с названием (см. ячейки td) */
 .dashboard-faction-tags {
     display: inline-flex;
     align-items: flex-start;
@@ -2570,6 +2577,8 @@ body, button, input, select {
     gap: 10px;
     flex-wrap: nowrap;
     margin-left: auto;
+    /* Оптически центр 18px-иконки к центру строки названия (line-height 24px) */
+    margin-top: 3px;
 }
 .dashboard-tag-metric {
     display: flex;
