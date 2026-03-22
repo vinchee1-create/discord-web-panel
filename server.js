@@ -402,7 +402,8 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessageReactions
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildPresences
     ],
     partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
@@ -837,6 +838,134 @@ app.delete('/api/curators/:discordId', async (req, res) => {
         return res.status(204).end();
     } catch (e) {
         console.error('DELETE /api/curators:', e.message);
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+const DASHBOARD_FACTIONS = [
+    { scope: 'ballas', label: 'The Ballas Gang' },
+    { scope: 'vagos', label: 'Los Santos Vagos' },
+    { scope: 'families', label: 'The Families' },
+    { scope: 'bloods', label: 'The Bloods Gang' },
+    { scope: 'marabunta', label: 'Marabunta Grande' }
+];
+
+app.get('/api/dashboard/home', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) {
+        return res.json({
+            curatorsOnline: 0,
+            playersOnline: 0,
+            factions: DASHBOARD_FACTIONS.map(({ scope, label }) => ({
+                scope,
+                label,
+                curators: [],
+                openTags: { questionsAndLeader: 0, treasury: 0, playerRequests: 0 }
+            }))
+        });
+    }
+    try {
+        const keys = ['main_guild_id', 'main_primary_role_id'];
+        for (const { scope } of DASHBOARD_FACTIONS) {
+            keys.push(
+                `${scope}_guild_id`,
+                `${scope}_fraction_curator_role_id`,
+                `${scope}_curators_questions_channel_id`,
+                `${scope}_curator_leader_channel_id`,
+                `${scope}_curator_leader_role_id`,
+                `${scope}_treasury_channel_id`,
+                `${scope}_player_requests_channel_id`
+            );
+        }
+        const { rows: setRows } = await pool.query(
+            'SELECT key, value FROM app_settings WHERE key = ANY($1::text[])',
+            [keys]
+        );
+        const kv = {};
+        setRows.forEach(r => { kv[r.key] = r.value || ''; });
+
+        let mainGuildId = kv.main_guild_id || '';
+        if (!mainGuildId && client.guilds.cache.size === 1) {
+            mainGuildId = client.guilds.cache.first().id;
+        }
+        const mainPrimaryRoleId = kv.main_primary_role_id || '';
+
+        let curatorsOnline = 0;
+        if (
+            mainGuildId && mainPrimaryRoleId
+            && /^\d{5,30}$/.test(mainGuildId)
+            && /^\d{5,30}$/.test(mainPrimaryRoleId)
+        ) {
+            const g = client.guilds.cache.get(mainGuildId);
+            if (g) {
+                await g.members.fetch().catch(() => {});
+                g.members.cache.forEach(m => {
+                    if (!m.roles.cache.has(mainPrimaryRoleId)) return;
+                    const st = m.presence?.status;
+                    if (st && st !== 'offline' && st !== 'invisible') curatorsOnline += 1;
+                });
+            }
+        }
+
+        let playersOnline = 0;
+        for (const { scope } of DASHBOARD_FACTIONS) {
+            const gid = kv[`${scope}_guild_id`] || '';
+            if (!/^\d{5,30}$/.test(gid)) continue;
+            const guild = client.guilds.cache.get(gid);
+            if (guild) playersOnline += Number(guild.memberCount || 0);
+        }
+
+        const { rows: tagRows } = await pool.query(
+            `SELECT faction_scope, source_channel_id, COUNT(*)::int AS c
+             FROM curator_tag_watches WHERE resolved_at IS NULL
+             GROUP BY faction_scope, source_channel_id`
+        );
+        const tagMap = new Map();
+        tagRows.forEach(r => tagMap.set(`${r.faction_scope}|${r.source_channel_id}`, r.c));
+
+        const factions = [];
+        for (const { scope, label } of DASHBOARD_FACTIONS) {
+            const gid = kv[`${scope}_guild_id`] || '';
+            const fracCur = kv[`${scope}_fraction_curator_role_id`] || '';
+            const chQ = kv[`${scope}_curators_questions_channel_id`] || '';
+            const chL = kv[`${scope}_curator_leader_channel_id`] || kv[`${scope}_curator_leader_role_id`] || '';
+            const chT = kv[`${scope}_treasury_channel_id`] || '';
+            const chP = kv[`${scope}_player_requests_channel_id`] || '';
+
+            const curatorNames = [];
+            if (gid && fracCur && /^\d{5,30}$/.test(gid) && /^\d{5,30}$/.test(fracCur)) {
+                const guild = client.guilds.cache.get(gid);
+                if (guild) {
+                    await guild.members.fetch().catch(() => {});
+                    guild.members.cache.forEach(m => {
+                        if (!m.roles.cache.has(fracCur)) return;
+                        curatorNames.push(m.displayName || m.user?.username || m.id);
+                    });
+                    curatorNames.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+                }
+            }
+
+            let tagsQuestions = 0;
+            if (chQ && /^\d{5,30}$/.test(chQ)) tagsQuestions += tagMap.get(`${scope}|${chQ}`) || 0;
+            if (chL && /^\d{5,30}$/.test(chL)) tagsQuestions += tagMap.get(`${scope}|${chL}`) || 0;
+            const tagsTreasury = (chT && /^\d{5,30}$/.test(chT)) ? (tagMap.get(`${scope}|${chT}`) || 0) : 0;
+            const tagsRequests = (chP && /^\d{5,30}$/.test(chP)) ? (tagMap.get(`${scope}|${chP}`) || 0) : 0;
+
+            factions.push({
+                scope,
+                label,
+                curators: curatorNames,
+                openTags: {
+                    questionsAndLeader: tagsQuestions,
+                    treasury: tagsTreasury,
+                    playerRequests: tagsRequests
+                }
+            });
+        }
+
+        return res.json({ curatorsOnline, playersOnline, factions });
+    } catch (e) {
+        console.error('GET /api/dashboard/home:', e.message);
         return res.status(500).json({ error: e.message });
     }
 });
@@ -1619,6 +1748,7 @@ app.get('/api/settings/discord', async (req, res) => {
             `${s}_fraction_curator_role_id`,
             `${s}_fraction_role_id`,
             `${s}_curators_news_channel_id`,
+            `${s}_curator_leader_channel_id`,
             `${s}_curator_leader_role_id`,
             `${s}_player_requests_channel_id`,
             `${s}_curators_questions_channel_id`,
@@ -1657,7 +1787,7 @@ app.get('/api/settings/discord', async (req, res) => {
             fractionCuratorId: kv[`${scope}_fraction_curator_role_id`] || legacyCurator || '',
             fractionRoleId: kv[`${scope}_fraction_role_id`] || '',
             curatorsNewsId: kv[`${scope}_curators_news_channel_id`] || '',
-            curatorLeaderId: kv[`${scope}_curator_leader_role_id`] || '',
+            curatorLeaderId: kv[`${scope}_curator_leader_channel_id`] || kv[`${scope}_curator_leader_role_id`] || '',
             playerRequestsId: kv[`${scope}_player_requests_channel_id`] || '',
             curatorsQuestionsId: kv[`${scope}_curators_questions_channel_id`] || '',
             treasuryId: kv[`${scope}_treasury_channel_id`] || '',
@@ -1739,7 +1869,7 @@ app.put('/api/settings/discord', async (req, res) => {
                 [`${scope}_fraction_curator_role_id`, body.fractionCuratorId],
                 [`${scope}_fraction_role_id`, body.fractionRoleId],
                 [`${scope}_curators_news_channel_id`, body.curatorsNewsId],
-                [`${scope}_curator_leader_role_id`, body.curatorLeaderId],
+                [`${scope}_curator_leader_channel_id`, body.curatorLeaderId],
                 [`${scope}_player_requests_channel_id`, body.playerRequestsId],
                 [`${scope}_curators_questions_channel_id`, body.curatorsQuestionsId],
                 [`${scope}_treasury_channel_id`, body.treasuryId]
@@ -1752,6 +1882,9 @@ app.put('/api/settings/discord', async (req, res) => {
                  ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
                 [k, v]
             );
+        }
+        if (scope !== 'main') {
+            await pool.query('DELETE FROM app_settings WHERE key = $1', [`${scope}_curator_leader_role_id`]);
         }
         return res.json({ ok: true });
     } catch (e) {
@@ -1773,7 +1906,7 @@ function renderMain(req, res, activePage, opts = {}) {
 }
 
 app.get('/', requireAuthStrict, (req, res) => {
-    renderMain(req, res, 'Панель управления');
+    renderMain(req, res, 'Главная');
 });
 
 // Отдельные URL для всех разделов сайдбара

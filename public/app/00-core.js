@@ -12,7 +12,7 @@ window.leaders = [];
 
 // Bootstrap
 window.currentUser = window.__BOOTSTRAP__?.currentUser ?? null;
-window.initialPage = window.__BOOTSTRAP__?.initialPage || 'Панель управления';
+window.initialPage = window.__BOOTSTRAP__?.initialPage || 'Главная';
 window.eventDetailPath = window.__BOOTSTRAP__?.eventDetailPath ?? null;
 
 // DOM refs

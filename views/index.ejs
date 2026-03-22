@@ -19,7 +19,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
                 </button>
                 <div class="header-separator"></div>
-                <span class="page-title" id="current-title">Панель управления</span>
+                <span class="page-title" id="current-title">Главная</span>
             </div>
             <div class="header-actions" id="header-actions" style="display: none;">
                 <button type="button" class="btn-month" id="btn-add-family" onclick="openModal()">
@@ -43,12 +43,13 @@
     <script>
         window.__BOOTSTRAP__ = {
             currentUser: <%- JSON.stringify(user || null) %>,
-            initialPage: <%- JSON.stringify(typeof activePage === 'string' ? activePage : 'Панель управления') %>,
+            initialPage: <%- JSON.stringify(typeof activePage === 'string' ? activePage : 'Главная') %>,
             eventDetailPath: <%- JSON.stringify(typeof eventDetailPath === 'string' ? eventDetailPath : null) %>
         };
     </script>
     <script src="/app/00-core.js"></script>
     <script src="/app/10-api.js"></script>
+    <script src="/app/25-dashboard.js"></script>
     <script src="/app/20-users.js"></script>
     <script src="/app/30-families.js"></script>
     <script src="/app/35-curators.js"></script>

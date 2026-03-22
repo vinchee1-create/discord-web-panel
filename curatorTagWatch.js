@@ -31,7 +31,8 @@ async function loadFactionMonitorConfigs(pool) {
         `${scope}_fraction_curator_role_id`,
         `${scope}_fraction_role_id`,
         `${scope}_curators_news_channel_id`,
-        `${scope}_curator_leader_role_id`,
+        `${scope}_curator_leader_channel_id`,
+        `${scope}_curator_leader_role_id`, // legacy: был ошибочно назван «role», значение — ID канала
         `${scope}_player_requests_channel_id`,
         `${scope}_curators_questions_channel_id`,
         `${scope}_treasury_channel_id`
@@ -47,8 +48,9 @@ async function loadFactionMonitorConfigs(pool) {
         if (isSnowflake(kv[`${scope}_curators_questions_channel_id`])) {
             replyChannelIds.add(kv[`${scope}_curators_questions_channel_id`]);
         }
-        if (isSnowflake(kv[`${scope}_curator_leader_role_id`])) {
-            replyChannelIds.add(kv[`${scope}_curator_leader_role_id`]);
+        const leaderCh = kv[`${scope}_curator_leader_channel_id`] || kv[`${scope}_curator_leader_role_id`] || '';
+        if (isSnowflake(leaderCh)) {
+            replyChannelIds.add(leaderCh);
         }
         if (isSnowflake(kv[`${scope}_player_requests_channel_id`])) {
             reactionChannelIds.add(kv[`${scope}_player_requests_channel_id`]);

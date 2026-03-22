@@ -77,6 +77,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
       await window.loadCurators();
       if (window.__navRequestId !== navReqId) return;
       window.renderCurators();
+    } else if (title === 'Главная') {
+      window.headerActions.style.display = 'none';
+      await window.loadDashboard();
+      if (window.__navRequestId !== navReqId) return;
+      window.renderDashboard();
     } else {
       window.headerActions.style.display = 'none';
       if (window.__navRequestId !== navReqId) return;
@@ -165,13 +170,15 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     window.headerActions.style.display = 'none';
     await window.loadCurators();
     window.renderCurators();
+  } else if (window.initialPage === 'Главная') {
+    window.pageTitle.textContent = 'Главная';
+    window.headerActions.style.display = 'none';
+    await window.loadDashboard();
+    window.renderDashboard();
   } else {
-    // Для остальных страниц пока просто заголовок и плейсхолдер "в разработке"
-    window.pageTitle.textContent = window.initialPage || 'Панель управления';
-    if (window.initialPage !== 'Панель управления') {
-      window.headerActions.style.display = 'none';
-      window.setPageContent(`<p style="color:#444">Раздел "${window.initialPage}" находится в разработке.</p>`);
-    }
+    window.pageTitle.textContent = window.initialPage || 'Главная';
+    window.headerActions.style.display = 'none';
+    window.setPageContent(`<p style="color:#444">Раздел "${window.initialPage}" находится в разработке.</p>`);
   }
 
   // Бейдж "Материалы семей" (красные выдачи) — подгружаем в фоне для сайдбара
@@ -194,10 +201,3 @@ document.addEventListener('click', (e) => {
   }
 });
 profileMenu?.addEventListener('click', (e) => e.stopPropagation());
-
-// Default placeholder
-// Important: this must not overwrite already-rendered pages on reload.
-if (window.initialPage === 'Панель управления') {
-  window.setPageContent(`<p style="color:#444">Выберите раздел в меню слева.</p>`);
-}
-
