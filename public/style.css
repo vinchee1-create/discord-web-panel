@@ -237,9 +237,9 @@ body, button, input, select {
     color: rgba(255,255,255,0.55);
 }
 
-/* Без зазора между кнопками в группе */
+/* Небольшой зазор между кнопками в группе */
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 0;
+    margin-top: 6px;
 }
 
 /* ПРАВАЯ ЧАСТЬ (разделитель — border-right у .sidebar-container) */
@@ -282,15 +282,15 @@ body, button, input, select {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     background: #141414;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .topbar-logo-mark svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     color: #fff;
 }
 

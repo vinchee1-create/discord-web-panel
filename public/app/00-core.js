@@ -93,8 +93,8 @@ window.syncTopbarSectionIcon = function syncTopbarSectionIcon(navItem) {
   const clone = svg.cloneNode(true);
   clone.removeAttribute('class');
   if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  clone.setAttribute('width', '18');
-  clone.setAttribute('height', '18');
+  clone.setAttribute('width', '14');
+  clone.setAttribute('height', '14');
   mark.replaceChildren(clone);
   if (link) {
     const href = item.getAttribute('href');

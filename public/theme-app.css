@@ -128,9 +128,9 @@ body::after {
     outline-offset: 2px;
 }
 .topbar-logo-mark {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--app-radius-md);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     background: var(--app-elevated);
     border: 1px solid var(--app-border-strong);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
@@ -141,6 +141,8 @@ body::after {
     box-shadow: 0 0 0 1px rgba(255, 26, 94, 0.15);
 }
 .topbar-logo-mark svg {
+    width: 14px;
+    height: 14px;
     color: var(--app-accent);
     opacity: 0.95;
 }
@@ -244,7 +246,7 @@ body::after {
 }
 
 .sidebar-group .nav-item + .nav-item {
-    margin-top: 0;
+    margin-top: 6px;
 }
 
 /* Навигация: комфортный размер клика и текста */
