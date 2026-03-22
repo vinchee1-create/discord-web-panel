@@ -1966,7 +1966,7 @@ const TOKEN = process.env.BOT_TOKEN;
         } catch (err) {
             console.error('❌ Ошибка подключения бота к Discord:', err.message);
         }
-    } else {
+} else {
         console.warn('⚠️ BOT_TOKEN не задан — бот не запущен');
     }
     app.listen(PORT, () => {

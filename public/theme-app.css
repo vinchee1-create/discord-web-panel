@@ -21,7 +21,6 @@
     --app-nav-item-bg-active: #262626;
     --app-scrollbar: #2a2a2a;
     --app-scrollbar-track: #0a0a0a;
-    --app-shell-accent-h: 2px;
     --app-radius-lg: 14px;
     --app-radius-md: 10px;
     --app-radius-sm: 8px;
@@ -96,24 +95,6 @@ body::after {
     border-bottom: 1px solid var(--app-border);
     box-shadow: none;
     position: relative;
-}
-.app-topbar::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: var(--app-shell-accent-h);
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 26, 94, 0.55) 18%,
-        rgba(255, 26, 94, 0.25) 50%,
-        rgba(255, 26, 94, 0.55) 82%,
-        transparent 100%
-    );
-    pointer-events: none;
-    opacity: 0.9;
 }
 
 .header-separator {
@@ -320,7 +301,7 @@ body::after {
     min-height: 40px;
     height: auto;
     /* Запас слева: полоска активного пункта наполовину выходит за край кнопки */
-    padding: 8px 10px 8px 14px;
+    padding: 8px 10px 8px 13px;
     box-sizing: border-box;
     border-radius: var(--app-radius-md);
     border: none;
@@ -393,8 +374,8 @@ body::after {
     left: 0;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 5px;
-    height: 28px;
+    width: 3px;
+    height: 20px;
     border-radius: 999px;
     background: linear-gradient(
         180deg,
@@ -403,9 +384,9 @@ body::after {
         #e01052 100%
     );
     box-shadow:
-        -3px 0 12px rgba(255, 26, 94, 0.5),
-        0 0 14px rgba(255, 26, 94, 0.35),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+        -2px 0 8px rgba(255, 26, 94, 0.42),
+        0 0 10px rgba(255, 26, 94, 0.28),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     pointer-events: none;
 }
 
