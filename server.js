@@ -932,16 +932,19 @@ app.get('/api/dashboard/home', async (req, res) => {
             const chT = kv[`${scope}_treasury_channel_id`] || '';
             const chP = kv[`${scope}_player_requests_channel_id`] || '';
 
-            const curatorNames = [];
+            const curators = [];
             if (gid && fracCur && /^\d{5,30}$/.test(gid) && /^\d{5,30}$/.test(fracCur)) {
                 const guild = client.guilds.cache.get(gid);
                 if (guild) {
                     await guild.members.fetch().catch(() => {});
                     guild.members.cache.forEach(m => {
                         if (!m.roles.cache.has(fracCur)) return;
-                        curatorNames.push(m.displayName || m.user?.username || m.id);
+                        const name = m.displayName || m.user?.username || m.id;
+                        const st = m.presence?.status;
+                        const online = Boolean(st && st !== 'offline' && st !== 'invisible');
+                        curators.push({ name, online });
                     });
-                    curatorNames.sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+                    curators.sort((a, b) => String(a.name).localeCompare(String(b.name), 'ru'));
                 }
             }
 
@@ -954,7 +957,7 @@ app.get('/api/dashboard/home', async (req, res) => {
             factions.push({
                 scope,
                 label,
-                curators: curatorNames,
+                curators,
                 openTags: {
                     questionsAndLeader: tagsQuestions,
                     treasury: tagsTreasury,

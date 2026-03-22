@@ -30,6 +30,24 @@ function tagMetric(svgHtml, count, title) {
     </div>`;
 }
 
+/** Кураторы: { name, online } или строка (совместимость). Онлайн — цвет фракции. */
+function renderFactionCurators(curators, scopeSlug) {
+  if (!Array.isArray(curators) || curators.length === 0) {
+    return '<span class="dashboard-faction-curators-empty">—</span>';
+  }
+  const parts = curators.map((entry) => {
+    const isObj = entry && typeof entry === 'object' && 'name' in entry;
+    const name = isObj ? entry.name : entry;
+    const online = isObj ? !!entry.online : false;
+    const esc = window.escapeHtml(String(name || ''));
+    if (online) {
+      return `<span class="dashboard-faction-curator-name dashboard-faction-curator--online dashboard-faction-accent--${scopeSlug}">${esc}</span>`;
+    }
+    return `<span class="dashboard-faction-curator-name dashboard-faction-curator--offline">${esc}</span>`;
+  });
+  return parts.join('<span class="dashboard-faction-curator-sep">, </span>');
+}
+
 window.renderDashboard = function renderDashboard() {
   const d = window.dashboardData || { curatorsOnline: 0, playersOnline: 0, factions: [] };
   const cur = Number(d.curatorsOnline) || 0;
@@ -37,10 +55,7 @@ window.renderDashboard = function renderDashboard() {
   const factions = Array.isArray(d.factions) ? d.factions : [];
 
   const rows = factions.map((f) => {
-    const names = Array.isArray(f.curators) ? f.curators : [];
-    const curLine = names.length
-      ? names.map(n => window.escapeHtml(n)).join(', ')
-      : '<span class="dashboard-faction-curators-empty">—</span>';
+    const curLine = renderFactionCurators(f.curators, String(f.scope || '').replace(/[^a-z0-9_-]/gi, '') || 'unknown');
     const ot = f.openTags || {};
     const scopeSlug = String(f.scope || '').replace(/[^a-z0-9_-]/gi, '') || 'unknown';
     const tagsCell = `
@@ -54,7 +69,6 @@ window.renderDashboard = function renderDashboard() {
           <td>
             <div class="dashboard-faction-name-row">
               <span class="dashboard-faction-color-dot dashboard-faction-dot--${scopeSlug}" aria-hidden="true"></span>
-              <span class="dashboard-faction-online-dot" title="Фракция в списке"></span>
               <div class="dashboard-faction-text-block">
                 <div class="dashboard-faction-cell-name">${window.escapeHtml(f.label || f.scope || '')}</div>
                 <div class="dashboard-faction-cell-curators">${curLine}</div>
