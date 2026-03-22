@@ -135,6 +135,16 @@ body, button, input, select {
     margin-top: 12px; 
     overflow-y: auto; 
 }
+/* Скролл меню слева без видимой полосы (колёсико / тач работают) */
+#sidebar-nav.nav-list {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#sidebar-nav.nav-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
 
 /* Профиль внизу сайдбара */
 .sidebar-footer {

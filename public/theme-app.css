@@ -272,6 +272,17 @@ body::after {
     padding: 0 0 8px;
 }
 
+/* Левая колонка: прокрутка меню без видимого скроллбара */
+#sidebar-nav.nav-list {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* старый Edge */
+}
+#sidebar-nav.nav-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
 .sidebar-group {
     padding: 10px 6px 6px;
     background: transparent;
@@ -307,7 +318,8 @@ body::after {
     gap: 10px;
     min-height: 40px;
     height: auto;
-    padding: 8px 10px 8px 15px;
+    /* Полоса активного пункта — у левого края «плитки», не в зоне иконки */
+    padding: 8px 10px 8px 12px;
     box-sizing: border-box;
     border-radius: var(--app-radius-md);
     border: none;
@@ -369,18 +381,21 @@ body::after {
     opacity: 0.55;
 }
 
-/* Розовая вертикальная «таблетка» слева у активного пункта */
+/* Розовая полоска у левого края кнопки (как на референсе), не между краем и иконкой */
 .nav-item.active::before {
     content: "";
     position: absolute;
-    left: 7px;
+    left: 4px;
     top: 50%;
     transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
+    width: 3px;
+    height: 22px;
     border-radius: 999px;
     background: var(--app-accent);
-    box-shadow: 0 0 12px rgba(255, 26, 94, 0.42);
+    box-shadow:
+        0 0 10px rgba(255, 26, 94, 0.55),
+        0 0 18px rgba(255, 26, 94, 0.35);
+    pointer-events: none;
 }
 
 .nav-item:focus-visible {
