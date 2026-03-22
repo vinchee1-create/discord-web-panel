@@ -1,0 +1,320 @@
+/**
+ * Кастомная тема админки (v2): нейтральный графит + редкий бирюзовый акцент.
+ * Не копирует внешние проекты — другая сетка и иерархия, шрифт как в style.css.
+ * Отключить: уберите link ниже в views/index.ejs
+ */
+:root {
+    --app-bg: #09090b;
+    --app-surface: #0f0f12;
+    --app-elevated: #141418;
+    --app-border: rgba(255, 255, 255, 0.06);
+    --app-border-strong: rgba(255, 255, 255, 0.1);
+    --app-text: #fafafa;
+    --app-muted: rgba(250, 250, 250, 0.52);
+    --app-accent: #2dd4bf;
+    --app-accent-dim: rgba(45, 212, 191, 0.14);
+    --app-accent-hover: #5eead4;
+    --app-scrollbar: #27272a;
+    --app-scrollbar-track: #09090b;
+}
+
+body {
+    background-color: var(--app-bg);
+    color: var(--app-text);
+}
+
+* {
+    scrollbar-color: var(--app-scrollbar) var(--app-scrollbar-track);
+}
+*::-webkit-scrollbar-track {
+    background: var(--app-scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--app-scrollbar);
+    border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+}
+
+/* Правая область — плоская плита, без «неоновых» рамок */
+.main-content {
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.content-header {
+    border-bottom: 1px solid var(--app-border);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.header-separator {
+    background: var(--app-border-strong);
+}
+
+.page-title {
+    color: var(--app-text);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+/* Левая колонка: ровная, без отдельной «капсулы» — только разделитель */
+.sidebar-container {
+    width: 268px;
+    padding: 0;
+    border-right: 1px solid var(--app-border);
+    background: var(--app-bg);
+}
+
+.sidebar-inner {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    height: 100%;
+}
+
+.sidebar-header {
+    padding: 20px 16px 16px;
+    margin-top: 0;
+    border-bottom: none;
+}
+
+.brand-button {
+    min-height: 0;
+    height: auto;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    color: var(--app-text);
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.brand-button:hover {
+    background: var(--app-elevated);
+    border-color: var(--app-border);
+    box-shadow: none;
+}
+
+.brand-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border);
+    box-shadow: none;
+}
+
+.brand-icon-box svg {
+    width: 18px;
+    height: 18px;
+    color: var(--app-accent);
+}
+
+.brand-main-text {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.brand-sub-text {
+    color: var(--app-muted);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 1;
+}
+
+.sidebar-content {
+    padding: 8px 10px 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-list {
+    gap: 0;
+    margin-top: 8px;
+    padding: 0 0 12px;
+}
+
+/* Группы — только типографика, без вложенных «карточек» */
+.sidebar-group {
+    padding: 12px 8px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.sidebar-group + .sidebar-group {
+    margin-top: 0;
+    border-top: 1px solid var(--app-border);
+}
+
+.sidebar-group-label {
+    padding: 0 8px 8px;
+    height: auto;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+}
+
+.sidebar-group .nav-item + .nav-item {
+    margin-top: 2px;
+}
+
+/* Пункты меню — плоские; акцент только полоска + лёгкий фон */
+.nav-item {
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    gap: 10px;
+    border: none;
+    color: var(--app-muted);
+    font-weight: 500;
+    transition: color 0.12s ease, background 0.12s ease;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--app-text);
+    border: none;
+    box-shadow: none;
+}
+
+.nav-item.active {
+    background: var(--app-accent-dim);
+    color: var(--app-text);
+    border: none;
+    box-shadow: inset 2px 0 0 var(--app-accent);
+}
+
+.nav-item svg {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    box-sizing: border-box;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    color: inherit;
+    opacity: 1;
+    box-shadow: none;
+}
+
+.nav-item:hover svg,
+.nav-item.active svg {
+    color: var(--app-accent-hover);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.nav-item.active svg {
+    color: var(--app-accent);
+}
+
+.nav-badge {
+    background: #3f3f46;
+    color: var(--app-text);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+/* Профиль */
+.sidebar-footer {
+    padding: 12px 12px 16px;
+    border-top: 1px solid var(--app-border);
+    background: transparent;
+}
+
+.profile-button {
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    color: var(--app-text);
+}
+
+.profile-button:hover {
+    background: var(--app-elevated);
+    border-color: var(--app-border);
+}
+
+.profile-avatar {
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+}
+
+.profile-lvl {
+    color: var(--app-muted);
+}
+
+.profile-menu {
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border-strong);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.profile-menu-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Кнопки контента */
+.btn-pill,
+.btn-primary {
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border-strong);
+    color: var(--app-text);
+}
+
+.btn-pill:hover,
+.btn-primary:hover {
+    background: rgba(45, 212, 191, 0.12);
+    border-color: rgba(45, 212, 191, 0.35);
+    color: var(--app-text);
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Главная — нейтральные карточки */
+.dashboard-stat-card,
+.dashboard-factions-panel {
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border);
+    box-shadow: none;
+}
+
+.dashboard-stat-header-icon {
+    color: var(--app-accent);
+    opacity: 1;
+}
+
+.dashboard-stat-footer {
+    color: var(--app-muted) !important;
+}
+
+/* Таблицы */
+.table-families {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+}
+
+.data-table-families thead {
+    background: #18181b;
+}
+
+.data-table-families th {
+    color: var(--app-muted);
+    font-weight: 600;
+}
