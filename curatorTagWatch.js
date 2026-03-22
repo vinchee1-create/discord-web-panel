@@ -1,7 +1,8 @@
 /**
- * Мониторинг тегов роли Fraction Curator на фракционных серверах в заданных каналах.
- * Периодические напоминания в канал «ID Теги» основного сервера с пингом Fraction Role,
- * пока на исходное сообщение не ответит участник с ролью Fraction Curator.
+ * Мониторинг тегов роли Fraction Curator на фракционных серверах.
+ * — Вопросы кураторам, Curator Leader: закрытие ответом (reply) куратора.
+ * — Запросы от игроков, Казна: закрытие реакцией куратора на исходное сообщение.
+ * — Новости кураторов: мониторинг тегов отключён.
  */
 
 const FACTION_SCOPES = [
@@ -12,15 +13,8 @@ const FACTION_SCOPES = [
     { scope: 'marabunta', label: 'Marabunta Grande' }
 ];
 
-/** Каналы под разделителем в настройках фракции (включая Curator Leader — канал; ключ в БД *_curator_leader_role_id). */
-function channelKeysForScope(scope) {
-    return [
-        `${scope}_curators_news_channel_id`,
-        `${scope}_curator_leader_role_id`,
-        `${scope}_player_requests_channel_id`,
-        `${scope}_curators_questions_channel_id`,
-        `${scope}_treasury_channel_id`
-    ];
+function isSnowflake(v) {
+    return typeof v === 'string' && /^\d{5,30}$/.test(v);
 }
 
 async function loadSettingsKeys(pool, keys) {
@@ -36,7 +30,11 @@ async function loadFactionMonitorConfigs(pool) {
         `${scope}_guild_id`,
         `${scope}_fraction_curator_role_id`,
         `${scope}_fraction_role_id`,
-        ...channelKeysForScope(scope)
+        `${scope}_curators_news_channel_id`,
+        `${scope}_curator_leader_role_id`,
+        `${scope}_player_requests_channel_id`,
+        `${scope}_curators_questions_channel_id`,
+        `${scope}_treasury_channel_id`
     ]);
     const kv = await loadSettingsKeys(pool, keys);
     const out = [];
@@ -44,19 +42,31 @@ async function loadFactionMonitorConfigs(pool) {
         const guildId = kv[`${scope}_guild_id`] || '';
         const fractionCuratorRoleId = kv[`${scope}_fraction_curator_role_id`] || '';
         const fractionRoleId = kv[`${scope}_fraction_role_id`] || '';
-        const channels = channelKeysForScope(scope)
-            .map(k => kv[k] || '')
-            .filter(id => /^\d{5,30}$/.test(id));
-        if (!guildId || !/^\d{5,30}$/.test(guildId)) continue;
-        if (!fractionCuratorRoleId || !/^\d{5,30}$/.test(fractionCuratorRoleId)) continue;
-        if (!channels.length) continue;
+        const replyChannelIds = new Set();
+        const reactionChannelIds = new Set();
+        if (isSnowflake(kv[`${scope}_curators_questions_channel_id`])) {
+            replyChannelIds.add(kv[`${scope}_curators_questions_channel_id`]);
+        }
+        if (isSnowflake(kv[`${scope}_curator_leader_role_id`])) {
+            replyChannelIds.add(kv[`${scope}_curator_leader_role_id`]);
+        }
+        if (isSnowflake(kv[`${scope}_player_requests_channel_id`])) {
+            reactionChannelIds.add(kv[`${scope}_player_requests_channel_id`]);
+        }
+        if (isSnowflake(kv[`${scope}_treasury_channel_id`])) {
+            reactionChannelIds.add(kv[`${scope}_treasury_channel_id`]);
+        }
+        if (!isSnowflake(guildId)) continue;
+        if (!isSnowflake(fractionCuratorRoleId)) continue;
+        if (replyChannelIds.size === 0 && reactionChannelIds.size === 0) continue;
         out.push({
             scope,
             label,
             guildId,
             fractionCuratorRoleId,
-            fractionRoleId: /^\d{5,30}$/.test(fractionRoleId) ? fractionRoleId : '',
-            channelIds: new Set(channels)
+            fractionRoleId: isSnowflake(fractionRoleId) ? fractionRoleId : '',
+            replyChannelIds,
+            reactionChannelIds
         });
     }
     return out;
@@ -76,10 +86,12 @@ async function loadMainReminderSettings(pool) {
     };
 }
 
-function findConfigForMessage(configs, guildId, channelId) {
+/** @returns {{ cfg: object, closeMode: 'reply'|'reaction' } | null} */
+function findChannelMatch(configs, guildId, channelId) {
     for (const c of configs) {
         if (c.guildId !== guildId) continue;
-        if (c.channelIds.has(channelId)) return c;
+        if (c.replyChannelIds.has(channelId)) return { cfg: c, closeMode: 'reply' };
+        if (c.reactionChannelIds.has(channelId)) return { cfg: c, closeMode: 'reaction' };
     }
     return null;
 }
@@ -88,26 +100,28 @@ async function insertWatch(pool, row) {
     await pool.query(
         `INSERT INTO curator_tag_watches (
            faction_scope, source_guild_id, source_channel_id, source_message_id,
-           fraction_curator_role_id, reminders_sent, started_at
-         ) VALUES ($1, $2, $3, $4, $5, 0, NOW())
+           fraction_curator_role_id, reminders_sent, started_at, close_mode
+         ) VALUES ($1, $2, $3, $4, $5, 0, NOW(), $6)
          ON CONFLICT (source_guild_id, source_channel_id, source_message_id) DO NOTHING`,
         [
             row.factionScope,
             row.sourceGuildId,
             row.sourceChannelId,
             row.sourceMessageId,
-            row.fractionCuratorRoleId
+            row.fractionCuratorRoleId,
+            row.closeMode
         ]
     );
 }
 
-/** Закрывает слежение и возвращает id сообщений напоминаний в канале «Теги». */
-async function resolveWatchAndGetReminderMessageIds(pool, guildId, channelId, parentMessageId) {
+/** Закрывает слежение и возвращает id сообщений напоминаний в канале «Теги». closeMode: reply | reaction */
+async function resolveWatchAndGetReminderMessageIds(pool, guildId, channelId, parentMessageId, closeMode) {
     const { rows } = await pool.query(
         `SELECT id, COALESCE(tags_reminder_message_ids, ARRAY[]::varchar(32)[]) AS mids
          FROM curator_tag_watches
-         WHERE source_guild_id = $1 AND source_channel_id = $2 AND source_message_id = $3 AND resolved_at IS NULL`,
-        [guildId, channelId, parentMessageId]
+         WHERE source_guild_id = $1 AND source_channel_id = $2 AND source_message_id = $3
+               AND resolved_at IS NULL AND close_mode = $4`,
+        [guildId, channelId, parentMessageId, closeMode]
     );
     if (!rows[0]) return [];
     const mids = rows[0].mids;
@@ -200,6 +214,24 @@ module.exports = function registerCuratorTagWatch(client, pool) {
         }
     }
 
+    async function finalizeResolvedWatch(guildId, channelId, sourceMessageId, closeMode) {
+        const reminderMsgIds = await resolveWatchAndGetReminderMessageIds(
+            pool,
+            guildId,
+            channelId,
+            sourceMessageId,
+            closeMode
+        );
+        const mainSet = await loadMainReminderSettings(pool);
+        if (mainSet.guildId && mainSet.tagsChannelId && reminderMsgIds.length) {
+            await addCheckmarkReactionsToTagMessages(
+                mainSet.guildId,
+                mainSet.tagsChannelId,
+                reminderMsgIds
+            );
+        }
+    }
+
     async function processReminders() {
         if (tickRunning) return;
         tickRunning = true;
@@ -224,8 +256,8 @@ module.exports = function registerCuratorTagWatch(client, pool) {
 
                 const started = new Date(w.started_at).getTime();
                 const elapsedMin = Math.floor((now - started) / 60000);
-                const sent = Number(w.reminders_sent) || 0;
-                const need = sent + 1;
+                const sentCount = Number(w.reminders_sent) || 0;
+                const need = sentCount + 1;
                 if (elapsedMin < need * main.periodMinutes) continue;
 
                 const msgLink = `https://discord.com/channels/${w.source_guild_id}/${w.source_channel_id}/${w.source_message_id}`;
@@ -238,11 +270,11 @@ module.exports = function registerCuratorTagWatch(client, pool) {
                         : [];
                     await deletePreviousTagRemindersWithoutCheck(tagsChannel, prevIds);
 
-                    const sent = await tagsChannel.send({
+                    const reminderMsg = await tagsChannel.send({
                         content: text,
                         allowedMentions: { roles: [cfg.fractionRoleId] }
                     });
-                    await bumpReminderSetTagMessages(pool, w.id, sent.id);
+                    await bumpReminderSetTagMessages(pool, w.id, reminderMsg.id);
                 } catch (e) {
                     console.error('curatorTagWatch reminder send:', e.message);
                 }
@@ -263,14 +295,15 @@ module.exports = function registerCuratorTagWatch(client, pool) {
             if (!channelId) return;
 
             const configs = await getFactionConfigsCached();
-            const cfg = findConfigForMessage(configs, guildId, channelId);
-            if (cfg && message.mentions?.roles?.has(cfg.fractionCuratorRoleId)) {
+            const match = findChannelMatch(configs, guildId, channelId);
+            if (match && message.mentions?.roles?.has(match.cfg.fractionCuratorRoleId)) {
                 await insertWatch(pool, {
-                    factionScope: cfg.scope,
+                    factionScope: match.cfg.scope,
                     sourceGuildId: guildId,
                     sourceChannelId: channelId,
                     sourceMessageId: message.id,
-                    fractionCuratorRoleId: cfg.fractionCuratorRoleId
+                    fractionCuratorRoleId: match.cfg.fractionCuratorRoleId,
+                    closeMode: match.closeMode
                 });
                 return;
             }
@@ -281,23 +314,46 @@ module.exports = function registerCuratorTagWatch(client, pool) {
             const refGuildId = message.guild?.id;
             if (!refGuildId || refGuildId !== guildId) return;
 
-            const cfgReply = findConfigForMessage(configs, guildId, refChannelId);
-            if (!cfgReply) return;
+            const replyMatch = findChannelMatch(configs, guildId, refChannelId);
+            if (!replyMatch || replyMatch.closeMode !== 'reply') return;
 
             const member = message.member || (await message.guild.members.fetch(message.author.id).catch(() => null));
-            if (!member || !member.roles.cache.has(cfgReply.fractionCuratorRoleId)) return;
+            if (!member || !member.roles.cache.has(replyMatch.cfg.fractionCuratorRoleId)) return;
 
-            const reminderMsgIds = await resolveWatchAndGetReminderMessageIds(pool, refGuildId, refChannelId, refId);
-            const mainSet = await loadMainReminderSettings(pool);
-            if (mainSet.guildId && mainSet.tagsChannelId && reminderMsgIds.length) {
-                await addCheckmarkReactionsToTagMessages(
-                    mainSet.guildId,
-                    mainSet.tagsChannelId,
-                    reminderMsgIds
-                );
-            }
+            await finalizeResolvedWatch(refGuildId, refChannelId, refId, 'reply');
         } catch (e) {
             console.error('curatorTagWatch messageCreate:', e.message);
+        }
+    });
+
+    client.on('messageReactionAdd', async (reaction, user) => {
+        try {
+            if (!pool || user.bot) return;
+            if (reaction.partial) await reaction.fetch().catch(() => {});
+            let msg = reaction.message;
+            if (!msg) return;
+            if (msg.partial) {
+                try {
+                    msg = await msg.fetch();
+                } catch (_) {
+                    return;
+                }
+            }
+            const guild = msg.guild;
+            if (!guild) return;
+            const channelId = msg.channelId || msg.channel?.id;
+            if (!channelId) return;
+
+            const configs = await getFactionConfigsCached();
+            const rMatch = findChannelMatch(configs, guild.id, channelId);
+            if (!rMatch || rMatch.closeMode !== 'reaction') return;
+
+            const member = await guild.members.fetch(user.id).catch(() => null);
+            if (!member || !member.roles.cache.has(rMatch.cfg.fractionCuratorRoleId)) return;
+
+            await finalizeResolvedWatch(guild.id, channelId, msg.id, 'reaction');
+        } catch (e) {
+            console.error('curatorTagWatch messageReactionAdd:', e.message);
         }
     });
 
@@ -306,5 +362,5 @@ module.exports = function registerCuratorTagWatch(client, pool) {
     }, 60_000);
     setTimeout(() => processReminders().catch(() => {}), 15_000);
 
-    console.log('✅ Мониторинг тегов Fraction Curator (напоминания в канал «Теги») включён');
+    console.log('✅ Мониторинг тегов Fraction Curator: reply / реакция по типу канала; новости без мониторинга');
 };

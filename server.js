@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const path = require('path');
 const { Pool } = require('pg');
 const session = require('express-session');
@@ -374,6 +374,7 @@ async function initCuratorTagWatchesTable() {
                 source_channel_id VARCHAR(32) NOT NULL,
                 source_message_id VARCHAR(32) NOT NULL,
                 fraction_curator_role_id VARCHAR(32) NOT NULL,
+                close_mode VARCHAR(16) NOT NULL DEFAULT 'reply',
                 reminders_sent INTEGER NOT NULL DEFAULT 0,
                 started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 last_reminder_at TIMESTAMPTZ,
@@ -384,6 +385,10 @@ async function initCuratorTagWatchesTable() {
         await pool.query(`
             ALTER TABLE curator_tag_watches
             ADD COLUMN IF NOT EXISTS tags_reminder_message_ids VARCHAR(32)[] DEFAULT ARRAY[]::varchar(32)[]
+        `);
+        await pool.query(`
+            ALTER TABLE curator_tag_watches
+            ADD COLUMN IF NOT EXISTS close_mode VARCHAR(16) NOT NULL DEFAULT 'reply'
         `);
         console.log('✅ Таблица curator_tag_watches готова');
     } catch (e) {
@@ -396,8 +401,10 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers
-    ]
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions
+    ],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
 // --- 3. AUTH PAGES ---
