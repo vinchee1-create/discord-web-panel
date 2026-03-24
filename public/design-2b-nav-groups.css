@@ -43,15 +43,16 @@ body {
     color: inherit;
     flex-shrink: 0;
     min-width: 0;
-    transition: opacity 0.15s ease;
+    margin-left: 0.5rem;
 }
 
-.sidebar-brand:hover {
-    opacity: 0.92;
-}
-
+/* Без opacity на всей ссылке — иначе белый текст на тёмном фоне выглядит «мутным» */
 .sidebar-brand:hover .logo {
     transform: scale(1.02);
+}
+
+.sidebar-brand:hover .sidebar-brand-text {
+    color: var(--muted);
 }
 
 .logo {
@@ -69,14 +70,19 @@ body {
 }
 
 .sidebar-brand-text {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9375rem;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     color: var(--text);
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: none;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: color 0.15s ease;
 }
 
 .sidebar-nav-scroll {
