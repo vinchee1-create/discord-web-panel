@@ -92,8 +92,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    /* Поля внутри скролла — свечение у активного пункта (::before) не режется по краям */
-    padding: 12px 10px 14px 12px;
+    /* Только вертикаль: боковые отступы съезжали логотип относительно меню и визуально расширяли колонку */
+    padding: 8px 0 12px 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
@@ -166,7 +166,8 @@ aside.sidebar nav a.nav-item.active {
 aside.sidebar nav a.nav-item.active::before {
     background: var(--accent);
     opacity: 1;
-    box-shadow: 0 0 10px var(--accent);
+    /* Чуть мягче и меньше вылезает за край без бокового pad у скролла */
+    box-shadow: 0 0 6px var(--accent);
 }
 
 /* Квадратный счётчик с лёгким скруглением (задачи, материалы) */
@@ -177,7 +178,7 @@ aside.sidebar nav a.nav-item .nav-badge {
     padding: 0 5px;
     box-sizing: border-box;
     border-radius: 5px;
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     display: inline-flex;
