@@ -170,25 +170,30 @@ aside.sidebar nav a.nav-item.active::before {
     box-shadow: 0 0 6px var(--accent);
 }
 
-/* Квадратный счётчик с лёгким скруглением (задачи, материалы) */
+/* Счётчик в меню: чёткая цифра (не «мытая» розовая на розовом), ровное центрирование */
 aside.sidebar nav a.nav-item .nav-badge {
     margin-left: auto;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
     box-sizing: border-box;
-    border-radius: 4px;
-    font-size: 0.5625rem;
+    border-radius: 5px;
+    font-size: 0.625rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-synthesis: none;
+    display: grid;
+    place-items: center;
     line-height: 1;
-    color: var(--accent);
-    background: rgba(232, 28, 90, 0.12);
-    border: 1px solid rgba(232, 28, 90, 0.25);
+    text-shadow: none;
+    filter: none;
+    color: #fff;
+    background: rgba(232, 28, 90, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     flex-shrink: 0;
+    isolation: isolate;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .main {
@@ -266,7 +271,8 @@ aside.sidebar nav a.nav-item .nav-badge {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 0;
+    /* Запас по бокам: тени карточек не режутся скроллом и скруглением .workspace */
+    padding: 0 12px;
     max-width: none;
 }
 
