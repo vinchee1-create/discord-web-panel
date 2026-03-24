@@ -347,29 +347,25 @@ body, button, input, select {
     margin-bottom: 16px;
 }
 
-/* Events: панель над календарем (выбор месяца) */
-.events-page .nick-page-header {
+/* Выбор месяца в одной колонке с календарём — левый край совпадает с календарём */
+.events-calendar-column {
     width: 980px;
     max-width: 100%;
-    height: 32px;
-    margin-bottom: 12px;
-    margin-left: 108px;
-    margin-right: 0;
-    padding: 0;
-    border: 0;
-    column-gap: 8px;
-    row-gap: 8px;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
     box-sizing: border-box;
-    padding-right: 0;
 }
-.events-page .nick-title {
-    display: none;
-}
-.events-page .nick-page-header > div:first-child {
-    display: none;
+.events-calendar-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 32px;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 .nick-title {
     font-size: 16px;
@@ -471,8 +467,9 @@ body, button, input, select {
     border-radius: 10px;
     border: 1.33333px solid oklch(1 0 0 / 0.1);
     padding: 0;
-    margin: 0 0 12px 0;
+    margin: 0;
     width: 980px;
+    max-width: 100%;
     height: 880.417px;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -491,7 +488,8 @@ body, button, input, select {
     height: 952.417px;
     min-height: 952.417px;
     margin: 0;
-    background-color: #0a0a0a;
+    /* как фон рабочей области .workspace (#161616), без отдельного #0a0a0a */
+    background-color: transparent;
 }
 .events-right-panel {
     width: 380px;
