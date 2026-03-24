@@ -173,12 +173,12 @@ aside.sidebar nav a.nav-item.active::before {
 /* Квадратный счётчик с лёгким скруглением (задачи, материалы) */
 aside.sidebar nav a.nav-item .nav-badge {
     margin-left: auto;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
     box-sizing: border-box;
-    border-radius: 5px;
-    font-size: 0.625rem;
+    border-radius: 4px;
+    font-size: 0.5625rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     display: inline-flex;
@@ -200,11 +200,12 @@ aside.sidebar nav a.nav-item .nav-badge {
     flex-direction: column;
 }
 
+/* Как в design-2b-nav-groups.html: панель тянется по высоте окна (учёт вертикальных 2rem+2rem у .main) */
 .workspace {
     background: var(--surface);
     border-radius: 16px;
-    min-height: 0;
     flex: 1;
+    min-height: calc(100vh - 4rem);
     display: flex;
     flex-direction: column;
     padding: 2rem clamp(1.5rem, 3vw, 2.5rem);
