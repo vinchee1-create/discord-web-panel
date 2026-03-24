@@ -4,8 +4,10 @@
 window.families = [];
 window.familyMaterials = [];
 window.factionMaterials = [];
+window.tasks = [];
 window.editingMaterialIndex = -1;
 window.editingFactionMaterialIndex = -1;
+window.editingTaskIndex = -1;
 window.accounts = []; // accounts section disabled
 window.usersList = [];
 window.leaders = [];

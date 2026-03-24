@@ -188,6 +188,24 @@ async function initFamilyMaterialsTable() {
     }
 }
 
+async function initTasksTable() {
+    if (!pool) return;
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS tasks (
+                id SERIAL PRIMARY KEY,
+                title TEXT,
+                description TEXT,
+                completed BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        console.log('✅ Таблица tasks готова');
+    } catch (e) {
+        console.error('❌ Ошибка создания таблицы tasks:', e.message);
+    }
+}
+
 async function initFactionMaterialsTable() {
     if (!pool) return;
     try {
@@ -1063,6 +1081,94 @@ app.delete('/api/family-materials/:id', async (req, res) => {
         res.status(204).end();
     } catch (e) {
         console.error('DELETE /api/family-materials/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- 4.1b. API ЗАДАЧ ---
+app.get('/api/tasks', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.json([]);
+    try {
+        const { rows } = await pool.query(
+            'SELECT id, title, description, completed, created_at FROM tasks ORDER BY completed ASC, created_at DESC, id DESC'
+        );
+        res.json(rows.map(r => ({
+            dbId: r.id,
+            title: r.title || '',
+            description: r.description || '',
+            completed: !!r.completed,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        })));
+    } catch (e) {
+        console.error('GET /api/tasks:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/tasks', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const { title, description } = req.body || {};
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO tasks (title, description, completed) VALUES ($1, $2, FALSE) RETURNING id, title, description, completed, created_at',
+            [title || '', description || '']
+        );
+        const r = rows[0];
+        res.status(201).json({
+            dbId: r.id,
+            title: r.title || '',
+            description: r.description || '',
+            completed: !!r.completed,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('POST /api/tasks:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/tasks/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    const { title, description, completed } = req.body || {};
+    try {
+        await pool.query(
+            'UPDATE tasks SET title=$1, description=$2, completed=$3 WHERE id=$4',
+            [title || '', description || '', !!completed, dbId]
+        );
+        const { rows } = await pool.query(
+            'SELECT id, title, description, completed, created_at FROM tasks WHERE id=$1',
+            [dbId]
+        );
+        if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+        const r = rows[0];
+        res.json({
+            dbId: r.id,
+            title: r.title || '',
+            description: r.description || '',
+            completed: !!r.completed,
+            createdAt: r.created_at ? r.created_at.toISOString() : null
+        });
+    } catch (e) {
+        console.error('PUT /api/tasks/:id:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!pool) return res.status(503).json({ error: 'Database not configured' });
+    const dbId = parseInt(req.params.id, 10);
+    if (isNaN(dbId)) return res.status(400).json({ error: 'Invalid id' });
+    try {
+        await pool.query('DELETE FROM tasks WHERE id=$1', [dbId]);
+        res.status(204).end();
+    } catch (e) {
+        console.error('DELETE /api/tasks/:id:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
@@ -1954,6 +2060,7 @@ const TOKEN = process.env.BOT_TOKEN;
     await initLeadersTable();
     await initAccountsTable();
     await initFamilyMaterialsTable();
+    await initTasksTable();
     await initFactionMaterialsTable();
     await initEventsTable();
     await initEventDetailFamilyRowsTable();

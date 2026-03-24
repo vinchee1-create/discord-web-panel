@@ -42,6 +42,17 @@ window.loadFactionMaterials = async function loadFactionMaterials() {
   }
 };
 
+window.loadTasks = async function loadTasks() {
+  try {
+    const res = await fetch('/api/tasks');
+    const data = await res.json();
+    window.tasks = Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error('Ошибка загрузки задач:', e);
+    window.tasks = [];
+  }
+};
+
 window.loadUsers = async function loadUsers() {
   try {
     const res = await fetch('/api/users');

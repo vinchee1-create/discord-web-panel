@@ -82,6 +82,16 @@ document.querySelectorAll('.nav-item').forEach(btn => {
       await window.loadDashboard();
       if (window.__navRequestId !== navReqId) return;
       window.renderDashboard();
+    } else if (title === 'Задачи') {
+      window.headerActions.style.display = 'flex';
+      const b = document.getElementById('btn-add-family');
+      if (b) {
+        b.onclick = window.openTaskModal;
+        b.querySelector('span:last-child').textContent = 'Добавить';
+      }
+      await window.loadTasks();
+      if (window.__navRequestId !== navReqId) return;
+      window.renderTasks();
     } else {
       window.headerActions.style.display = 'none';
       if (window.__navRequestId !== navReqId) return;
@@ -170,6 +180,16 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     window.headerActions.style.display = 'none';
     await window.loadCurators();
     window.renderCurators();
+  } else if (window.initialPage === 'Задачи') {
+    window.pageTitle.textContent = 'Задачи';
+    window.headerActions.style.display = 'flex';
+    const b = document.getElementById('btn-add-family');
+    if (b) {
+      b.onclick = window.openTaskModal;
+      b.querySelector('span:last-child').textContent = 'Добавить';
+    }
+    await window.loadTasks();
+    window.renderTasks();
   } else if (window.initialPage === 'Главная') {
     window.pageTitle.textContent = 'Главная';
     window.headerActions.style.display = 'none';
