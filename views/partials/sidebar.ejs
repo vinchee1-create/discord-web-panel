@@ -1,9 +1,10 @@
 <aside class="sidebar-inner">
+    <a href="/" class="sidebar-brand-logo" title="На главную" aria-label="Boston RP — главная">B</a>
     <div class="sidebar-content">
         <nav class="nav-list" id="sidebar-nav">
   <!-- Основное -->
-  <div class="sidebar-group">
-    <div class="sidebar-group-label">Основное</div>
+  <div class="sidebar-group nav-block">
+    <h3 class="sidebar-group-label">Основное</h3>
 
     <a href="/" class="nav-item active" data-title="Главная">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,8 +44,8 @@
   </div>
 
   <!-- Информация -->
-  <div class="sidebar-group">
-    <div class="sidebar-group-label">Информация</div>
+  <div class="sidebar-group nav-block">
+    <h3 class="sidebar-group-label">Информация</h3>
 
     <a href="/families" class="nav-item" data-title="Семьи">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -103,8 +104,8 @@
   </div>
 
   <!-- Статистика -->
-  <div class="sidebar-group">
-    <div class="sidebar-group-label">Статистика</div>
+  <div class="sidebar-group nav-block">
+    <h3 class="sidebar-group-label">Статистика</h3>
 
     <a href="/online" class="nav-item" data-title="Онлайн Л/Ф">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -125,8 +126,8 @@
 
   <!-- Настройки -->
   <% if (user && user.role_level >= 4) { %>
-  <div class="sidebar-group">
-    <div class="sidebar-group-label">Настройки</div>
+  <div class="sidebar-group nav-block">
+    <h3 class="sidebar-group-label">Настройки</h3>
 
     <a href="/users" class="nav-item" data-title="Пользователи">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -203,6 +203,15 @@ document.querySelector('a.topbar-logo')?.addEventListener('click', (e) => {
   }
 });
 
+/* Логотип B в сайдбаре — на главную без перезагрузки */
+document.querySelector('a.sidebar-brand-logo')?.addEventListener('click', (e) => {
+  const home = document.querySelector('.nav-item[href="/"]');
+  if (home) {
+    e.preventDefault();
+    home.click();
+  }
+});
+
 const profileButton = document.getElementById('profile-button');
 const profileMenu = document.getElementById('profile-menu');
 function closeProfileMenu() { profileMenu?.classList.remove('open'); }

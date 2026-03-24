@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="geist-fonts.css" />
+  <title>2B — Меню с группами</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #161616;
+      --accent: #e81c5a;
+      --muted: #aaaaaa;
+      --text: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Geist, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      padding: 2rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #b01545);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .nav-block { display: flex; flex-direction: column; gap: 0.35rem; }
+    .nav-block h3 {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(170, 170, 170, 0.55);
+      padding: 0 0.85rem;
+      margin-bottom: 0.15rem;
+    }
+    .nav-block + .nav-block { margin-top: 0.35rem; }
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    nav a:hover { color: var(--text); background: var(--surface); }
+    nav a:hover::before { background: var(--text); opacity: 1; }
+    nav a.active {
+      color: var(--text);
+      background: var(--surface);
+      box-shadow: inset 0 0 0 1px rgba(232, 28, 90, 0.35);
+    }
+    nav a.active::before {
+      background: var(--accent);
+      opacity: 1;
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .back { margin-top: auto; padding-top: 1rem; }
+    .back a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .back a:hover { color: var(--accent); }
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 2rem clamp(1.5rem, 4vw, 3rem) 2rem 0;
+    }
+    @media (max-width: 720px) {
+      .main { padding-left: 1.5rem; }
+      body { flex-direction: column; }
+      .sidebar { width: 100%; }
+    }
+    .workspace {
+      background: var(--surface);
+      border-radius: 16px;
+      min-height: calc(100vh - 4rem);
+      padding: 2rem clamp(1.5rem, 3vw, 2.5rem);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .workspace header {
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .workspace header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), rgba(232, 28, 90, 0.15) 45%, transparent 75%);
+      border-radius: 1px;
+    }
+    .workspace h2 { font-size: 1.45rem; font-weight: 600; }
+    .workspace header p {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 0.4rem;
+    }
+    .workspace .content {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      max-width: 48rem;
+    }
+    .workspace .content p + p { margin-top: 1rem; }
+    .tag {
+      display: inline-block;
+      margin-top: 1.25rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(232, 28, 90, 0.12);
+      border: 1px solid rgba(232, 28, 90, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">P</div>
+    <div class="nav-block">
+      <h3>Работа</h3>
+      <nav>
+        <a href="#" class="active">Главная</a>
+        <a href="#">Проекты</a>
+        <a href="#">Команда</a>
+      </nav>
+    </div>
+    <div class="nav-block">
+      <h3>Система</h3>
+      <nav>
+        <a href="#">Помощь</a>
+        <a href="#">Выход</a>
+      </nav>
+    </div>
+    <div class="back"><a href="index.html">← Все варианты</a></div>
+  </aside>
+  <main class="main">
+    <div class="workspace">
+      <header>
+        <h2>Рабочая зона</h2>
+        <p>Как вариант 2, но навигация разбита на группы с подписями; линия под заголовком тянется на всю ширину панели.</p>
+      </header>
+      <div class="content">
+        <p>Структура боковой колонки читабельнее, когда разделы подписаны капсом серым — без лишних линий-разделителей.</p>
+        <span class="tag">Вариант 2B</span>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
