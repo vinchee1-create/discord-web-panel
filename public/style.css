@@ -1565,7 +1565,7 @@ body, button, input, select {
 /* БАЗОВАЯ ТАБЛИЦА */
 .table-container {
     background: #0d0d0d;
-    border: 1px solid #1a1a1a;
+    border: 1px solid #2e2f2f;
     border-radius: 10px;
     overflow: hidden;
     margin-top: 0;
@@ -1596,7 +1596,7 @@ body, button, input, select {
 /* ТАБЛИЦА "СЕМЬИ" — палитра и типографика как на референсе */
 .table-families {
     background: #080808;
-    border-color: #181818;
+    border-color: #2e2f2f;
 }
 .data-table-families {
     font-size: 14px;
@@ -2086,7 +2086,7 @@ body, button, input, select {
 }
 .settings-card {
     background: #101010;
-    border: 1px solid #1b1b1b;
+    border: 1px solid #2e2f2f;
     border-radius: 12px;
     padding: 18px 20px;
     box-shadow: none;
