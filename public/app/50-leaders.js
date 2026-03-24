@@ -79,22 +79,24 @@ window.renderLeaders = function renderLeaders() {
         </tr>`;
   }).join('');
   window.setPageContent(`
-        <div class="stat-cards">${cardsHtml}</div>
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Фракция</th>
-                        <th>Лидер</th>
-                        <th>Static ID</th>
-                        <th>Срок</th>
-                        <th>Время</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>${rowsHtml}</tbody>
-            </table>
+        <div class="workspace-panel">
+            <div class="stat-cards">${cardsHtml}</div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Фракция</th>
+                            <th>Лидер</th>
+                            <th>Static ID</th>
+                            <th>Срок</th>
+                            <th>Время</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
         </div>`);
 };
 

@@ -35,7 +35,7 @@ window.renderCurators = function renderCurators() {
     : '';
 
   window.setPageContent(`
-        <div class="curators-panel">
+        <div class="workspace-panel workspace-panel--flush">
             ${warnBlock}
             <div class="table-container table-families">
                 <table class="data-table data-table-families">

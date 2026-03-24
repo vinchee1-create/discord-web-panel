@@ -33,8 +33,10 @@ window.renderSettings = async function renderSettings() {
   `).join('');
 
   window.setPageContent(`
-    <div class="settings-page">
-      <div class="settings-grid">${cardsHtml}</div>
+    <div class="workspace-panel">
+      <div class="settings-page">
+        <div class="settings-grid">${cardsHtml}</div>
+      </div>
     </div>
     <div class="modal-overlay settings-main-modal" id="settings-main-modal">
       <div class="modal-card settings-guild-modal-card">

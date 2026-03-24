@@ -1631,16 +1631,20 @@ body, button, input, select {
     border-bottom: none;
 }
 
-/* Кураторы: рамка и фон как у .events-calendar */
-.curators-panel {
+/* Оболочка разделов — рамка и фон как у .events-calendar */
+.workspace-panel {
     background-color: oklch(0.205 0 0);
     border: 1.33333px solid oklch(1 0 0 / 0.1);
     border-radius: 10px;
     overflow: hidden;
     box-sizing: border-box;
     max-width: 100%;
+    padding: 16px;
 }
-.curators-panel .table-container.table-families {
+.workspace-panel--flush {
+    padding: 0;
+}
+.workspace-panel .table-container {
     background: transparent;
     border: none;
     border-radius: 0;
@@ -1656,7 +1660,7 @@ body, button, input, select {
     background: rgba(255, 180, 60, 0.12);
     border: 1px solid rgba(255, 190, 80, 0.25);
 }
-.curators-panel .curators-page-warning + .table-container {
+.workspace-panel--flush .curators-page-warning + .table-container {
     margin-top: 0;
 }
 

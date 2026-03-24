@@ -194,7 +194,7 @@ window.renderNicknames = function renderNicknames() {
   }).join('');
 
   window.setPageContent(`
-            <div class="nick-page">
+            <div class="nick-page workspace-panel">
             <div class="nick-page-header">
                 <div>
                     <div class="nick-title">Проверка никнеймов</div>

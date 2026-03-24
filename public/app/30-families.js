@@ -16,19 +16,21 @@ window.renderFamilies = function renderFamilies() {
         </tr>`;
   }).join('');
   window.setPageContent(`
-        <div class="table-container table-families">
-            <table class="data-table data-table-families">
-                <thead>
-                    <tr>
-                        <th>Семья</th>
-                        <th>ID</th>
-                        <th>Лидер</th>
-                        <th>Discord ID</th>
-                        <th style="text-align:right">Действие</th>
-                    </tr>
-                </thead>
-                <tbody>${list}</tbody>
-            </table>
+        <div class="workspace-panel workspace-panel--flush">
+            <div class="table-container table-families">
+                <table class="data-table data-table-families">
+                    <thead>
+                        <tr>
+                            <th>Семья</th>
+                            <th>ID</th>
+                            <th>Лидер</th>
+                            <th>Discord ID</th>
+                            <th style="text-align:right">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>${list}</tbody>
+                </table>
+            </div>
         </div>`);
 };
 

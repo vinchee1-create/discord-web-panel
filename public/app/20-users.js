@@ -15,27 +15,29 @@ window.renderUsers = function renderUsers() {
         </tr>
     `).join('');
   window.setPageContent(`
-        <div class="nick-page-header">
-            <div class="nick-title">Пользователи</div>
-            <button type="button" class="btn-month" onclick="openUserModal()">
-                <span class="btn-month-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
-                </span>
-                <span>Добавить пользователя</span>
-            </button>
-        </div>
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Логин</th>
-                        <th>Роль</th>
-                        <th>Уровень</th>
-                        <th style="text-align:right">Действие</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
+        <div class="workspace-panel">
+            <div class="nick-page-header">
+                <div class="nick-title">Пользователи</div>
+                <button type="button" class="btn-month" onclick="openUserModal()">
+                    <span class="btn-month-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+                    </span>
+                    <span>Добавить пользователя</span>
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Логин</th>
+                            <th>Роль</th>
+                            <th>Уровень</th>
+                            <th style="text-align:right">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
         </div>
     `);
 };
