@@ -1239,7 +1239,7 @@ body, button, input, select {
     padding: 0;
     background: #0d0d0d !important;
     vertical-align: middle;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid #2e2f2f;
 }
 .event-detail-fe-table tr.event-fe-spacer-row td.event-fe-spacer-cell {
     min-height: 12px;
@@ -1576,7 +1576,7 @@ body, button, input, select {
     text-align: left;
     padding: 12px 16px;
     color: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid #1f1f1f;
+    border-bottom: 1px solid #2e2f2f;
     font-weight: 600;
     font-size: 12px;
     text-transform: uppercase;
@@ -1587,7 +1587,7 @@ body, button, input, select {
 .data-table tbody tr:hover { background: #181818; }
 .data-table td {
     padding: 12px 16px;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid #2e2f2f;
     color: rgba(255, 255, 255, 0.9);
 }
 .data-table tbody tr:last-child td { border-bottom: none; }
@@ -1622,7 +1622,7 @@ body, button, input, select {
 }
 .data-table-families td {
     padding: 10px 18px;
-    border-bottom-color: #181818;
+    border-bottom-color: #2e2f2f;
     font-weight: 400;
     font-size: 13px;
     color: rgba(255,255,255,0.88);
