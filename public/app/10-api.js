@@ -47,9 +47,11 @@ window.loadTasks = async function loadTasks() {
     const res = await fetch('/api/tasks');
     const data = await res.json();
     window.tasks = Array.isArray(data) ? data : [];
+    window.updateTasksBadge();
   } catch (e) {
     console.error('Ошибка загрузки задач:', e);
     window.tasks = [];
+    window.updateTasksBadge();
   }
 };
 

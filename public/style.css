@@ -1921,10 +1921,13 @@ body, button, input, select {
 }
 
 /* Материалы семей — карточки */
+/* Отступы, чтобы box-shadow карточек не обрезался overflow у .content-body */
 .materials-page {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding: 18px;
+    box-sizing: border-box;
 }
 .materials-grid {
     display: grid;

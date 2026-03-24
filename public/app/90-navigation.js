@@ -205,6 +205,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   try { await window.loadFamilyMaterials(); } catch (_) { }
   // Бейдж "Материалы фракций" — тоже подгружаем в фоне
   try { await window.loadFactionMaterials(); } catch (_) { }
+  // Бейдж "Задачи" (невыполненные)
+  try { await window.loadTasks(); } catch (_) { }
 
 })();
 

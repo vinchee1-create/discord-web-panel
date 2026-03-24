@@ -21,6 +21,7 @@ window.eventDetailPath = window.__BOOTSTRAP__?.eventDetailPath ?? null;
 window.toastRoot = document.getElementById('toast-root');
 window.familyMaterialsBadge = document.getElementById('nav-badge-family-materials');
 window.factionMaterialsBadge = document.getElementById('nav-badge-faction-materials');
+window.tasksBadge = document.getElementById('nav-badge-tasks');
 window.pageContent = document.getElementById('page-content');
 window.pageTitle = document.getElementById('current-title');
 window.headerActions = document.getElementById('header-actions');
@@ -63,6 +64,17 @@ window.updateFactionMaterialsBadge = function updateFactionMaterialsBadge() {
     window.factionMaterialsBadge.style.display = 'inline-flex';
   } else {
     window.factionMaterialsBadge.style.display = 'none';
+  }
+};
+
+window.updateTasksBadge = function updateTasksBadge() {
+  if (!window.tasksBadge) return;
+  const pending = (window.tasks || []).filter(x => !x.completed).length;
+  if (pending > 0) {
+    window.tasksBadge.textContent = String(pending);
+    window.tasksBadge.style.display = 'inline-flex';
+  } else {
+    window.tasksBadge.style.display = 'none';
   }
 };
 

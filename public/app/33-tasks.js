@@ -107,6 +107,7 @@ window.renderTasks = function renderTasks() {
             </div>
         </div>
     `);
+  window.updateTasksBadge();
 };
 
 window.deleteCurrentTask = function deleteCurrentTask() {
