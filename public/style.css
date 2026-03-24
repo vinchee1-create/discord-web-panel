@@ -347,24 +347,16 @@ body, button, input, select {
     margin-bottom: 16px;
 }
 
-/* Выбор месяца в одной колонке с календарём — левый край совпадает с календарём */
-.events-calendar-column {
-    width: 980px;
-    max-width: 100%;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    box-sizing: border-box;
-}
+/* Месяц — только над календарём; календарь и правая панель в одной строке (верх совпадает) */
 .events-calendar-topbar {
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     width: 100%;
+    max-width: 980px;
     min-height: 32px;
-    flex-shrink: 0;
     box-sizing: border-box;
 }
 .nick-title {
@@ -463,6 +455,8 @@ body, button, input, select {
     gap: 16px;
 }
 .events-calendar {
+    grid-column: 1;
+    grid-row: 2;
     background-color: oklch(0.205 0 0);
     border-radius: 10px;
     border: 1.33333px solid oklch(1 0 0 / 0.1);
@@ -478,68 +472,80 @@ body, button, input, select {
 .events-calendar-layout {
     display: grid;
     grid-template-columns: 980px 380px;
+    grid-template-rows: auto auto;
     justify-content: center;
     align-items: start;
     column-gap: 16px;
+    row-gap: 12px;
     padding: 0;
-    row-gap: 16px;
     width: 1592px;
     max-width: 100%;
-    height: 952.417px;
     min-height: 952.417px;
     margin: 0;
     /* как фон рабочей области .workspace (#161616), без отдельного #0a0a0a */
     background-color: transparent;
 }
 .events-right-panel {
+    grid-column: 2;
+    grid-row: 2;
     width: 380px;
+    max-width: 100%;
     position: sticky;
     top: 16px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 0;
+    padding: 0;
     height: auto;
     min-height: 0;
     align-self: start;
     margin-top: 0;
-    overflow: visible;
-    background-color: #171717;
-    border: 1.33333px solid rgba(255,255,255,0.10);
+    overflow: hidden;
+    /* как у блока .events-calendar */
+    background-color: oklch(0.205 0 0);
+    border: 1.33333px solid oklch(1 0 0 / 0.1);
     border-radius: 10px;
 }
+/* Верхняя полоса как .events-weekdays у календаря */
 .events-right-header {
-    width: 345.333px;
-    height: 20px;
+    width: 100%;
+    min-height: 33.3333px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    column-gap: 8px;
-    row-gap: 8px;
+    column-gap: 12px;
+    row-gap: 4px;
     box-sizing: border-box;
+    padding: 8px 16px;
+    border-bottom: 1.33333px solid oklch(1 0 0 / 0.1);
+    background-color: oklch(0.205 0 0);
+    flex-shrink: 0;
 }
 .events-right-title {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     color: oklch(0.985 0 0);
-    line-height: 20px;
+    line-height: 16px;
     margin: 0;
 }
 .events-right-subtitle {
-    font-size: 13px;
-    color: rgba(255,255,255,0.75);
-    margin-top: 0;
-    line-height: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(0.708 0 0);
+    margin: 0;
+    line-height: 16px;
+    text-align: right;
 }
 .events-right-items-wrap {
-    width: 345.333px;
+    width: 100%;
     height: auto;
     box-sizing: border-box;
     overflow: visible;
     display: block;
     flex: 1;
     min-height: 0;
+    padding: 12px 16px 0;
     background-color: transparent;
 }
 .events-right-list {
@@ -548,7 +554,8 @@ body, button, input, select {
     gap: 12px;
     overflow-y: visible;
     padding-right: 0;
-    width: 345.333px;
+    width: 100%;
+    max-width: 100%;
     height: auto;
     flex: 1;
     min-height: 0;
@@ -587,7 +594,7 @@ body, button, input, select {
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
-    max-width: 322.667px;
+    max-width: 100%;
 }
 .events-tag-pill {
     display: inline-flex;
@@ -930,12 +937,15 @@ body, button, input, select {
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 .events-right-new-btn.events-new-btn {
-    width: 345.333px;
+    width: calc(100% - 32px);
+    max-width: 100%;
+    box-sizing: border-box;
     height: 32px;
     border-radius: 8px;
     background-color: oklab(1 0 0 / 0.045);
     border: 1.33333px solid oklch(1 0 0 / 0.15);
-    margin-top: 4px;
+    margin: 12px 16px 16px;
+    align-self: center;
     font-size: 14px;
     line-height: 20px;
     padding: 0;
@@ -1621,8 +1631,23 @@ body, button, input, select {
     border-bottom: none;
 }
 
+/* Кураторы: рамка и фон как у .events-calendar */
+.curators-panel {
+    background-color: oklch(0.205 0 0);
+    border: 1.33333px solid oklch(1 0 0 / 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+.curators-panel .table-container.table-families {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
 .curators-page-warning {
-    margin: 0 0 16px;
+    margin: 12px 12px 10px;
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 13px;
@@ -1630,6 +1655,9 @@ body, button, input, select {
     color: rgba(255, 210, 120, 0.95);
     background: rgba(255, 180, 60, 0.12);
     border: 1px solid rgba(255, 190, 80, 0.25);
+}
+.curators-panel .curators-page-warning + .table-container {
+    margin-top: 0;
 }
 
 /* Кураторы: фракции в столбце Curate (цвета как карточки настроек) */

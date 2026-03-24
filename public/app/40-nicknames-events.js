@@ -54,26 +54,25 @@ window.renderEventsCalendar = function renderEventsCalendar() {
   window.setPageContent(`
         <div class="events-page">
             <div class="events-calendar-layout">
-                <div class="events-calendar-column">
-                    <div class="events-calendar-topbar">
-                        <div class="events-month-control">
-                            <button type="button" class="events-month-nav" id="events-month-prev-btn" aria-label="Предыдущий месяц">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M15 18l-6-6 6-6"></path>
-                                </svg>
-                            </button>
-                            <div class="events-month-label" id="events-month-label">
-                                <span class="events-month-name">${monthName}</span>
-                                <span class="events-month-year">${year}</span>
-                            </div>
-                            <button type="button" class="events-month-nav" id="events-month-next-btn" aria-label="Следующий месяц">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 18l6-6-6-6"></path>
-                                </svg>
-                            </button>
+                <div class="events-calendar-topbar">
+                    <div class="events-month-control">
+                        <button type="button" class="events-month-nav" id="events-month-prev-btn" aria-label="Предыдущий месяц">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 18l-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="events-month-label" id="events-month-label">
+                            <span class="events-month-name">${monthName}</span>
+                            <span class="events-month-year">${year}</span>
                         </div>
+                        <button type="button" class="events-month-nav" id="events-month-next-btn" aria-label="Следующий месяц">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18l6-6-6-6"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="events-calendar">
+                </div>
+                <div class="events-calendar">
                     <div class="events-weekdays">
                         <div>Пн</div>
                         <div>Вт</div>
@@ -85,7 +84,6 @@ window.renderEventsCalendar = function renderEventsCalendar() {
                     </div>
                     <div class="events-grid">
                         ${cells.join('')}
-                    </div>
                     </div>
                 </div>
 

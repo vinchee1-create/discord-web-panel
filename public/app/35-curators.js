@@ -35,20 +35,22 @@ window.renderCurators = function renderCurators() {
     : '';
 
   window.setPageContent(`
-        ${warnBlock}
-        <div class="table-container table-families">
-            <table class="data-table data-table-families">
-                <thead>
-                    <tr>
-                        <th>Nickname</th>
-                        <th>LVL</th>
-                        <th>Discord ID</th>
-                        <th>Curate</th>
-                        <th style="text-align:right">Действие</th>
-                    </tr>
-                </thead>
-                <tbody>${list || '<tr><td colspan="5" style="opacity:0.6">Нет участников с основной ролью.</td></tr>'}</tbody>
-            </table>
+        <div class="curators-panel">
+            ${warnBlock}
+            <div class="table-container table-families">
+                <table class="data-table data-table-families">
+                    <thead>
+                        <tr>
+                            <th>Nickname</th>
+                            <th>LVL</th>
+                            <th>Discord ID</th>
+                            <th>Curate</th>
+                            <th style="text-align:right">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>${list || '<tr><td colspan="5" style="opacity:0.6">Нет участников с основной ролью.</td></tr>'}</tbody>
+                </table>
+            </div>
         </div>`);
 };
 
