@@ -5,27 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boston RP Admin</title>
     <link rel="stylesheet" href="/style.css">
-    <!-- Тема: размытый фон, одна плита app-body (шапка+сайдбар+контент). Уберите link — останется только style.css -->
-    <link rel="stylesheet" href="/theme-app.css">
     <link rel="stylesheet" href="/design-2b-nav-groups.css">
 </head>
 <body>
 
-    <div class="app-shell">
-        <div class="app-body">
-            <header class="app-topbar" aria-label="Панель страницы">
-                <div class="header-left">
-                    <a href="/" class="topbar-logo" title="Главная" aria-label="Раздел: Главная">
-                        <span class="topbar-logo-mark" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-                                <rect width="20" height="14" x="2" y="3" rx="2"></rect>
-                                <line x1="8" x2="16" y1="21" y2="21"></line>
-                                <line x1="12" x2="12" y1="17" y2="21"></line>
-                            </svg>
-                        </span>
-                    </a>
-                    <div class="header-separator"></div>
-                    <span class="page-title" id="current-title">Главная</span>
+    <%- include('partials/sidebar', { user }) %>
+
+    <main class="main">
+        <div class="workspace">
+            <header>
+                <div class="workspace-header-text">
+                    <h2 class="workspace-title" id="current-title">Главная</h2>
+                    <p class="workspace-subtitle" id="workspace-subtitle"></p>
                 </div>
                 <div class="header-actions" id="header-actions" style="display: none;">
                     <button type="button" class="btn-month" id="btn-add-family" onclick="openModal()">
@@ -36,19 +27,9 @@
                     </button>
                 </div>
             </header>
-
-            <div class="app-workspace-split">
-                <div class="sidebar-container">
-                    <%- include('partials/sidebar', { user }) %>
-                </div>
-
-                <main class="main-content">
-                    <div class="content-body" id="page-content">
-                    </div>
-                </main>
-            </div>
+            <div class="content-body" id="page-content"></div>
         </div>
-    </div>
+    </main>
 
     <%- include('partials/modals') %>
 

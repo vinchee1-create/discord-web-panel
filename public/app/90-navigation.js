@@ -12,7 +12,6 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     }
     document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
     btn.classList.add('active');
-    window.syncTopbarSectionIcon(btn);
     const title = btn.getAttribute('data-title');
     window.pageTitle.textContent = title;
     // Clear content immediately to avoid showing the previous page during async loads.
@@ -187,24 +186,10 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   // Бейдж "Материалы фракций" — тоже подгружаем в фоне
   try { await window.loadFactionMaterials(); } catch (_) { }
 
-  window.syncTopbarSectionIcon();
 })();
 
-/* Клик по иконке раздела в шапке — как клик по пункту меню (без полной перезагрузки) */
-document.querySelector('a.topbar-logo')?.addEventListener('click', (e) => {
-  const link = e.currentTarget;
-  const href = link.getAttribute('href') || '/';
-  const nav = Array.from(document.querySelectorAll('.nav-item')).find(
-    (a) => a.getAttribute('href') === href
-  );
-  if (nav) {
-    e.preventDefault();
-    nav.click();
-  }
-});
-
-/* Логотип B в сайдбаре — на главную без перезагрузки */
-document.querySelector('a.sidebar-brand-logo')?.addEventListener('click', (e) => {
+/* Логотип B — на главную без перезагрузки */
+document.querySelector('aside.sidebar a.logo')?.addEventListener('click', (e) => {
   const home = document.querySelector('.nav-item[href="/"]');
   if (home) {
     e.preventDefault();
