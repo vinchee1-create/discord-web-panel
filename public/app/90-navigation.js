@@ -189,7 +189,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 })();
 
 /* Логотип B — на главную без перезагрузки */
-document.querySelector('aside.sidebar a.logo')?.addEventListener('click', (e) => {
+document.querySelector('aside.sidebar a.sidebar-brand')?.addEventListener('click', (e) => {
   const home = document.querySelector('.nav-item[href="/"]');
   if (home) {
     e.preventDefault();
