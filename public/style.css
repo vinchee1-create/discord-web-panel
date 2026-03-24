@@ -328,7 +328,7 @@ body, button, input, select {
 }
 .stat-card {
     background: #151515;
-    border: 1px solid #202020;
+    border: 1px solid #2e2f2f;
     border-radius: 10px;
     padding: 16px;
     position: relative;
@@ -1631,27 +1631,8 @@ body, button, input, select {
     border-bottom: none;
 }
 
-/* Оболочка разделов — рамка и фон как у .events-calendar */
-.workspace-panel {
-    background-color: oklch(0.205 0 0);
-    border: 1.33333px solid oklch(1 0 0 / 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    box-sizing: border-box;
-    max-width: 100%;
-    padding: 16px;
-}
-.workspace-panel--flush {
-    padding: 0;
-}
-.workspace-panel .table-container {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    margin: 0;
-}
 .curators-page-warning {
-    margin: 12px 12px 10px;
+    margin: 0 0 16px;
     padding: 12px 16px;
     border-radius: 8px;
     font-size: 13px;
@@ -1659,9 +1640,6 @@ body, button, input, select {
     color: rgba(255, 210, 120, 0.95);
     background: rgba(255, 180, 60, 0.12);
     border: 1px solid rgba(255, 190, 80, 0.25);
-}
-.workspace-panel--flush .curators-page-warning + .table-container {
-    margin-top: 0;
 }
 
 /* Кураторы: фракции в столбце Curate (цвета как карточки настроек) */
